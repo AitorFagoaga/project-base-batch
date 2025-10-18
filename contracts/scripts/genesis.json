@@ -1,0 +1,12 @@
+[
+  {
+    "address": "0x0000000000000000000000000000000000000001",
+    "amount": 100,
+    "reason": "Hackathon winner - ETHGlobal 2024"
+  },
+  {
+    "address": "0x0000000000000000000000000000000000000002",
+    "amount": 50,
+    "reason": "OSS contributor - Verified GitHub contributions"
+  }
+]

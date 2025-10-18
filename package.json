@@ -1,0 +1,32 @@
+{
+  "name": "launchpad-meritocratic",
+  "version": "1.0.0",
+  "description": "Meritocratic Launchpad on Base Sepolia with on-chain reputation protocol",
+  "private": true,
+  "workspaces": [
+    "contracts",
+    "app"
+  ],
+  "scripts": {
+    "contracts:compile": "npm run compile --workspace=contracts",
+    "contracts:test": "npm run test --workspace=contracts",
+    "contracts:deploy": "npm run deploy --workspace=contracts",
+    "contracts:seed": "npm run seed-genesis --workspace=contracts",
+    "app:dev": "npm run dev --workspace=app",
+    "app:build": "npm run build --workspace=app",
+    "app:start": "npm run start --workspace=app",
+    "update-contracts": "node scripts/update-contracts.js",
+    "health-check": "node scripts/health-check.js",
+    "dev": "npm run app:dev",
+    "start": "npm run app:start"
+  },
+  "keywords": [
+    "base",
+    "launchpad",
+    "reputation",
+    "crowdfunding",
+    "web3"
+  ],
+  "author": "",
+  "license": "MIT"
+}

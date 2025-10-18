@@ -1,0 +1,192 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "./interfaces/IReputation.sol";
+
+/**
+ * @title Reputation
+ * @notice Two-layer reputation protocol for the Meritocratic Launchpad
+ * @dev Layer 1 (Genesis): Owner awards reputation for verified achievements
+ *      Layer 2 (Boosts): P2P reputation with sublinear power (sqrt) and cooldown
+ */
+contract Reputation is IReputation, Ownable {
+    // ═════════════════════════════════════════════════════════════════════════════
+    // STATE
+    // ═════════════════════════════════════════════════════════════════════════════
+    
+    /// @notice Reputation scores (genesis + boosts received)
+    mapping(address => uint256) private _reputation;
+    
+    /// @notice Last boost timestamp for each address (cooldown tracking)
+    mapping(address => uint256) private _lastBoostAt;
+    
+    /// @notice Cooldown period between boosts (in seconds)
+    uint256 private _cooldown;
+    
+    /// @notice Baseline boost power (added to sqrt(rep))
+    uint256 private _baselinePower;
+    
+    /// @notice Minimum reputation required to give boosts
+    uint256 private _minRepToBoost;
+
+    // ═════════════════════════════════════════════════════════════════════════════
+    // ERRORS
+    // ═════════════════════════════════════════════════════════════════════════════
+    
+    error CooldownNotExpired(uint256 timeRemaining);
+    error InsufficientReputation(uint256 required, uint256 actual);
+    error CannotBoostSelf();
+    error InvalidRecipient();
+    error ArrayLengthMismatch();
+
+    // ═════════════════════════════════════════════════════════════════════════════
+    // CONSTRUCTOR
+    // ═════════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * @param cooldown_ Cooldown period between boosts (e.g., 86400 = 1 day)
+     * @param baselinePower_ Baseline boost power (e.g., 1)
+     * @param minRepToBoost_ Minimum reputation to give boosts (e.g., 0 for MVP)
+     * @param initialOwner_ Address that will own the contract
+     */
+    constructor(
+        uint256 cooldown_,
+        uint256 baselinePower_,
+        uint256 minRepToBoost_,
+        address initialOwner_
+    ) Ownable(initialOwner_) {
+        _cooldown = cooldown_;
+        _baselinePower = baselinePower_;
+        _minRepToBoost = minRepToBoost_;
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════════
+    // VIEW FUNCTIONS
+    // ═════════════════════════════════════════════════════════════════════════════
+    
+    /// @inheritdoc IReputation
+    function reputationOf(address account) external view returns (uint256) {
+        return _reputation[account];
+    }
+    
+    /// @inheritdoc IReputation
+    function lastBoostAt(address booster) external view returns (uint256) {
+        return _lastBoostAt[booster];
+    }
+    
+    /// @inheritdoc IReputation
+    function cooldown() external view returns (uint256) {
+        return _cooldown;
+    }
+    
+    /**
+     * @inheritdoc IReputation
+     * @dev Boost power = sqrt(reputation) + baseline
+     *      Uses Babylonian method for sqrt approximation
+     */
+    function boostPower(address booster) public view returns (uint256) {
+        uint256 rep = _reputation[booster];
+        return _sqrt(rep) + _baselinePower;
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════════
+    // GENESIS (OWNER ONLY)
+    // ═════════════════════════════════════════════════════════════════════════════
+    
+    /// @inheritdoc IReputation
+    function awardGenesis(
+        address recipient,
+        uint256 amount,
+        string calldata reason
+    ) external onlyOwner {
+        if (recipient == address(0)) revert InvalidRecipient();
+        
+        _reputation[recipient] += amount;
+        emit GenesisAwarded(recipient, amount, reason);
+    }
+    
+    /// @inheritdoc IReputation
+    function awardGenesisBatch(
+        address[] calldata recipients,
+        uint256[] calldata amounts,
+        string[] calldata reasons
+    ) external onlyOwner {
+        uint256 len = recipients.length;
+        if (len != amounts.length || len != reasons.length) {
+            revert ArrayLengthMismatch();
+        }
+        
+        for (uint256 i = 0; i < len; i++) {
+            if (recipients[i] == address(0)) revert InvalidRecipient();
+            _reputation[recipients[i]] += amounts[i];
+            emit GenesisAwarded(recipients[i], amounts[i], reasons[i]);
+        }
+    }
+    
+    /// @inheritdoc IReputation
+    function setParams(
+        uint256 newCooldown,
+        uint256 newBaselinePower,
+        uint256 newMinRepToBoost
+    ) external onlyOwner {
+        _cooldown = newCooldown;
+        _baselinePower = newBaselinePower;
+        _minRepToBoost = newMinRepToBoost;
+        emit ParamsUpdated(newCooldown, newBaselinePower, newMinRepToBoost);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════════
+    // BOOSTS (P2P)
+    // ═════════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * @inheritdoc IReputation
+     * @dev Checks:
+     *      - Booster has minimum reputation
+     *      - Cooldown has expired
+     *      - Not boosting self
+     *      - Recipient is valid
+     */
+    function boost(address recipient) external {
+        if (recipient == address(0)) revert InvalidRecipient();
+        if (recipient == msg.sender) revert CannotBoostSelf();
+        
+        uint256 boosterRep = _reputation[msg.sender];
+        if (boosterRep < _minRepToBoost) {
+            revert InsufficientReputation(_minRepToBoost, boosterRep);
+        }
+        
+        uint256 lastBoost = _lastBoostAt[msg.sender];
+        if (block.timestamp < lastBoost + _cooldown) {
+            uint256 timeRemaining = (lastBoost + _cooldown) - block.timestamp;
+            revert CooldownNotExpired(timeRemaining);
+        }
+        
+        // Calculate and apply boost power
+        uint256 power = boostPower(msg.sender);
+        _reputation[recipient] += power;
+        _lastBoostAt[msg.sender] = block.timestamp;
+        
+        emit BoostGiven(msg.sender, recipient, power);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════════
+    // INTERNAL HELPERS
+    // ═════════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * @dev Babylonian method for computing sqrt
+     * @param x Input value
+     * @return y Square root of x
+     */
+    function _sqrt(uint256 x) internal pure returns (uint256 y) {
+        if (x == 0) return 0;
+        uint256 z = (x + 1) / 2;
+        y = x;
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
+        }
+    }
+}
