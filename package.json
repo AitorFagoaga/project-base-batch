@@ -1,0 +1,31 @@
+{
+  "name": "meritocratic-launchpad",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Meritocratic Launchpad on Base with on-chain reputation protocol",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "hardhat:build": "npm run build --workspace=packages/hardhat",
+    "hardhat:test": "npm run test --workspace=packages/hardhat",
+    "hardhat:deploy": "npm run deploy --workspace=packages/hardhat",
+    "frontend:dev": "npm run dev --workspace=packages/next.js",
+    "frontend:build": "npm run build --workspace=packages/next.js",
+    "dev": "npm run frontend:dev",
+    "build": "npm run hardhat:build && npm run frontend:build",
+    "test": "npm run hardhat:test"
+  },
+  "keywords": [
+    "blockchain",
+    "base",
+    "reputation",
+    "launchpad",
+    "crowdfunding",
+    "web3"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "npm@10.0.0"
+}
