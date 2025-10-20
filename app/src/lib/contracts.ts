@@ -527,6 +527,11 @@ export const CONTRACTS = {
   },
   {
     "type": "error",
+    "name": "AlreadyCofounder",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "DeadlineNotReached",
     "inputs": []
   },
@@ -557,6 +562,11 @@ export const CONTRACTS = {
   },
   {
     "type": "error",
+    "name": "NotCreatorOrCofounder",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "ProjectNotFound",
     "inputs": []
   },
@@ -574,6 +584,23 @@ export const CONTRACTS = {
     "type": "error",
     "name": "ZeroContribution",
     "inputs": []
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "CofounderAdded",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "cofounder",
+        "indexed": true
+      }
+    ]
   },
   {
     "type": "event",
@@ -640,6 +667,16 @@ export const CONTRACTS = {
         "indexed": false
       },
       {
+        "type": "string",
+        "name": "description",
+        "indexed": false
+      },
+      {
+        "type": "string",
+        "name": "imageUrl",
+        "indexed": false
+      },
+      {
         "type": "uint256",
         "name": "goal",
         "indexed": false
@@ -650,6 +687,23 @@ export const CONTRACTS = {
         "indexed": false
       }
     ]
+  },
+  {
+    "type": "function",
+    "name": "addCofounder",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      },
+      {
+        "type": "address",
+        "name": "cofounder"
+      }
+    ],
+    "outputs": []
   },
   {
     "type": "function",
@@ -673,6 +727,14 @@ export const CONTRACTS = {
       {
         "type": "string",
         "name": "title"
+      },
+      {
+        "type": "string",
+        "name": "description"
+      },
+      {
+        "type": "string",
+        "name": "imageUrl"
       },
       {
         "type": "uint256",
@@ -703,6 +765,25 @@ export const CONTRACTS = {
       }
     ],
     "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "getCofounders",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address[]",
+        "name": ""
+      }
+    ]
   },
   {
     "type": "function",
@@ -757,6 +838,14 @@ export const CONTRACTS = {
             "name": "title"
           },
           {
+            "type": "string",
+            "name": "description"
+          },
+          {
+            "type": "string",
+            "name": "imageUrl"
+          },
+          {
             "type": "uint256",
             "name": "goal"
           },
@@ -771,8 +860,35 @@ export const CONTRACTS = {
           {
             "type": "bool",
             "name": "claimed"
+          },
+          {
+            "type": "address[]",
+            "name": "cofounders"
           }
         ]
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "isCofounder",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      },
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": ""
       }
     ]
   },
@@ -806,7 +922,142 @@ export const CONTRACTS = {
   }
 ] as const,
   },
+  userProfile: {
+    address: "0xD071B9D95Ac9d1402227661E000F0C009EC7862a" as `0x${string}`,
+    abi: [
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "ProfileUpdated",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "user",
+        "indexed": true
+      },
+      {
+        "type": "string",
+        "name": "name",
+        "indexed": false
+      },
+      {
+        "type": "string",
+        "name": "description",
+        "indexed": false
+      },
+      {
+        "type": "string",
+        "name": "avatarUrl",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getProfile",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "_user"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "string",
+        "name": "name"
+      },
+      {
+        "type": "string",
+        "name": "description"
+      },
+      {
+        "type": "string",
+        "name": "avatarUrl"
+      },
+      {
+        "type": "bool",
+        "name": "exists"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "hasProfile",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "_user"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "profiles",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ],
+    "outputs": [
+      {
+        "type": "string",
+        "name": "name"
+      },
+      {
+        "type": "string",
+        "name": "description"
+      },
+      {
+        "type": "string",
+        "name": "avatarUrl"
+      },
+      {
+        "type": "bool",
+        "name": "exists"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "setProfile",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "string",
+        "name": "_name"
+      },
+      {
+        "type": "string",
+        "name": "_description"
+      },
+      {
+        "type": "string",
+        "name": "_avatarUrl"
+      }
+    ],
+    "outputs": []
+  }
+] as const,
+  },
 } as const;
 
 export type ReputationABI = typeof CONTRACTS.reputation.abi;
 export type LaunchpadABI = typeof CONTRACTS.launchpad.abi;
+export type UserProfileABI = typeof CONTRACTS.userProfile.abi;

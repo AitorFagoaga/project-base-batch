@@ -1,16 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interfaces/IReputation.sol";
 
 /**
  * @title Reputation
  * @notice Two-layer reputation protocol for the Meritocratic Launchpad
- * @dev Layer 1 (Genesis): Owner awards reputation for verified achievements
+ * @dev Layer 1 (Genesis): Admins award reputation for verified achievements
  *      Layer 2 (Boosts): P2P reputation with sublinear power (sqrt) and cooldown
  */
-contract Reputation is IReputation, Ownable {
+contract Reputation is IReputation, AccessControl {
+    // ═════════════════════════════════════════════════════════════════════════════
+    // ROLES
+    // ═════════════════════════════════════════════════════════════════════════════
+
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     // ═════════════════════════════════════════════════════════════════════════════
     // STATE
     // ═════════════════════════════════════════════════════════════════════════════
@@ -62,17 +67,21 @@ contract Reputation is IReputation, Ownable {
      * @param cooldown_ Cooldown period between boosts (e.g., 86400 = 1 day)
      * @param baselinePower_ Baseline boost power (e.g., 1)
      * @param minRepToBoost_ Minimum reputation to give boosts (e.g., 0 for MVP)
-     * @param initialOwner_ Address that will own the contract
+     * @param initialAdmin_ Address that will be the first admin
      */
     constructor(
         uint256 cooldown_,
         uint256 baselinePower_,
         uint256 minRepToBoost_,
-        address initialOwner_
-    ) Ownable(initialOwner_) {
+        address initialAdmin_
+    ) {
         _cooldown = cooldown_;
         _baselinePower = baselinePower_;
         _minRepToBoost = minRepToBoost_;
+
+        // Grant DEFAULT_ADMIN_ROLE and ADMIN_ROLE to initial admin
+        _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin_);
+        _grantRole(ADMIN_ROLE, initialAdmin_);
     }
 
     // ═════════════════════════════════════════════════════════════════════════════
@@ -139,7 +148,7 @@ contract Reputation is IReputation, Ownable {
         address recipient,
         uint256 amount,
         string calldata reason
-    ) external onlyOwner {
+    ) external onlyRole(ADMIN_ROLE) {
         _awardGenesisWithCategory(recipient, amount, "CUSTOM", reason);
     }
 
@@ -149,7 +158,7 @@ contract Reputation is IReputation, Ownable {
         uint256 amount,
         string calldata category,
         string calldata reason
-    ) external onlyOwner {
+    ) external onlyRole(ADMIN_ROLE) {
         _awardGenesisWithCategory(recipient, amount, category, reason);
     }
 
@@ -158,7 +167,7 @@ contract Reputation is IReputation, Ownable {
         address[] calldata recipients,
         uint256[] calldata amounts,
         string[] calldata reasons
-    ) external onlyOwner {
+    ) external onlyRole(ADMIN_ROLE) {
         uint256 len = recipients.length;
         if (len != amounts.length || len != reasons.length) {
             revert ArrayLengthMismatch();
@@ -175,7 +184,7 @@ contract Reputation is IReputation, Ownable {
         uint256[] calldata amounts,
         string[] calldata categories,
         string[] calldata reasons
-    ) external onlyOwner {
+    ) external onlyRole(ADMIN_ROLE) {
         uint256 len = recipients.length;
         if (len != amounts.length || len != categories.length || len != reasons.length) {
             revert ArrayLengthMismatch();
@@ -213,7 +222,7 @@ contract Reputation is IReputation, Ownable {
         uint256 newCooldown,
         uint256 newBaselinePower,
         uint256 newMinRepToBoost
-    ) external onlyOwner {
+    ) external onlyRole(ADMIN_ROLE) {
         _cooldown = newCooldown;
         _baselinePower = newBaselinePower;
         _minRepToBoost = newMinRepToBoost;

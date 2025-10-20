@@ -14,6 +14,8 @@ export default function CreateProjectPage() {
   const { isConnected } = useAccount();
 
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [goalEth, setGoalEth] = useState("");
   const [durationDays, setDurationDays] = useState("");
 
@@ -27,7 +29,7 @@ export default function CreateProjectPage() {
     e.preventDefault();
 
     if (!title || !goalEth || !durationDays) {
-      toast.error("Please fill all fields");
+      toast.error("Por favor completa todos los campos requeridos");
       return;
     }
 
@@ -35,12 +37,27 @@ export default function CreateProjectPage() {
     const duration = parseInt(durationDays, 10);
 
     if (goal <= 0) {
-      toast.error("Goal must be greater than 0");
+      toast.error("La meta debe ser mayor a 0");
       return;
     }
 
     if (duration <= 0 || duration > 365) {
-      toast.error("Duration must be between 1 and 365 days");
+      toast.error("La duración debe estar entre 1 y 365 días");
+      return;
+    }
+
+    if (title.length > 100) {
+      toast.error("El título debe tener máximo 100 caracteres");
+      return;
+    }
+
+    if (description.length > 1000) {
+      toast.error("La descripción debe tener máximo 1000 caracteres");
+      return;
+    }
+
+    if (imageUrl.length > 200) {
+      toast.error("La URL de la imagen debe tener máximo 200 caracteres");
       return;
     }
 
@@ -52,7 +69,7 @@ export default function CreateProjectPage() {
         address: CONTRACTS.launchpad.address,
         abi: CONTRACTS.launchpad.abi,
         functionName: "createProject",
-        args: [title, goalInWei, BigInt(duration)],
+        args: [title, description, imageUrl, goalInWei, BigInt(duration)],
       });
 
       toast.success("📝 Transacción enviada a MetaMask");
@@ -200,6 +217,66 @@ export default function CreateProjectPage() {
                     {title.length}/100
                   </p>
                 </div>
+              </div>
+
+              {/* Project Description */}
+              <div>
+                <label htmlFor="description" className="input-label text-lg">
+                  📄 Project Description
+                </label>
+                <textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe your project, goals, and why people should fund it..."
+                  className="input-field text-lg min-h-[150px] resize-y"
+                  disabled={isPending || isConfirming}
+                  maxLength={1000}
+                  rows={6}
+                />
+                <div className="flex justify-between mt-2">
+                  <p className="text-sm text-gray-500">
+                    Provide details about your project (optional but recommended)
+                  </p>
+                  <p className={`text-sm font-medium ${description.length > 900 ? 'text-orange-600' : 'text-gray-500'}`}>
+                    {description.length}/1000
+                  </p>
+                </div>
+              </div>
+
+              {/* Project Image URL */}
+              <div>
+                <label htmlFor="imageUrl" className="input-label text-lg">
+                  🖼️ Project Image URL (Optional)
+                </label>
+                <input
+                  id="imageUrl"
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://... or ipfs://..."
+                  className="input-field text-lg"
+                  disabled={isPending || isConfirming}
+                  maxLength={200}
+                />
+                <p className="text-sm text-gray-500 mt-2">
+                  Add an image to make your project more attractive
+                </p>
+                {imageUrl && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Vista previa:</p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imageUrl}
+                      alt="Project preview"
+                      className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&q=80";
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Funding Goal */}
