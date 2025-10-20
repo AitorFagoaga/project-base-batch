@@ -132,7 +132,7 @@ contract Launchpad is ReentrancyGuard {
      * @param title Project title
      * @param description Project description
      * @param imageUrl Project image URL
-     * @param goalInEth Funding goal in ETH (will be converted to wei)
+     * @param goal Funding goal in wei
      * @param durationInDays Duration of the campaign in days
      * @return projectId The ID of the newly created project
      */
@@ -140,13 +140,12 @@ contract Launchpad is ReentrancyGuard {
         string calldata title,
         string calldata description,
         string calldata imageUrl,
-        uint256 goalInEth,
+        uint256 goal,
         uint256 durationInDays
     ) external returns (uint256 projectId) {
-        if (goalInEth == 0) revert InvalidGoal();
+        if (goal == 0) revert InvalidGoal();
         if (durationInDays == 0) revert InvalidDuration();
 
-        uint256 goalInWei = goalInEth * 1 ether;
         uint256 deadline = block.timestamp + (durationInDays * 1 days);
 
         projectId = _projectIdCounter++;
@@ -157,13 +156,13 @@ contract Launchpad is ReentrancyGuard {
             title: title,
             description: description,
             imageUrl: imageUrl,
-            goal: goalInWei,
+            goal: goal,
             deadline: deadline,
             fundsRaised: 0,
             claimed: false
         });
 
-        emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, goalInWei, deadline);
+        emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, goal, deadline);
     }
 
     // ═════════════════════════════════════════════════════════════════════════════

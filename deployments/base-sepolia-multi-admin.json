@@ -1,11 +1,16 @@
 {
   "network": "base-sepolia",
   "chainId": 84532,
-  "deployedAt": "2025-10-20T23:14:55.592Z",
+  "deployedAt": "2025-10-20T23:03:58.532Z",
   "deployer": "0x31a42406422E72dC790cF42eD978458B0b00bd06",
+  "features": {
+    "multiAdmin": true,
+    "descriptionSupport": true,
+    "imageUrlSupport": true
+  },
   "contracts": {
     "Reputation": {
-      "address": "0x6A9F0A968BF23df10AB954E788a1A99718388816",
+      "address": "0x8997C090A2563a9Af39563E4ddE7AD76eF7ECE44",
       "abi": [
         {
           "type": "constructor",
@@ -655,10 +660,13 @@
             }
           ]
         }
+      ],
+      "admins": [
+        "0x31a42406422E72dC790cF42eD978458B0b00bd06"
       ]
     },
     "Launchpad": {
-      "address": "0x95469D42822E8C323e6FC4c7f2cF46EC26249195",
+      "address": "0x6122fcbDe14f5ad2334e593DE45097e734abDe60",
       "abi": [
         {
           "type": "constructor",
@@ -845,7 +853,7 @@
             },
             {
               "type": "uint256",
-              "name": "goal"
+              "name": "goalInEth"
             },
             {
               "type": "uint256",

@@ -62,9 +62,9 @@ export default function CreateProjectPage() {
     }
 
     try {
-      // Convert ETH to Wei (multiply by 10^18)
+      // Convert ETH to Wei - contract now accepts Wei directly
       const goalInWei = BigInt(Math.floor(goal * 1e18));
-      
+
       writeContract({
         address: CONTRACTS.launchpad.address,
         abi: CONTRACTS.launchpad.abi,
