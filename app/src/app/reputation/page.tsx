@@ -2,11 +2,11 @@
 
 import { useAccount, useReadContract } from "wagmi";
 import { CONTRACTS } from "@/lib/contracts";
-import { ConnectButton } from "@/components/ConnectButton";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { BoostForm } from "@/components/BoostForm";
-import Link from "next/link";
+import { GenesisBreakdown } from "@/components/GenesisBreakdown";
+import { SharedPageLayout } from "@/components/SharedPageLayout";
 
 export default function ReputationPage() {
   const { address } = useAccount();
@@ -16,6 +16,14 @@ export default function ReputationPage() {
     address: CONTRACTS.reputation.address,
     abi: CONTRACTS.reputation.abi,
     functionName: "reputationOf",
+    args: address ? [address] : undefined,
+  });
+
+  // Read Genesis reputation
+  const { data: genesisReputation } = useReadContract({
+    address: CONTRACTS.reputation.address,
+    abi: CONTRACTS.reputation.abi,
+    functionName: "genesisReputationOf",
     args: address ? [address] : undefined,
   });
 
@@ -47,54 +55,13 @@ export default function ReputationPage() {
   const timeUntilNextBoost = Math.max(0, lastBoostTime + cooldownSeconds - now);
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                🚀 Meritocratic Launchpad
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Reputation-based crowdfunding on Base Sepolia
-              </p>
-            </div>
-            <ConnectButton />
-          </div>
-        </div>
-      </header>
-
-      {/* Navigation */}
-      <nav className="bg-gray-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8 py-3">
-            <Link href="/" className="text-gray-600 hover:text-gray-900">
-              Projects
-            </Link>
-            <Link href="/create" className="text-gray-600 hover:text-gray-900">
-              Create Project
-            </Link>
-            <Link href="/reputation" className="text-primary-600 font-medium">
-              Reputation
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <NetworkGuard>
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Your Reputation
-            </h2>
-            <p className="text-gray-600">
-              Build trust through verified achievements and community boosts
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <SharedPageLayout
+      title="Your Reputation"
+      description="Build trust through verified achievements and community boosts"
+    >
+      <NetworkGuard>
+        <div className="animate-fadeIn">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {/* Reputation Stats */}
             <div className="card">
               <h3 className="text-lg font-bold mb-4">Reputation Score</h3>
@@ -102,6 +69,8 @@ export default function ReputationPage() {
               <div className="flex items-center justify-center py-8">
                 <ReputationBadge
                   reputation={reputation || BigInt(0)}
+                  genesisReputation={genesisReputation}
+                  showGenesis={true}
                   className="text-2xl px-6 py-3"
                 />
               </div>
@@ -140,6 +109,9 @@ export default function ReputationPage() {
                 </div>
               )}
             </div>
+
+            {/* Genesis Breakdown */}
+            {address && <GenesisBreakdown address={address} />}
 
             {/* Boost Form */}
             <BoostForm />
@@ -193,8 +165,8 @@ export default function ReputationPage() {
               </div>
             </div>
           </div>
-        </NetworkGuard>
-      </main>
-    </div>
+        </div>
+      </NetworkGuard>
+    </SharedPageLayout>
   );
 }

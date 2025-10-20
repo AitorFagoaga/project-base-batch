@@ -6,9 +6,13 @@ import { ProjectCard } from "@/components/ProjectCard";
 import { ConnectButton } from "@/components/ConnectButton";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { LoadingSkeleton, EmptyState } from "@/components/UIComponents";
+import { useIsContractOwner } from "@/hooks/useIsContractOwner";
 import Link from "next/link";
 
 export default function Home() {
+  // Check if user is contract owner
+  const { isOwner } = useIsContractOwner();
+
   // Read total project count
   const { data: projectCount } = useReadContract({
     address: CONTRACTS.launchpad.address,
@@ -40,25 +44,33 @@ export default function Home() {
       {/* Navigation */}
       <nav className="glass-card border-b border-white/20 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8 py-4">
-            <Link 
-              href="/" 
-              className="text-gray-900 font-bold bg-white/30 px-4 py-2 rounded-lg shadow-sm"
+          <div className="flex space-x-4 py-4">
+            <Link
+              href="/"
+              className="text-gray-900 font-bold bg-white/40 px-4 py-2 rounded-lg shadow-md scale-105"
             >
               📊 Projects
             </Link>
-            <Link 
-              href="/create" 
-              className="text-gray-800 hover:text-gray-900 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white/20"
+            <Link
+              href="/create"
+              className="text-gray-800 hover:text-gray-900 font-medium transition-all duration-200 px-4 py-2 rounded-lg hover:bg-white/20"
             >
               ✨ Create Project
             </Link>
-            <Link 
-              href="/reputation" 
-              className="text-gray-800 hover:text-gray-900 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white/20"
+            <Link
+              href="/reputation"
+              className="text-gray-800 hover:text-gray-900 font-medium transition-all duration-200 px-4 py-2 rounded-lg hover:bg-white/20"
             >
               ⭐ Reputation
             </Link>
+            {isOwner && (
+              <Link
+                href="/admin"
+                className="text-gray-800 hover:text-gray-900 font-medium transition-all duration-200 px-4 py-2 rounded-lg hover:bg-white/20"
+              >
+                👑 Admin
+              </Link>
+            )}
           </div>
         </div>
       </nav>

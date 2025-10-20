@@ -20,29 +20,20 @@ async function main() {
   const BASELINE_POWER = 1;
   const MIN_REP_TO_BOOST = 0;
 
-  let reputationAddress: string;
-  
-  // Check if already deployed
-  const existingReputationAddress = "0x66f8E781f0b714717c7B53dEa1acF7247b4B913b";
-  const code = await ethers.provider.getCode(existingReputationAddress);
-  
-  if (code !== "0x") {
-    console.log("\n📜 Reputation contract already deployed at:", existingReputationAddress);
-    reputationAddress = existingReputationAddress;
-  } else {
-    console.log("\n📜 Deploying Reputation contract...");
-    const ReputationFactory = await ethers.getContractFactory("Reputation");
-    const reputation = await ReputationFactory.deploy(
-      COOLDOWN,
-      BASELINE_POWER,
-      MIN_REP_TO_BOOST,
-      deployer.address
-    );
+  // Deploy fresh Reputation contract with enhanced Genesis features
+  console.log("\n📜 Deploying NEW Reputation contract (with Genesis categories)...");
+  const ReputationFactory = await ethers.getContractFactory("Reputation");
+  const reputation = await ReputationFactory.deploy(
+    COOLDOWN,
+    BASELINE_POWER,
+    MIN_REP_TO_BOOST,
+    deployer.address // Your wallet will be the owner
+  );
 
-    await reputation.waitForDeployment();
-    reputationAddress = await reputation.getAddress();
-    console.log("✅ Reputation deployed at:", reputationAddress);
-  }
+  await reputation.waitForDeployment();
+  const reputationAddress = await reputation.getAddress();
+  console.log("✅ Reputation deployed at:", reputationAddress);
+  console.log("👤 Contract owner:", deployer.address);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // LAUNCHPAD CONTRACT

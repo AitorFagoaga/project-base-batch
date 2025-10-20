@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseEther } from "viem";
 import { CONTRACTS } from "@/lib/contracts";
@@ -66,13 +66,15 @@ export function FundForm({ projectId, onSuccess }: FundFormProps) {
     }
   };
 
-  if (isSuccess) {
-    toast.success("🎉 ¡Contribución exitosa! Gracias por apoyar este proyecto", {
-      duration: 5000,
-    });
-    onSuccess?.();
-    setAmount("");
-  }
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("🎉 ¡Contribución exitosa! Gracias por apoyar este proyecto", {
+        duration: 5000,
+      });
+      onSuccess?.();
+      setAmount("");
+    }
+  }, [isSuccess]);
 
   return (
     <form onSubmit={handleSubmit} className="card space-y-5">

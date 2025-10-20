@@ -1,12 +1,13 @@
 /**
  * Contract addresses and ABIs for Base Sepolia deployment
  * Auto-generated from /deployments/base-sepolia.json
- * Last updated: 2025-10-18T22:57:57.989Z
+ * Last updated: 2025-10-20T21:39:02.649Z
+ * Owner: 0x31a42406422E72dC790cF42eD978458B0b00bd06
  */
 
 export const CONTRACTS = {
   reputation: {
-    address: "0x66f8E781f0b714717c7B53dEa1acF7247b4B913b" as `0x${string}`,
+    address: "0x106874B110e6a21C468c9E2c2dE008aAC44C5738" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -323,6 +324,154 @@ export const CONTRACTS = {
   },
   {
     "type": "function",
+    "name": "genesisReputationOf",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "boostReputationOf",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getGenesisHistory",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "tuple[]",
+        "name": "",
+        "components": [
+          {
+            "type": "uint256",
+            "name": "amount"
+          },
+          {
+            "type": "string",
+            "name": "category"
+          },
+          {
+            "type": "string",
+            "name": "reason"
+          },
+          {
+            "type": "uint256",
+            "name": "timestamp"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getGenesisByCategory",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
+      },
+      {
+        "type": "string",
+        "name": "category"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "total"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "awardGenesisWithCategory",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "recipient"
+      },
+      {
+        "type": "uint256",
+        "name": "amount"
+      },
+      {
+        "type": "string",
+        "name": "category"
+      },
+      {
+        "type": "string",
+        "name": "reason"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "awardGenesisBatchWithCategories",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address[]",
+        "name": "recipients"
+      },
+      {
+        "type": "uint256[]",
+        "name": "amounts"
+      },
+      {
+        "type": "string[]",
+        "name": "categories"
+      },
+      {
+        "type": "string[]",
+        "name": "reasons"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
     "name": "setParams",
     "constant": false,
     "payable": false,
@@ -358,7 +507,7 @@ export const CONTRACTS = {
 ] as const,
   },
   launchpad: {
-    address: "0xad6715C528F092D31010407C1D9Eb961A1aB545C" as `0x${string}`,
+    address: "0x3130F2946a2D9C0f3D0d8B810BBB33496d7a16D5" as `0x${string}`,
     abi: [
   {
     "type": "constructor",

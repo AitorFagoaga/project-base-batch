@@ -1,11 +1,11 @@
 {
   "network": "base-sepolia",
   "chainId": 84532,
-  "deployedAt": "2025-10-18T22:40:41.100Z",
-  "deployer": "0xaa860E97f1a50ca6Ce786AEf9B835052dfD0ee25",
+  "deployedAt": "2025-10-20T21:39:02.649Z",
+  "deployer": "0x31a42406422E72dC790cF42eD978458B0b00bd06",
   "contracts": {
     "Reputation": {
-      "address": "0x66f8E781f0b714717c7B53dEa1acF7247b4B913b",
+      "address": "0x106874B110e6a21C468c9E2c2dE008aAC44C5738",
       "abi": [
         {
           "type": "constructor",
@@ -216,6 +216,56 @@
         },
         {
           "type": "function",
+          "name": "awardGenesisBatchWithCategories",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "address[]",
+              "name": "recipients"
+            },
+            {
+              "type": "uint256[]",
+              "name": "amounts"
+            },
+            {
+              "type": "string[]",
+              "name": "categories"
+            },
+            {
+              "type": "string[]",
+              "name": "reasons"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "awardGenesisWithCategory",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "address",
+              "name": "recipient"
+            },
+            {
+              "type": "uint256",
+              "name": "amount"
+            },
+            {
+              "type": "string",
+              "name": "category"
+            },
+            {
+              "type": "string",
+              "name": "reason"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
           "name": "boost",
           "constant": false,
           "payable": false,
@@ -248,6 +298,25 @@
         },
         {
           "type": "function",
+          "name": "boostReputationOf",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "address",
+              "name": "account"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "uint256",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
           "name": "cooldown",
           "constant": true,
           "stateMutability": "view",
@@ -257,6 +326,85 @@
             {
               "type": "uint256",
               "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "genesisReputationOf",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "address",
+              "name": "account"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "uint256",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "getGenesisByCategory",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "address",
+              "name": "account"
+            },
+            {
+              "type": "string",
+              "name": "category"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "uint256",
+              "name": "total"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "getGenesisHistory",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "address",
+              "name": "account"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "tuple[]",
+              "name": "",
+              "components": [
+                {
+                  "type": "uint256",
+                  "name": "amount"
+                },
+                {
+                  "type": "string",
+                  "name": "category"
+                },
+                {
+                  "type": "string",
+                  "name": "reason"
+                },
+                {
+                  "type": "uint256",
+                  "name": "timestamp"
+                }
+              ]
             }
           ]
         },
@@ -357,7 +505,7 @@
       ]
     },
     "Launchpad": {
-      "address": "0xad6715C528F092D31010407C1D9Eb961A1aB545C",
+      "address": "0x3130F2946a2D9C0f3D0d8B810BBB33496d7a16D5",
       "abi": [
         {
           "type": "constructor",
