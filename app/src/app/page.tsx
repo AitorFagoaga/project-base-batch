@@ -5,9 +5,23 @@ import { CONTRACTS } from "@/lib/contracts";
 import { ProjectCard } from "@/components/ProjectCard";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { EmptyState } from "@/components/UIComponents";
-import { Header } from "@/components/Header";
+import { SharedPageLayout } from "@/components/SharedPageLayout";
 import Link from "next/link";
 
+type ProjectContractResponse = {
+  id?: bigint;
+  creator?: string;
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  goal?: bigint;
+  deadline?: bigint;
+  fundsRaised?: bigint;
+  claimed?: boolean;
+  cofounders?: readonly string[];
+} & {
+  [key: number]: unknown;
+};
 export default function Home() {
   // Read total project count
   const { data: projectCount } = useReadContract({
@@ -17,25 +31,51 @@ export default function Home() {
   });
 
   const totalProjects = projectCount ? Number(projectCount) : 0;
+  const projectsLabel =
+    totalProjects > 0
+      ? `Explore ${totalProjects} live project${totalProjects > 1 ? "s" : ""} backed by on-chain reputation.`
+      : "Be the first to launch a reputation-backed project on the Meritocratic Launchpad.";
+
+  const filterLabels = ["All", "Trending", "Collectibles", "Impact", "DeFi", "Education"];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
-      <Header />
+    <SharedPageLayout title="Active Projects" description={projectsLabel}>
+      <NetworkGuard>
+        <div className="space-y-10">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr),auto] xl:items-center">
+            <div className="relative flex-1">
+              <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
+                🔍
+              </span>
+              <input
+                type="search"
+                placeholder="Search projects, creators, or categories"
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-12 pr-6 text-sm text-gray-700 shadow-inner focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              />
+            </div>
+            <div className="flex gap-3">
+              <button className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-600 shadow-sm hover:border-indigo-400 hover:text-gray-900">
+                Sort by • Latest
+              </button>
+              <Link href="/create" className="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl">
+                Create Project
+              </Link>
+            </div>
+          </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <NetworkGuard>
-          <div className="mb-10 text-center animate-fadeIn">
-            <h2 className="text-4xl font-bold text-gray-900 drop-shadow-sm mb-3">
-              Active Projects
-            </h2>
-            <p className="text-gray-800 text-lg font-medium">
-              {totalProjects > 0 ? (
-                <>{totalProjects} project{totalProjects > 1 ? 's' : ''} launched · Fund projects backed by verified reputation</>
-              ) : (
-                <>Be the first to launch a project on the Meritocratic Launchpad</>
-              )}
-            </p>
+          <div className="flex flex-wrap gap-3">
+            {filterLabels.map((label, index) => (
+              <button
+                key={label}
+                className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
+                  index === 0
+                    ? "border-indigo-500 bg-indigo-500 text-white shadow-md"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-indigo-400 hover:text-gray-900"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
           {totalProjects === 0 ? (
@@ -51,18 +91,9 @@ export default function Home() {
           ) : (
             <ProjectList count={totalProjects} />
           )}
-        </NetworkGuard>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-center text-gray-600 text-sm">
-            Built on Base Sepolia · Open Source
-          </p>
         </div>
-      </footer>
-    </div>
+      </NetworkGuard>
+    </SharedPageLayout>
   );
 }
 
@@ -74,12 +105,33 @@ function ProjectList({ count }: { count: number }) {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          Loading {count} projects...
-        </p>
+      <div className="rounded-3xl border border-gray-100 bg-gradient-to-r from-indigo-50 via-white to-purple-50 px-6 py-6 mb-8 shadow-inner">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/10 text-xl text-indigo-600">
+              📡
+            </span>
+            <div>
+              <p className="text-base font-semibold text-gray-900">
+                Showing {count} project{count !== 1 ? "s" : ""} across the launchpad
+              </p>
+              <p className="text-sm text-gray-600">
+                Updated in real time via on-chain reads. Discover projects backed by reputation.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wide text-indigo-600 shadow-sm ring-1 ring-indigo-100">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live on Base Sepolia
+            </span>
+            <Link href="/reputation" className="text-sm font-semibold text-indigo-600 hover:underline">
+              View reputation tiers →
+            </Link>
+          </div>
+        </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 2xl:grid-cols-4">
         {projectIds.map((id) => (
           <ProjectWithReputation key={id} projectId={BigInt(id)} />
         ))}
@@ -116,7 +168,7 @@ function ProjectWithReputation({ projectId }: { projectId: bigint }) {
 
   if (projectError) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+      <div className="glass-card border border-red-200 bg-red-50/70 p-6 text-sm text-red-700">
         <p className="text-red-600 text-sm">Error loading project #{projectId.toString()}</p>
       </div>
     );
@@ -124,11 +176,11 @@ function ProjectWithReputation({ projectId }: { projectId: bigint }) {
 
   if (projectLoading || !projectData) {
     return (
-      <div className="bg-gray-100 rounded-lg p-6 animate-pulse">
-        <div className="h-48 bg-gray-200 rounded-t-lg mb-4"></div>
-        <div className="h-6 bg-gray-200 rounded mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+      <div className="card h-full animate-pulse space-y-4">
+        <div className="h-48 w-full rounded-2xl bg-gradient-to-br from-purple-200/60 to-pink-200/60"></div>
+        <div className="h-6 rounded bg-gray-200"></div>
+        <div className="h-4 rounded bg-gray-200 w-5/6"></div>
+        <div className="h-4 rounded bg-gray-200 w-2/3"></div>
       </div>
     );
   }
@@ -153,7 +205,7 @@ function ProjectWithReputation({ projectId }: { projectId: bigint }) {
     };
   } else {
     // Object format (viem v2 returns objects)
-    const data = projectData as any;
+    const data = projectData as ProjectContractResponse;
     project = {
       id: data.id ?? data[0],
       creator: data.creator ?? data[1],

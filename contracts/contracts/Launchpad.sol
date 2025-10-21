@@ -18,6 +18,8 @@ contract Launchpad is ReentrancyGuard {
         uint256 id;
         address creator;
         string title;
+        string description;
+        string imageUrl;
         string description; // Project description
         string imageUrl; // Project image (IPFS or URL)
         uint256 goal; // in wei
@@ -45,6 +47,12 @@ contract Launchpad is ReentrancyGuard {
     
     /// @notice Mapping to check if address is a cofounder of a project
     mapping(uint256 => mapping(address => bool)) private _isCofounder;
+    
+    /// @notice List of contributors per project
+    mapping(uint256 => address[]) private _contributors;
+    
+    /// @notice Whether a contribution is anonymous
+    mapping(uint256 => mapping(address => bool)) private _isAnonymous;
 
     // ═════════════════════════════════════════════════════════════════════════════
     // EVENTS
@@ -54,6 +62,8 @@ contract Launchpad is ReentrancyGuard {
         uint256 indexed projectId,
         address indexed creator,
         string title,
+        string description,
+        string imageUrl,
         string description,
         string imageUrl,
         uint256 goal,
@@ -68,7 +78,8 @@ contract Launchpad is ReentrancyGuard {
     event ContributionMade(
         uint256 indexed projectId,
         address indexed backer,
-        uint256 amount
+        uint256 amount,
+        bool isAnonymous
     );
     
     event FundsClaimed(
@@ -133,6 +144,24 @@ contract Launchpad is ReentrancyGuard {
     function getContribution(uint256 projectId, address backer) external view returns (uint256) {
         return _contributions[projectId][backer];
     }
+    
+    /**
+     * @notice Returns all contributors to a project
+     * @param projectId The ID of the project
+     * @return Array of contributor addresses
+     */
+    function getContributors(uint256 projectId) external view returns (address[] memory) {
+        return _contributors[projectId];
+    }
+    
+    /**
+     * @notice Check if a contribution is anonymous
+     * @param projectId The ID of the project
+     * @param backer The address of the backer
+     */
+    function isContributionAnonymous(uint256 projectId, address backer) external view returns (bool) {
+        return _isAnonymous[projectId][backer];
+    }
 
     // ═════════════════════════════════════════════════════════════════════════════
     // PROJECT CREATION
@@ -141,6 +170,9 @@ contract Launchpad is ReentrancyGuard {
     /**
      * @notice Creates a new crowdfunding project
      * @param title Project title
+     * @param description Project description
+     * @param imageUrl Project image URL
+     * @param goal Funding goal in wei
      * @param description Project description
      * @param imageUrl Project image URL (IPFS or hosted)
      * @param goalInEth Funding goal in ETH (will be converted to wei)
@@ -151,24 +183,31 @@ contract Launchpad is ReentrancyGuard {
         string calldata title,
         string calldata description,
         string calldata imageUrl,
+        uint256 goal,
+        string calldata description,
+        string calldata imageUrl,
         uint256 goalInEth,
         uint256 durationInDays
     ) external returns (uint256 projectId) {
-        if (goalInEth == 0) revert InvalidGoal();
+        if (goal == 0) revert InvalidGoal();
         if (durationInDays == 0) revert InvalidDuration();
+
         require(bytes(title).length <= 100, "Title too long");
         require(bytes(description).length <= 1000, "Description too long");
         require(bytes(imageUrl).length <= 200, "Image URL too long");
         
         uint256 goalInWei = goalInEth * 1 ether;
         uint256 deadline = block.timestamp + (durationInDays * 1 days);
-        
+
         projectId = _projectIdCounter++;
-        
+
         _projects[projectId] = Project({
             id: projectId,
             creator: msg.sender,
             title: title,
+            description: description,
+            imageUrl: imageUrl,
+            goal: goal,
             description: description,
             imageUrl: imageUrl,
             goal: goalInWei,
@@ -177,6 +216,8 @@ contract Launchpad is ReentrancyGuard {
             claimed: false,
             cofounders: new address[](0)
         });
+
+        emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, goal, deadline);
         
         emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, goalInWei, deadline);
     }
@@ -223,18 +264,25 @@ contract Launchpad is ReentrancyGuard {
     /**
      * @notice Fund a project with ETH
      * @param projectId The ID of the project to fund
+     * @param isAnonymous Whether to keep the contribution anonymous
      */
-    function fundProject(uint256 projectId) external payable {
+    function fundProject(uint256 projectId, bool isAnonymous) external payable {
         if (msg.value == 0) revert ZeroContribution();
         
         Project storage project = _projects[projectId];
         if (project.creator == address(0)) revert ProjectNotFound();
         if (block.timestamp >= project.deadline) revert DeadlinePassed();
         
+        // Track first-time contributor
+        if (_contributions[projectId][msg.sender] == 0) {
+            _contributors[projectId].push(msg.sender);
+        }
+        
         project.fundsRaised += msg.value;
         _contributions[projectId][msg.sender] += msg.value;
+        _isAnonymous[projectId][msg.sender] = isAnonymous;
         
-        emit ContributionMade(projectId, msg.sender, msg.value);
+        emit ContributionMade(projectId, msg.sender, msg.value, isAnonymous);
     }
 
     // ═════════════════════════════════════════════════════════════════════════════

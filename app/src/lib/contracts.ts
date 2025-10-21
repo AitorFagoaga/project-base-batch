@@ -1,12 +1,13 @@
 /**
  * Contract addresses and ABIs for Base Sepolia deployment
  * Auto-generated from /deployments/base-sepolia.json
- * Last updated: 2025-10-20T21:23:46.023Z
+ * Last updated: 2025-10-20T23:14:55.592Z
+ * Owner: 0x31a42406422E72dC790cF42eD978458B0b00bd06
  */
 
 export const CONTRACTS = {
   reputation: {
-    address: "0x66f8E781f0b714717c7B53dEa1acF7247b4B913b" as `0x${string}`,
+    address: "0x6A9F0A968BF23df10AB954E788a1A99718388816" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -27,7 +28,26 @@ export const CONTRACTS = {
       },
       {
         "type": "address",
-        "name": "initialOwner_"
+        "name": "initialAdmin_"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AccessControlBadConfirmation",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "AccessControlUnauthorizedAccount",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
+      },
+      {
+        "type": "bytes32",
+        "name": "neededRole"
       }
     ]
   },
@@ -69,26 +89,6 @@ export const CONTRACTS = {
     "type": "error",
     "name": "InvalidRecipient",
     "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "OwnableInvalidOwner",
-    "inputs": [
-      {
-        "type": "address",
-        "name": "owner"
-      }
-    ]
-  },
-  {
-    "type": "error",
-    "name": "OwnableUnauthorizedAccount",
-    "inputs": [
-      {
-        "type": "address",
-        "name": "account"
-      }
-    ]
   },
   {
     "type": "event",
@@ -137,23 +137,6 @@ export const CONTRACTS = {
   {
     "type": "event",
     "anonymous": false,
-    "name": "OwnershipTransferred",
-    "inputs": [
-      {
-        "type": "address",
-        "name": "previousOwner",
-        "indexed": true
-      },
-      {
-        "type": "address",
-        "name": "newOwner",
-        "indexed": true
-      }
-    ]
-  },
-  {
-    "type": "event",
-    "anonymous": false,
     "name": "ParamsUpdated",
     "inputs": [
       {
@@ -170,6 +153,100 @@ export const CONTRACTS = {
         "type": "uint256",
         "name": "minRepToBoost",
         "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "RoleAdminChanged",
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "role",
+        "indexed": true
+      },
+      {
+        "type": "bytes32",
+        "name": "previousAdminRole",
+        "indexed": true
+      },
+      {
+        "type": "bytes32",
+        "name": "newAdminRole",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "RoleGranted",
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "role",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "account",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "sender",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "RoleRevoked",
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "role",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "account",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "sender",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "ADMIN_ROLE",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "bytes32",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "DEFAULT_ADMIN_ROLE",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "bytes32",
+        "name": ""
       }
     ]
   },
@@ -217,6 +294,56 @@ export const CONTRACTS = {
   },
   {
     "type": "function",
+    "name": "awardGenesisBatchWithCategories",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address[]",
+        "name": "recipients"
+      },
+      {
+        "type": "uint256[]",
+        "name": "amounts"
+      },
+      {
+        "type": "string[]",
+        "name": "categories"
+      },
+      {
+        "type": "string[]",
+        "name": "reasons"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "awardGenesisWithCategory",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "recipient"
+      },
+      {
+        "type": "uint256",
+        "name": "amount"
+      },
+      {
+        "type": "string",
+        "name": "category"
+      },
+      {
+        "type": "string",
+        "name": "reason"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
     "name": "boost",
     "constant": false,
     "payable": false,
@@ -249,6 +376,25 @@ export const CONTRACTS = {
   },
   {
     "type": "function",
+    "name": "boostReputationOf",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
     "name": "cooldown",
     "constant": true,
     "stateMutability": "view",
@@ -257,6 +403,144 @@ export const CONTRACTS = {
     "outputs": [
       {
         "type": "uint256",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "genesisReputationOf",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getGenesisByCategory",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
+      },
+      {
+        "type": "string",
+        "name": "category"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "total"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getGenesisHistory",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "tuple[]",
+        "name": "",
+        "components": [
+          {
+            "type": "uint256",
+            "name": "amount"
+          },
+          {
+            "type": "string",
+            "name": "category"
+          },
+          {
+            "type": "string",
+            "name": "reason"
+          },
+          {
+            "type": "uint256",
+            "name": "timestamp"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getRoleAdmin",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "role"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bytes32",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "grantRole",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "role"
+      },
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "hasRole",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "role"
+      },
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
         "name": ""
       }
     ]
@@ -282,24 +566,19 @@ export const CONTRACTS = {
   },
   {
     "type": "function",
-    "name": "owner",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [],
-    "outputs": [
-      {
-        "type": "address",
-        "name": ""
-      }
-    ]
-  },
-  {
-    "type": "function",
-    "name": "renounceOwnership",
+    "name": "renounceRole",
     "constant": false,
     "payable": false,
-    "inputs": [],
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "role"
+      },
+      {
+        "type": "address",
+        "name": "callerConfirmation"
+      }
+    ],
     "outputs": []
   },
   {
@@ -320,6 +599,23 @@ export const CONTRACTS = {
         "name": ""
       }
     ]
+  },
+  {
+    "type": "function",
+    "name": "revokeRole",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "role"
+      },
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ],
+    "outputs": []
   },
   {
     "type": "function",
@@ -344,21 +640,27 @@ export const CONTRACTS = {
   },
   {
     "type": "function",
-    "name": "transferOwnership",
-    "constant": false,
+    "name": "supportsInterface",
+    "constant": true,
+    "stateMutability": "view",
     "payable": false,
     "inputs": [
       {
-        "type": "address",
-        "name": "newOwner"
+        "type": "bytes4",
+        "name": "interfaceId"
       }
     ],
-    "outputs": []
+    "outputs": [
+      {
+        "type": "bool",
+        "name": ""
+      }
+    ]
   }
 ] as const,
   },
   launchpad: {
-    address: "0x06AD960d6b070ba78973d40a6Cb54321ed02dF4b" as `0x${string}`,
+    address: "0x95469D42822E8C323e6FC4c7f2cF46EC26249195" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -374,11 +676,6 @@ export const CONTRACTS = {
   {
     "type": "error",
     "name": "AlreadyClaimed",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "AlreadyCofounder",
     "inputs": []
   },
   {
@@ -413,11 +710,6 @@ export const CONTRACTS = {
   },
   {
     "type": "error",
-    "name": "NotCreatorOrCofounder",
-    "inputs": []
-  },
-  {
-    "type": "error",
     "name": "ProjectNotFound",
     "inputs": []
   },
@@ -435,23 +727,6 @@ export const CONTRACTS = {
     "type": "error",
     "name": "ZeroContribution",
     "inputs": []
-  },
-  {
-    "type": "event",
-    "anonymous": false,
-    "name": "CofounderAdded",
-    "inputs": [
-      {
-        "type": "uint256",
-        "name": "projectId",
-        "indexed": true
-      },
-      {
-        "type": "address",
-        "name": "cofounder",
-        "indexed": true
-      }
-    ]
   },
   {
     "type": "event",
@@ -541,23 +816,6 @@ export const CONTRACTS = {
   },
   {
     "type": "function",
-    "name": "addCofounder",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      {
-        "type": "uint256",
-        "name": "projectId"
-      },
-      {
-        "type": "address",
-        "name": "cofounder"
-      }
-    ],
-    "outputs": []
-  },
-  {
-    "type": "function",
     "name": "claimFunds",
     "constant": false,
     "payable": false,
@@ -589,7 +847,7 @@ export const CONTRACTS = {
       },
       {
         "type": "uint256",
-        "name": "goalInEth"
+        "name": "goal"
       },
       {
         "type": "uint256",
@@ -616,25 +874,6 @@ export const CONTRACTS = {
       }
     ],
     "outputs": []
-  },
-  {
-    "type": "function",
-    "name": "getCofounders",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      {
-        "type": "uint256",
-        "name": "projectId"
-      }
-    ],
-    "outputs": [
-      {
-        "type": "address[]",
-        "name": ""
-      }
-    ]
   },
   {
     "type": "function",
@@ -711,35 +950,8 @@ export const CONTRACTS = {
           {
             "type": "bool",
             "name": "claimed"
-          },
-          {
-            "type": "address[]",
-            "name": "cofounders"
           }
         ]
-      }
-    ]
-  },
-  {
-    "type": "function",
-    "name": "isCofounder",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      {
-        "type": "uint256",
-        "name": "projectId"
-      },
-      {
-        "type": "address",
-        "name": "account"
-      }
-    ],
-    "outputs": [
-      {
-        "type": "bool",
-        "name": ""
       }
     ]
   },
@@ -774,138 +986,138 @@ export const CONTRACTS = {
 ] as const,
   },
   userProfile: {
-    address: "0xD071B9D95Ac9d1402227661E000F0C009EC7862a" as `0x${string}`,
+    address: "0xEE45A29585A6576aAe63a18d56aa13af289CE769" as `0x${string}`,
     abi: [
-  {
-    "type": "event",
-    "anonymous": false,
-    "name": "ProfileUpdated",
-    "inputs": [
       {
-        "type": "address",
-        "name": "user",
-        "indexed": true
+        "type": "event",
+        "anonymous": false,
+        "name": "ProfileUpdated",
+        "inputs": [
+          {
+            "type": "address",
+            "name": "user",
+            "indexed": true
+          },
+          {
+            "type": "string",
+            "name": "name",
+            "indexed": false
+          },
+          {
+            "type": "string",
+            "name": "description",
+            "indexed": false
+          },
+          {
+            "type": "string",
+            "name": "avatarUrl",
+            "indexed": false
+          }
+        ]
       },
       {
-        "type": "string",
-        "name": "name",
-        "indexed": false
+        "type": "function",
+        "name": "getProfile",
+        "constant": true,
+        "stateMutability": "view",
+        "payable": false,
+        "inputs": [
+          {
+            "type": "address",
+            "name": "_user"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "string",
+            "name": "name"
+          },
+          {
+            "type": "string",
+            "name": "description"
+          },
+          {
+            "type": "string",
+            "name": "avatarUrl"
+          },
+          {
+            "type": "bool",
+            "name": "exists"
+          }
+        ]
       },
       {
-        "type": "string",
-        "name": "description",
-        "indexed": false
+        "type": "function",
+        "name": "hasProfile",
+        "constant": true,
+        "stateMutability": "view",
+        "payable": false,
+        "inputs": [
+          {
+            "type": "address",
+            "name": "_user"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "bool",
+            "name": ""
+          }
+        ]
       },
       {
-        "type": "string",
-        "name": "avatarUrl",
-        "indexed": false
+        "type": "function",
+        "name": "profiles",
+        "constant": true,
+        "stateMutability": "view",
+        "payable": false,
+        "inputs": [
+          {
+            "type": "address",
+            "name": ""
+          }
+        ],
+        "outputs": [
+          {
+            "type": "string",
+            "name": "name"
+          },
+          {
+            "type": "string",
+            "name": "description"
+          },
+          {
+            "type": "string",
+            "name": "avatarUrl"
+          },
+          {
+            "type": "bool",
+            "name": "exists"
+          }
+        ]
+      },
+      {
+        "type": "function",
+        "name": "setProfile",
+        "constant": false,
+        "payable": false,
+        "inputs": [
+          {
+            "type": "string",
+            "name": "_name"
+          },
+          {
+            "type": "string",
+            "name": "_description"
+          },
+          {
+            "type": "string",
+            "name": "_avatarUrl"
+          }
+        ],
+        "outputs": []
       }
-    ]
-  },
-  {
-    "type": "function",
-    "name": "getProfile",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      {
-        "type": "address",
-        "name": "_user"
-      }
-    ],
-    "outputs": [
-      {
-        "type": "string",
-        "name": "name"
-      },
-      {
-        "type": "string",
-        "name": "description"
-      },
-      {
-        "type": "string",
-        "name": "avatarUrl"
-      },
-      {
-        "type": "bool",
-        "name": "exists"
-      }
-    ]
-  },
-  {
-    "type": "function",
-    "name": "hasProfile",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      {
-        "type": "address",
-        "name": "_user"
-      }
-    ],
-    "outputs": [
-      {
-        "type": "bool",
-        "name": ""
-      }
-    ]
-  },
-  {
-    "type": "function",
-    "name": "profiles",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      {
-        "type": "address",
-        "name": ""
-      }
-    ],
-    "outputs": [
-      {
-        "type": "string",
-        "name": "name"
-      },
-      {
-        "type": "string",
-        "name": "description"
-      },
-      {
-        "type": "string",
-        "name": "avatarUrl"
-      },
-      {
-        "type": "bool",
-        "name": "exists"
-      }
-    ]
-  },
-  {
-    "type": "function",
-    "name": "setProfile",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      {
-        "type": "string",
-        "name": "_name"
-      },
-      {
-        "type": "string",
-        "name": "_description"
-      },
-      {
-        "type": "string",
-        "name": "_avatarUrl"
-      }
-    ],
-    "outputs": []
-  }
-] as const,
+    ] as const,
   },
 } as const;
 

@@ -6,9 +6,11 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { EditProfileModal } from "@/components/EditProfileModal";
 import { ProjectCard } from "@/components/ProjectCard";
 import { NetworkGuard } from "@/components/NetworkGuard";
-import { Header } from "@/components/Header";
+import { SharedPageLayout } from "@/components/SharedPageLayout";
+import { BoostForm } from "@/components/BoostForm";
 import Link from "next/link";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 interface PageProps {
   params: { address: string };
@@ -18,8 +20,15 @@ export default function ProfilePage({ params }: PageProps) {
   const { address } = params;
   const { address: connectedAddress } = useAccount();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showBoostForm, setShowBoostForm] = useState(false);
 
   const isOwnProfile = connectedAddress?.toLowerCase() === address.toLowerCase();
+
+  // Copy address to clipboard
+  const copyAddress = () => {
+    navigator.clipboard.writeText(address);
+    toast.success("¡Dirección copiada al portapapeles! 📋");
+  };
 
   // Get user profile
   const { data: profileData, isLoading: isLoadingProfile } = useReadContract({
@@ -44,13 +53,21 @@ export default function ProfilePage({ params }: PageProps) {
     functionName: "projectCount",
   });
 
+  // Parse profile data (handle both array and object return types)
   const profile = profileData
-    ? {
-        name: profileData[0] as string,
-        description: profileData[1] as string,
-        avatarUrl: profileData[2] as string,
-        exists: profileData[3] as boolean,
-      }
+    ? Array.isArray(profileData)
+      ? {
+          name: profileData[0] as string,
+          description: profileData[1] as string,
+          avatarUrl: profileData[2] as string,
+          exists: profileData[3] as boolean,
+        }
+      : {
+          name: (profileData as any).name || '',
+          description: (profileData as any).description || '',
+          avatarUrl: (profileData as any).avatarUrl || '',
+          exists: (profileData as any).exists || false,
+        }
     : null;
 
   const reputation = reputationData ? Number(reputationData) : 0;
@@ -62,131 +79,165 @@ export default function ProfilePage({ params }: PageProps) {
     userProjects.push(i);
   }
 
+  const pageTitle = profile?.exists 
+    ? `${profile.name}'s Profile`
+    : address 
+    ? `${address.slice(0, 6)}...${address.slice(-4)}'s Profile`
+    : "User Profile";
+
+  const pageDescription = profile?.description 
+    ? profile.description 
+    : `Reputation: ${reputation} · View projects and boost this user`;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
-      <Header />
+    <SharedPageLayout title={pageTitle} description={pageDescription}>
+      <NetworkGuard>
+        {/* Profile Header */}
+        <div className="card mb-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+            {/* Avatar */}
+            <div className="flex-shrink-0">
+              <UserAvatar address={address} size="lg" showReputation={false} clickable={false} />
+            </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <NetworkGuard>
-          {/* Profile Header */}
-          <div className="glass-card mb-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              {/* Avatar */}
-              <div className="flex-shrink-0">
-                <UserAvatar address={address} size="lg" showReputation={false} clickable={false} />
-              </div>
-
-              {/* Profile Info */}
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-3xl font-bold text-gray-900">
-                    {isLoadingProfile ? (
-                      <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
-                    ) : profile?.exists ? (
-                      profile.name
-                    ) : (
-                      <span className="text-gray-600">Usuario sin perfil</span>
-                    )}
-                  </h1>
-                  {isOwnProfile && (
-                    <>
-                      <button
-                        onClick={() => setIsEditModalOpen(true)}
-                        className="btn-secondary text-sm"
-                        title="Editar perfil (modal rápido)"
-                      >
-                        ✏️ Editar
-                      </button>
-                      <Link
-                        href="/profile/edit"
-                        className="btn-primary text-sm"
-                        title="Editar perfil (página completa)"
-                      >
-                        📝 Editar Perfil
-                      </Link>
-                    </>
+            {/* Profile Info */}
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {isLoadingProfile ? (
+                    <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
+                  ) : profile?.exists ? (
+                    profile.name
+                  ) : (
+                    <span className="text-gray-600">Usuario sin perfil</span>
                   )}
-                </div>
-
-                {/* Address */}
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm text-gray-600 font-mono">
-                    {address.slice(0, 10)}...{address.slice(-8)}
-                  </span>
-                  <a
-                    href={`https://sepolia.basescan.org/address/${address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-purple-600 hover:text-purple-700"
-                  >
-                    🔍 Ver en BaseScan
-                  </a>
-                </div>
-
-                {/* Description */}
-                {profile?.description && (
-                  <p className="text-gray-700 mb-4 max-w-2xl">{profile.description}</p>
+                </h2>
+                {isOwnProfile && (
+                  <>
+                    <button
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="rounded-lg bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+                      title="Editar perfil (modal rápido)"
+                    >
+                      ✏️ Editar
+                    </button>
+                    <Link
+                      href="/profile/edit"
+                      className="rounded-lg bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-600"
+                      title="Editar perfil (página completa)"
+                    >
+                      📝 Editar Perfil
+                    </Link>
+                  </>
                 )}
+              </div>
 
-                {/* Stats */}
-                <div className="flex flex-wrap gap-6">
-                  {/* Reputation */}
-                  <div className="flex items-center gap-2">
-                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-2">
-                      <span className="text-white text-sm font-bold">⭐</span>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900">{reputation}</div>
-                      <div className="text-xs text-gray-600">Reputación</div>
-                    </div>
+              {/* Address */}
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm text-gray-600 font-mono bg-gray-100 px-3 py-1 rounded-lg">
+                  {address.slice(0, 10)}...{address.slice(-8)}
+                </span>
+                <button
+                  onClick={copyAddress}
+                  className="rounded-lg bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200"
+                  title="Copiar dirección completa"
+                >
+                  📋 Copiar
+                </button>
+                <a
+                  href={`https://sepolia.basescan.org/address/${address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                >
+                  🔍 BaseScan
+                </a>
+              </div>
+
+              {/* Description */}
+              {profile?.description && (
+                <p className="text-gray-700 mb-4 max-w-2xl">{profile.description}</p>
+              )}
+
+              {/* Stats */}
+              <div className="flex flex-wrap gap-6">
+                {/* Reputation */}
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500">
+                    <span className="text-white text-lg font-bold">⭐</span>
                   </div>
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900">{reputation}</div>
+                    <div className="text-xs text-gray-600 font-medium">Reputación</div>
+                  </div>
+                </div>
 
-                  {/* Projects Created (will be calculated below) */}
-                  <div className="flex items-center gap-2">
-                    <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full p-2">
-                      <span className="text-white text-sm font-bold">🚀</span>
+                {/* Projects Created */}
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500">
+                    <span className="text-white text-lg font-bold">🚀</span>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900" id="project-count">
+                      0
                     </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900" id="project-count">
-                        0
-                      </div>
-                      <div className="text-xs text-gray-600">Proyectos</div>
-                    </div>
+                    <div className="text-xs text-gray-600 font-medium">Proyectos</div>
                   </div>
                 </div>
               </div>
+
+              {/* Boost Button - Only show if not own profile and connected */}
+              {!isOwnProfile && connectedAddress && (
+                <div className="mt-6">
+                  <button
+                    onClick={() => setShowBoostForm(!showBoostForm)}
+                    className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-600"
+                  >
+                    {showBoostForm ? "❌ Cancelar" : "⚡ Boost Usuario"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
+        </div>
 
-          {/* User's Projects */}
-          <div className="mb-10">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              📂 Proyectos Creados
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userProjects.map((projectId) => (
-                <UserProjectCard
-                  key={projectId}
-                  projectId={projectId}
-                  creatorAddress={address}
-                />
-              ))}
-            </div>
+        {/* Boost Form - Show when button clicked */}
+        {showBoostForm && !isOwnProfile && connectedAddress && (
+          <div className="card mb-8">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              ⚡ Boost a {profile?.name || address.slice(0, 10)}
+            </h3>
+            <BoostForm targetUser={address as `0x${string}`} />
           </div>
-        </NetworkGuard>
-      </main>
+        )}
 
-      {/* Edit Profile Modal */}
-      {isOwnProfile && (
-        <EditProfileModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          currentProfile={profile || undefined}
-          userAddress={address}
-        />
-      )}
-    </div>
+        {/* User's Projects */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            📂 Proyectos Creados
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {userProjects.map((projectId) => (
+              <UserProjectCard
+                key={projectId}
+                projectId={projectId}
+                creatorAddress={address}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Edit Profile Modal */}
+        {isOwnProfile && (
+          <EditProfileModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            currentProfile={profile || undefined}
+            userAddress={address}
+          />
+        )}
+      </NetworkGuard>
+    </SharedPageLayout>
   );
 }
 

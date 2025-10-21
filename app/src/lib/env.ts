@@ -6,6 +6,7 @@ export const env = {
   CHAIN_ID: parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || "84532", 10),
   REPUTATION_ADDRESS: (process.env.NEXT_PUBLIC_REPUTATION_ADDRESS || "") as `0x${string}`,
   LAUNCHPAD_ADDRESS: (process.env.NEXT_PUBLIC_LAUNCHPAD_ADDRESS || "") as `0x${string}`,
+  EVENT_MANAGER_ADDRESS: (process.env.NEXT_PUBLIC_EVENT_MANAGER_ADDRESS || "") as `0x${string}`,
   WALLETCONNECT_PROJECT_ID: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
 } as const;
 
@@ -21,6 +22,10 @@ export function validateEnv(): { valid: boolean; missing: string[] } {
 
   if (!env.LAUNCHPAD_ADDRESS || env.LAUNCHPAD_ADDRESS === "") {
     missing.push("NEXT_PUBLIC_LAUNCHPAD_ADDRESS");
+  }
+
+  if (!env.EVENT_MANAGER_ADDRESS || env.EVENT_MANAGER_ADDRESS === "") {
+    missing.push("NEXT_PUBLIC_EVENT_MANAGER_ADDRESS");
   }
 
   return {

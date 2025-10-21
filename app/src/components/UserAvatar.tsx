@@ -12,35 +12,20 @@ interface UserAvatarProps {
   clickable?: boolean;
 }
 
-export function UserAvatar({ 
-  address, 
-  size = "md", 
+export function UserAvatar({
+  address,
+  size = "md",
   showReputation = false,
-  clickable = true 
+  clickable = true
 }: UserAvatarProps) {
-  // Get user profile
-  const { data: profileData } = useReadContract({
-    address: CONTRACTS.userProfile.address,
-    abi: CONTRACTS.userProfile.abi,
-    functionName: "getProfile",
-    args: [address as `0x${string}`],
-  });
-
   // Get reputation if needed
   const { data: reputationData } = useReadContract({
     address: CONTRACTS.reputation.address,
     abi: CONTRACTS.reputation.abi,
-    functionName: "getReputation",
+    functionName: "reputationOf",
     args: [address as `0x${string}`],
     query: { enabled: showReputation },
   });
-
-  const profile = profileData ? {
-    name: profileData[0] as string,
-    description: profileData[1] as string,
-    avatarUrl: profileData[2] as string,
-    exists: profileData[3] as boolean,
-  } : null;
 
   const reputation = reputationData ? Number(reputationData) : 0;
 
@@ -50,15 +35,15 @@ export function UserAvatar({
     lg: "w-16 h-16",
   };
 
-  const avatarUrl = profile?.avatarUrl || 
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || address.slice(0, 6))}&background=random`;
+  const shortAddress = `${address.slice(0, 6)}...${address.slice(-4)}`;
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(address.slice(0, 6))}&background=6366f1`;
 
   const content = (
     <div className="relative inline-block">
       <div className={`${sizeClasses[size]} rounded-full overflow-hidden border-2 border-white shadow-lg bg-white`}>
         <Image
           src={avatarUrl}
-          alt={profile?.name || address.slice(0, 6)}
+          alt={shortAddress}
           width={size === "sm" ? 32 : size === "md" ? 48 : 64}
           height={size === "sm" ? 32 : size === "md" ? 48 : 64}
           className="object-cover w-full h-full"
@@ -85,10 +70,10 @@ export function UserAvatar({
 
   if (clickable) {
     return (
-      <Link 
+      <Link
         href={`/profile/${address}`}
         className="inline-block hover:opacity-80 transition-opacity"
-        title={profile?.name || `Ver perfil de ${address.slice(0, 6)}`}
+        title={`Ver perfil de ${shortAddress}`}
       >
         {content}
       </Link>

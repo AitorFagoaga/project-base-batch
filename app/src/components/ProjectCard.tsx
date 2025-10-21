@@ -27,18 +27,16 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, creatorReputation, isLoadingReputation }: ProjectCardProps) {
-  // Validar que el proyecto tenga todas las propiedades requeridas
   if (!project || project.goal === undefined || project.fundsRaised === undefined || project.deadline === undefined) {
-    console.error('Invalid project data in ProjectCard:', project);
+    console.error("Invalid project data in ProjectCard:", project);
     return null;
   }
-  
-  // Asegurar valores por defecto
+
   const safeProject = {
     ...project,
     fundsRaised: project.fundsRaised ?? BigInt(0),
-    description: project.description ?? '',
-    imageUrl: project.imageUrl ?? '',
+    description: project.description ?? "",
+    imageUrl: project.imageUrl ?? "",
     cofounders: project.cofounders ?? [],
   };
 
@@ -46,122 +44,93 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
   const progressPercent = Math.min(progress * 100, 100);
 
   const now = Math.floor(Date.now() / 1000);
-  const deadlineDate = new Date(Number(safeProject.deadline) * 1000);
   const isActive = now < Number(safeProject.deadline);
-  const daysRemaining = Math.max(
-    0,
-    Math.ceil((Number(safeProject.deadline) - now) / 86400)
-  );
+  const daysRemaining = Math.max(0, Math.ceil((Number(safeProject.deadline) - now) / 86400));
 
   const goalEth = formatEther(safeProject.goal);
   const raisedEth = formatEther(safeProject.fundsRaised);
-
   const projectImage = safeProject.imageUrl || "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&q=80";
 
   return (
-    <div className="card hover:shadow-xl transition-all duration-200 overflow-hidden p-0">
-      {/* Project Image */}
-      <div className="relative h-48 w-full bg-gradient-to-br from-purple-400 to-pink-400">
+    <div className="group rounded-3xl border border-gray-100 bg-white/80 p-3 shadow-[0_18px_40px_-24px_rgba(79,70,229,0.4)] transition-shadow hover:shadow-[0_28px_60px_-30px_rgba(79,70,229,0.55)]">
+      <div className="relative aspect-[16/11] overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
         <Image
           src={projectImage}
           alt={safeProject.title}
           fill
-          className="object-cover"
-          unoptimized
-          onError={(e) => {
-            const img = e.target as HTMLImageElement;
-            img.src = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&q=80";
-          }}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(min-width: 1280px) 320px, (min-width: 768px) 280px, 100vw"
         />
-        {/* Reputation Badge Overlay */}
-        <div className="absolute top-3 right-3">
+        <div className="absolute inset-x-4 top-4 flex items-center justify-between">
+          <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-gray-500 shadow">
+            #{safeProject.id.toString()}
+          </span>
           {isLoadingReputation ? (
-            <div className="h-6 w-20 bg-white/80 rounded animate-pulse"></div>
+            <div className="h-7 w-24 rounded-full bg-white/70 animate-pulse" />
           ) : (
             <ReputationBadge reputation={creatorReputation} />
           )}
         </div>
       </div>
 
-      {/* Card Content */}
-      <div className="p-5">
-        {/* Title */}
-        <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-          {safeProject.title}
-        </h3>
-
-        {/* Description */}
-        {safeProject.description && (
-          <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-            {safeProject.description}
+      <div className="mt-4 space-y-4">
+        <div className="space-y-2">
+          <h3 className="text-base font-semibold text-gray-900 line-clamp-1">{safeProject.title}</h3>
+          <p className="text-sm text-gray-500 line-clamp-2">
+            {safeProject.description || "Sin descripción todavía. ¡Cuéntale al mundo por qué deberían apoyarte!"}
           </p>
-        )}
+        </div>
 
-        {/* Creator & Co-founders */}
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-3">
           <UserAvatar address={safeProject.creator} size="sm" showReputation={false} />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-500">Creador</p>
-            <p className="text-sm font-medium text-gray-900 truncate font-mono">
+          <div className="flex-1">
+            <p className="text-xs uppercase tracking-wide text-gray-400">Creador</p>
+            <p className="font-mono text-sm font-semibold text-gray-700">
               {safeProject.creator.slice(0, 6)}...{safeProject.creator.slice(-4)}
             </p>
           </div>
           {safeProject.cofounders && safeProject.cofounders.length > 0 && (
-            <div className="flex -space-x-2">
-              {safeProject.cofounders.slice(0, 3).map((cofounder, idx) => (
-                <div key={idx} className="relative" title={`Co-founder: ${cofounder}`}>
-                  <UserAvatar address={cofounder} size="sm" showReputation={false} />
-                </div>
-              ))}
-              {safeProject.cofounders.length > 3 && (
-                <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white flex items-center justify-center">
-                  <span className="text-xs font-bold text-gray-700">
-                    +{safeProject.cofounders.length - 3}
-                  </span>
-                </div>
-              )}
-            </div>
+            <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600">
+              +{safeProject.cofounders.length} cofounder{safeProject.cofounders.length > 1 ? "s" : ""}
+            </span>
           )}
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-4">
-          <div className="flex justify-between text-sm text-gray-600 mb-2">
-            <span className="font-semibold">
+        <div className="space-y-2 rounded-2xl bg-gray-50/80 p-2.5">
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <span className="font-medium text-gray-700">Recaudado</span>
+            <span className="font-semibold text-gray-900">
               {raisedEth} / {goalEth} ETH
             </span>
-            <span className="font-bold text-purple-600">{progressPercent.toFixed(1)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-300 shadow-sm"
-              style={{ width: `${progressPercent}%` }}
-            ></div>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
+          </div>
+          <div className="flex items-center justify-between text-xs uppercase tracking-wide text-gray-400">
+            <span>{progressPercent.toFixed(0)}% completado</span>
+            <span>
+              {isActive
+                ? `${daysRemaining} día${daysRemaining === 1 ? "" : "s"} restantes`
+                : safeProject.claimed
+                ? "Fondos reclamados"
+                : "Campaña finalizada"}
+            </span>
           </div>
         </div>
 
-        {/* Status & CTA */}
-        <div className="flex items-center justify-between gap-3">
-          {isActive ? (
-            <span className="text-sm text-green-600 font-medium bg-green-50 px-3 py-1 rounded-full">
-              ⏰ {daysRemaining} día{daysRemaining !== 1 ? 's' : ''} restante{daysRemaining !== 1 ? 's' : ''}
-            </span>
-          ) : safeProject.claimed ? (
-            <span className="text-sm text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded-full">
-              ✓ Financiado
-            </span>
-          ) : (
-            <span className="text-sm text-red-600 font-medium bg-red-50 px-3 py-1 rounded-full">
-              ⏱️ Finalizado
-            </span>
-          )}
-
+        <div className="flex items-center justify-between">
           <Link
             href={`/project/${safeProject.id}`}
-            className="btn-primary text-sm py-2 px-4"
+            className="rounded-full bg-gray-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-600"
           >
-            Ver Proyecto →
+            Ver Proyecto
           </Link>
+          <button
+            type="button"
+            className="flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-500 transition hover:border-indigo-500 hover:text-indigo-600"
+          >
+            ⭐ Inspirador
+          </button>
         </div>
       </div>
     </div>

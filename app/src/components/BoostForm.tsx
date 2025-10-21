@@ -9,8 +9,12 @@ import { isAddress } from "viem";
 /**
  * Boost form for giving reputation to another user
  */
-export function BoostForm() {
-  const [recipientAddress, setRecipientAddress] = useState("");
+interface BoostFormProps {
+  targetUser?: `0x${string}`;
+}
+
+export function BoostForm({ targetUser }: BoostFormProps = {}) {
+  const [recipientAddress, setRecipientAddress] = useState(targetUser || "");
   const { address } = useAccount();
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
@@ -117,8 +121,14 @@ export function BoostForm() {
           onChange={(e) => setRecipientAddress(e.target.value)}
           placeholder="0x..."
           className="input-field font-mono text-sm"
-          disabled={isPending || isConfirming || !canBoost}
+          disabled={isPending || isConfirming || !canBoost || !!targetUser}
+          readOnly={!!targetUser}
         />
+        {targetUser && (
+          <p className="text-xs text-gray-500 mt-1">
+            Boosteando a este usuario
+          </p>
+        )}
       </div>
 
       {error && (

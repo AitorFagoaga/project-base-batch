@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseEther } from "viem";
 import { CONTRACTS } from "@/lib/contracts";
@@ -16,6 +16,7 @@ interface FundFormProps {
 
 export function FundForm({ projectId, onSuccess }: FundFormProps) {
   const [amount, setAmount] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
 
@@ -36,7 +37,7 @@ export function FundForm({ projectId, onSuccess }: FundFormProps) {
         address: CONTRACTS.launchpad.address,
         abi: CONTRACTS.launchpad.abi,
         functionName: "fundProject",
-        args: [projectId],
+        args: [projectId, isAnonymous],
         value: parseEther(amount),
       });
 
@@ -66,13 +67,15 @@ export function FundForm({ projectId, onSuccess }: FundFormProps) {
     }
   };
 
-  if (isSuccess) {
-    toast.success("🎉 ¡Contribución exitosa! Gracias por apoyar este proyecto", {
-      duration: 5000,
-    });
-    onSuccess?.();
-    setAmount("");
-  }
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("🎉 ¡Contribución exitosa! Gracias por apoyar este proyecto", {
+        duration: 5000,
+      });
+      onSuccess?.();
+      setAmount("");
+    }
+  }, [isSuccess]);
 
   return (
     <form onSubmit={handleSubmit} className="card space-y-5">
@@ -125,6 +128,28 @@ export function FundForm({ projectId, onSuccess }: FundFormProps) {
             1 ETH
           </button>
         </div>
+      </div>
+
+      {/* Anonymous Contribution Toggle */}
+      <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 border-2 border-purple-200">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isAnonymous}
+            onChange={(e) => setIsAnonymous(e.target.checked)}
+            className="mt-1 w-5 h-5 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+            disabled={isPending || isConfirming}
+          />
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-lg">🎭</span>
+              <span className="font-semibold text-gray-900">Contribución Anónima</span>
+            </div>
+            <p className="text-sm text-gray-600">
+              Tu nombre no aparecerá en el historial público de inversores. Solo se mostrará el monto invertido.
+            </p>
+          </div>
+        </label>
       </div>
 
       {error && (

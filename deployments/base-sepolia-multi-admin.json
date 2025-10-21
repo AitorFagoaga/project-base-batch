@@ -1,11 +1,16 @@
 {
   "network": "base-sepolia",
   "chainId": 84532,
-  "deployedAt": "2025-10-20T23:14:55.592Z",
+  "deployedAt": "2025-10-20T23:03:58.532Z",
   "deployer": "0x31a42406422E72dC790cF42eD978458B0b00bd06",
+  "features": {
+    "multiAdmin": true,
+    "descriptionSupport": true,
+    "imageUrlSupport": true
+  },
   "contracts": {
     "Reputation": {
-      "address": "0x6A9F0A968BF23df10AB954E788a1A99718388816",
+      "address": "0x8997C090A2563a9Af39563E4ddE7AD76eF7ECE44",
       "abi": [
         {
           "type": "constructor",
@@ -135,50 +140,22 @@
         {
           "type": "event",
           "anonymous": false,
-          "name": "RoleRevoked",
+          "name": "ParamsUpdated",
           "inputs": [
             {
-              "type": "bytes32",
-              "name": "role",
-              "indexed": true
+              "type": "uint256",
+              "name": "cooldown",
+              "indexed": false
             },
             {
-              "type": "address",
-              "name": "account",
-              "indexed": true
+              "type": "uint256",
+              "name": "baselinePower",
+              "indexed": false
             },
             {
-              "type": "address",
-              "name": "sender",
-              "indexed": true
-            }
-          ]
-        },
-        {
-          "type": "function",
-          "name": "ADMIN_ROLE",
-          "constant": true,
-          "stateMutability": "view",
-          "payable": false,
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "bytes32",
-              "name": ""
-            }
-          ]
-        },
-        {
-          "type": "function",
-          "name": "DEFAULT_ADMIN_ROLE",
-          "constant": true,
-          "stateMutability": "view",
-          "payable": false,
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "bytes32",
-              "name": ""
+              "type": "uint256",
+              "name": "minRepToBoost",
+              "indexed": false
             }
           ]
         },
@@ -573,14 +550,14 @@
         },
         {
           "type": "function",
-          "name": "genesisReputationOf",
+          "name": "lastBoostAt",
           "constant": true,
           "stateMutability": "view",
           "payable": false,
           "inputs": [
             {
               "type": "address",
-              "name": "account"
+              "name": "booster"
             }
           ],
           "outputs": [
@@ -683,10 +660,13 @@
             }
           ]
         }
+      ],
+      "admins": [
+        "0x31a42406422E72dC790cF42eD978458B0b00bd06"
       ]
     },
     "Launchpad": {
-      "address": "0x95469D42822E8C323e6FC4c7f2cF46EC26249195",
+      "address": "0x6122fcbDe14f5ad2334e593DE45097e734abDe60",
       "abi": [
         {
           "type": "constructor",
@@ -702,11 +682,6 @@
         {
           "type": "error",
           "name": "AlreadyClaimed",
-          "inputs": []
-        },
-        {
-          "type": "error",
-          "name": "AlreadyCofounder",
           "inputs": []
         },
         {
@@ -741,11 +716,6 @@
         },
         {
           "type": "error",
-          "name": "NotCreatorOrCofounder",
-          "inputs": []
-        },
-        {
-          "type": "error",
           "name": "ProjectNotFound",
           "inputs": []
         },
@@ -763,23 +733,6 @@
           "type": "error",
           "name": "ZeroContribution",
           "inputs": []
-        },
-        {
-          "type": "event",
-          "anonymous": false,
-          "name": "CofounderAdded",
-          "inputs": [
-            {
-              "type": "uint256",
-              "name": "projectId",
-              "indexed": true
-            },
-            {
-              "type": "address",
-              "name": "cofounder",
-              "indexed": true
-            }
-          ]
         },
         {
           "type": "event",
@@ -869,23 +822,6 @@
         },
         {
           "type": "function",
-          "name": "addCofounder",
-          "constant": false,
-          "payable": false,
-          "inputs": [
-            {
-              "type": "uint256",
-              "name": "projectId"
-            },
-            {
-              "type": "address",
-              "name": "cofounder"
-            }
-          ],
-          "outputs": []
-        },
-        {
-          "type": "function",
           "name": "claimFunds",
           "constant": false,
           "payable": false,
@@ -917,7 +853,7 @@
             },
             {
               "type": "uint256",
-              "name": "goal"
+              "name": "goalInEth"
             },
             {
               "type": "uint256",
@@ -944,25 +880,6 @@
             }
           ],
           "outputs": []
-        },
-        {
-          "type": "function",
-          "name": "getCofounders",
-          "constant": true,
-          "stateMutability": "view",
-          "payable": false,
-          "inputs": [
-            {
-              "type": "uint256",
-              "name": "projectId"
-            }
-          ],
-          "outputs": [
-            {
-              "type": "address[]",
-              "name": ""
-            }
-          ]
         },
         {
           "type": "function",
@@ -1039,35 +956,8 @@
                 {
                   "type": "bool",
                   "name": "claimed"
-                },
-                {
-                  "type": "address[]",
-                  "name": "cofounders"
                 }
               ]
-            }
-          ]
-        },
-        {
-          "type": "function",
-          "name": "isCofounder",
-          "constant": true,
-          "stateMutability": "view",
-          "payable": false,
-          "inputs": [
-            {
-              "type": "uint256",
-              "name": "projectId"
-            },
-            {
-              "type": "address",
-              "name": "account"
-            }
-          ],
-          "outputs": [
-            {
-              "type": "bool",
-              "name": ""
             }
           ]
         },
@@ -1098,140 +988,6 @@
               "name": ""
             }
           ]
-        }
-      ]
-    },
-    "UserProfile": {
-      "address": "0xEE45A29585A6576aAe63a18d56aa13af289CE769",
-      "abi": [
-        {
-          "type": "event",
-          "anonymous": false,
-          "name": "ProfileUpdated",
-          "inputs": [
-            {
-              "type": "address",
-              "name": "user",
-              "indexed": true
-            },
-            {
-              "type": "string",
-              "name": "name",
-              "indexed": false
-            },
-            {
-              "type": "string",
-              "name": "description",
-              "indexed": false
-            },
-            {
-              "type": "string",
-              "name": "avatarUrl",
-              "indexed": false
-            }
-          ]
-        },
-        {
-          "type": "function",
-          "name": "getProfile",
-          "constant": true,
-          "stateMutability": "view",
-          "payable": false,
-          "inputs": [
-            {
-              "type": "address",
-              "name": "_user"
-            }
-          ],
-          "outputs": [
-            {
-              "type": "string",
-              "name": "name"
-            },
-            {
-              "type": "string",
-              "name": "description"
-            },
-            {
-              "type": "string",
-              "name": "avatarUrl"
-            },
-            {
-              "type": "bool",
-              "name": "exists"
-            }
-          ]
-        },
-        {
-          "type": "function",
-          "name": "hasProfile",
-          "constant": true,
-          "stateMutability": "view",
-          "payable": false,
-          "inputs": [
-            {
-              "type": "address",
-              "name": "_user"
-            }
-          ],
-          "outputs": [
-            {
-              "type": "bool",
-              "name": ""
-            }
-          ]
-        },
-        {
-          "type": "function",
-          "name": "profiles",
-          "constant": true,
-          "stateMutability": "view",
-          "payable": false,
-          "inputs": [
-            {
-              "type": "address",
-              "name": ""
-            }
-          ],
-          "outputs": [
-            {
-              "type": "string",
-              "name": "name"
-            },
-            {
-              "type": "string",
-              "name": "description"
-            },
-            {
-              "type": "string",
-              "name": "avatarUrl"
-            },
-            {
-              "type": "bool",
-              "name": "exists"
-            }
-          ]
-        },
-        {
-          "type": "function",
-          "name": "setProfile",
-          "constant": false,
-          "payable": false,
-          "inputs": [
-            {
-              "type": "string",
-              "name": "_name"
-            },
-            {
-              "type": "string",
-              "name": "_description"
-            },
-            {
-              "type": "string",
-              "name": "_avatarUrl"
-            }
-          ],
-          "outputs": []
         }
       ]
     }

@@ -20,29 +20,20 @@ async function main() {
   const BASELINE_POWER = 1;
   const MIN_REP_TO_BOOST = 0;
 
-  let reputationAddress: string;
-  
-  // Check if already deployed
-  const existingReputationAddress = "0x66f8E781f0b714717c7B53dEa1acF7247b4B913b";
-  const code = await ethers.provider.getCode(existingReputationAddress);
-  
-  if (code !== "0x") {
-    console.log("\n📜 Reputation contract already deployed at:", existingReputationAddress);
-    reputationAddress = existingReputationAddress;
-  } else {
-    console.log("\n📜 Deploying Reputation contract...");
-    const ReputationFactory = await ethers.getContractFactory("Reputation");
-    const reputation = await ReputationFactory.deploy(
-      COOLDOWN,
-      BASELINE_POWER,
-      MIN_REP_TO_BOOST,
-      deployer.address
-    );
+  // Deploy fresh Reputation contract with enhanced Genesis features
+  console.log("\n📜 Deploying NEW Reputation contract (with Genesis categories)...");
+  const ReputationFactory = await ethers.getContractFactory("Reputation");
+  const reputation = await ReputationFactory.deploy(
+    COOLDOWN,
+    BASELINE_POWER,
+    MIN_REP_TO_BOOST,
+    deployer.address // Your wallet will be the owner
+  );
 
-    await reputation.waitForDeployment();
-    reputationAddress = await reputation.getAddress();
-    console.log("✅ Reputation deployed at:", reputationAddress);
-  }
+  await reputation.waitForDeployment();
+  const reputationAddress = await reputation.getAddress();
+  console.log("✅ Reputation deployed at:", reputationAddress);
+  console.log("👤 Contract owner:", deployer.address);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // USER PROFILE CONTRACT
@@ -77,6 +68,14 @@ async function main() {
   console.log("✅ Launchpad deployed at:", launchpadAddress);
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // EVENT MANAGER CONTRACT
+  console.log("\n🗓️ Deploying EventManager contract...");
+  const EventManagerFactory = await ethers.getContractFactory("EventManager");
+  const eventManager = await EventManagerFactory.deploy(deployer.address);
+  await eventManager.waitForDeployment();
+  const eventManagerAddress = await eventManager.getAddress();
+  console.log("✅ EventManager deployed at:", eventManagerAddress);
+
   // SAVE DEPLOYMENT INFO
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -89,6 +88,7 @@ async function main() {
   const ReputationFactoryForAbi = await ethers.getContractFactory("Reputation");
   const LaunchpadFactoryForAbi = await ethers.getContractFactory("Launchpad");
   const UserProfileFactoryForAbi = await ethers.getContractFactory("UserProfile");
+  const EventManagerFactoryForAbi = await ethers.getContractFactory("EventManager");
 
   const deploymentInfo = {
     network: "base-sepolia",
@@ -108,6 +108,10 @@ async function main() {
         address: userProfileAddress,
         abi: JSON.parse(UserProfileFactoryForAbi.interface.formatJson()),
       },
+      EventManager: {
+        address: eventManagerAddress,
+        abi: JSON.parse(EventManagerFactoryForAbi.interface.formatJson()),
+      },
     },
   };
 
@@ -120,6 +124,7 @@ async function main() {
   console.log(`NEXT_PUBLIC_REPUTATION_ADDRESS=${reputationAddress}`);
   console.log(`NEXT_PUBLIC_LAUNCHPAD_ADDRESS=${launchpadAddress}`);
   console.log(`NEXT_PUBLIC_USERPROFILE_ADDRESS=${userProfileAddress}`);
+  console.log(`NEXT_PUBLIC_EVENT_MANAGER_ADDRESS=${eventManagerAddress}`);
 }
 
 main()
