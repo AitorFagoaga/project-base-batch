@@ -26,10 +26,15 @@ export const CONTRACTS = {
     address: "${deployment.contracts.Launchpad.address}" as \`0x\${string}\`,
     abi: ${JSON.stringify(deployment.contracts.Launchpad.abi, null, 2)} as const,
   },
+  userProfile: {
+    address: "${deployment.contracts.UserProfile.address}" as \`0x\${string}\`,
+    abi: ${JSON.stringify(deployment.contracts.UserProfile.abi, null, 2)} as const,
+  },
 } as const;
 
 export type ReputationABI = typeof CONTRACTS.reputation.abi;
 export type LaunchpadABI = typeof CONTRACTS.launchpad.abi;
+export type UserProfileABI = typeof CONTRACTS.userProfile.abi;
 `;
 
 // Write to contracts.ts
@@ -38,3 +43,4 @@ fs.writeFileSync(contractsPath, content, 'utf8');
 console.log('✅ Updated app/src/lib/contracts.ts');
 console.log(`   - Reputation: ${deployment.contracts.Reputation.address}`);
 console.log(`   - Launchpad: ${deployment.contracts.Launchpad.address}`);
+console.log(`   - UserProfile: ${deployment.contracts.UserProfile.address}`);

@@ -37,31 +37,39 @@ describe("Launchpad", function () {
     it("Should create a project successfully", async function () {
       const tx = await launchpad
         .connect(creator)
-        .createProject("My Project", 10, 30); // 10 ETH, 30 days
+        .createProject(
+          "My Project", 
+          "A revolutionary DeFi project", 
+          "ipfs://QmHash123",
+          10, 
+          30
+        ); // 10 ETH, 30 days
 
       await expect(tx).to.emit(launchpad, "ProjectCreated");
 
       const project = await launchpad.getProject(0);
       expect(project.creator).to.equal(creator.address);
       expect(project.title).to.equal("My Project");
+      expect(project.description).to.equal("A revolutionary DeFi project");
+      expect(project.imageUrl).to.equal("ipfs://QmHash123");
       expect(project.goal).to.equal(ethers.parseEther("10"));
     });
 
     it("Should revert with zero goal", async function () {
       await expect(
-        launchpad.connect(creator).createProject("Test", 0, 30)
+        launchpad.connect(creator).createProject("Test", "Description", "", 0, 30)
       ).to.be.revertedWithCustomError(launchpad, "InvalidGoal");
     });
 
     it("Should revert with zero duration", async function () {
       await expect(
-        launchpad.connect(creator).createProject("Test", 10, 0)
+        launchpad.connect(creator).createProject("Test", "Description", "", 10, 0)
       ).to.be.revertedWithCustomError(launchpad, "InvalidDuration");
     });
 
     it("Should increment project counter", async function () {
-      await launchpad.connect(creator).createProject("Project 1", 5, 30);
-      await launchpad.connect(creator).createProject("Project 2", 8, 30);
+      await launchpad.connect(creator).createProject("Project 1", "Desc 1", "", 5, 30);
+      await launchpad.connect(creator).createProject("Project 2", "Desc 2", "", 8, 30);
 
       expect(await launchpad.projectCount()).to.equal(2);
     });
@@ -71,7 +79,7 @@ describe("Launchpad", function () {
     let projectId: number;
 
     beforeEach(async function () {
-      await launchpad.connect(creator).createProject("Test Project", 5, 30);
+      await launchpad.connect(creator).createProject("Test Project", "Test description", "", 5, 30);
       projectId = 0;
     });
 
@@ -122,7 +130,7 @@ describe("Launchpad", function () {
     let projectId: number;
 
     beforeEach(async function () {
-      await launchpad.connect(creator).createProject("Test Project", 5, 30);
+      await launchpad.connect(creator).createProject("Test Project", "Test description", "", 5, 30);
       projectId = 0;
     });
 
@@ -198,6 +206,59 @@ describe("Launchpad", function () {
       await expect(
         launchpad.connect(creator).claimFunds(projectId)
       ).to.be.revertedWithCustomError(launchpad, "AlreadyClaimed");
+    });
+  });
+
+  describe("Co-founders", function () {
+    let projectId: number;
+
+    beforeEach(async function () {
+      await launchpad.connect(creator).createProject(
+        "Test Project",
+        "Description",
+        "",
+        5,
+        30
+      );
+      projectId = 0;
+    });
+
+    it("Should allow creator to add co-founder", async function () {
+      await expect(
+        launchpad.connect(creator).addCofounder(projectId, backer1.address)
+      )
+        .to.emit(launchpad, "CofounderAdded")
+        .withArgs(projectId, backer1.address);
+
+      expect(await launchpad.isCofounder(projectId, backer1.address)).to.be.true;
+    });
+
+    it("Should return all co-founders", async function () {
+      await launchpad.connect(creator).addCofounder(projectId, backer1.address);
+      await launchpad.connect(creator).addCofounder(projectId, backer2.address);
+
+      const cofounders = await launchpad.getCofounders(projectId);
+      expect(cofounders).to.deep.equal([backer1.address, backer2.address]);
+    });
+
+    it("Should revert if non-creator tries to add co-founder", async function () {
+      await expect(
+        launchpad.connect(backer1).addCofounder(projectId, backer2.address)
+      ).to.be.revertedWithCustomError(launchpad, "NotCreator");
+    });
+
+    it("Should revert if adding duplicate co-founder", async function () {
+      await launchpad.connect(creator).addCofounder(projectId, backer1.address);
+      
+      await expect(
+        launchpad.connect(creator).addCofounder(projectId, backer1.address)
+      ).to.be.revertedWithCustomError(launchpad, "AlreadyCofounder");
+    });
+
+    it("Should revert if trying to add creator as co-founder", async function () {
+      await expect(
+        launchpad.connect(creator).addCofounder(projectId, creator.address)
+      ).to.be.revertedWithCustomError(launchpad, "AlreadyCofounder");
     });
   });
 

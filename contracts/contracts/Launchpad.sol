@@ -18,10 +18,13 @@ contract Launchpad is ReentrancyGuard {
         uint256 id;
         address creator;
         string title;
+        string description; // Project description
+        string imageUrl; // Project image (IPFS or URL)
         uint256 goal; // in wei
         uint256 deadline; // timestamp
         uint256 fundsRaised;
         bool claimed;
+        address[] cofounders; // List of co-founders
     }
 
     // ═════════════════════════════════════════════════════════════════════════════
@@ -39,6 +42,9 @@ contract Launchpad is ReentrancyGuard {
     
     /// @notice Total contributions per project per backer
     mapping(uint256 => mapping(address => uint256)) private _contributions;
+    
+    /// @notice Mapping to check if address is a cofounder of a project
+    mapping(uint256 => mapping(address => bool)) private _isCofounder;
 
     // ═════════════════════════════════════════════════════════════════════════════
     // EVENTS
@@ -48,8 +54,15 @@ contract Launchpad is ReentrancyGuard {
         uint256 indexed projectId,
         address indexed creator,
         string title,
+        string description,
+        string imageUrl,
         uint256 goal,
         uint256 deadline
+    );
+    
+    event CofounderAdded(
+        uint256 indexed projectId,
+        address indexed cofounder
     );
     
     event ContributionMade(
@@ -78,6 +91,8 @@ contract Launchpad is ReentrancyGuard {
     error DeadlinePassed();
     error ZeroContribution();
     error TransferFailed();
+    error NotCreatorOrCofounder();
+    error AlreadyCofounder();
 
     // ═════════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR
@@ -126,17 +141,24 @@ contract Launchpad is ReentrancyGuard {
     /**
      * @notice Creates a new crowdfunding project
      * @param title Project title
+     * @param description Project description
+     * @param imageUrl Project image URL (IPFS or hosted)
      * @param goalInEth Funding goal in ETH (will be converted to wei)
      * @param durationInDays Duration of the campaign in days
      * @return projectId The ID of the newly created project
      */
     function createProject(
         string calldata title,
+        string calldata description,
+        string calldata imageUrl,
         uint256 goalInEth,
         uint256 durationInDays
     ) external returns (uint256 projectId) {
         if (goalInEth == 0) revert InvalidGoal();
         if (durationInDays == 0) revert InvalidDuration();
+        require(bytes(title).length <= 100, "Title too long");
+        require(bytes(description).length <= 1000, "Description too long");
+        require(bytes(imageUrl).length <= 200, "Image URL too long");
         
         uint256 goalInWei = goalInEth * 1 ether;
         uint256 deadline = block.timestamp + (durationInDays * 1 days);
@@ -147,13 +169,51 @@ contract Launchpad is ReentrancyGuard {
             id: projectId,
             creator: msg.sender,
             title: title,
+            description: description,
+            imageUrl: imageUrl,
             goal: goalInWei,
             deadline: deadline,
             fundsRaised: 0,
-            claimed: false
+            claimed: false,
+            cofounders: new address[](0)
         });
         
-        emit ProjectCreated(projectId, msg.sender, title, goalInWei, deadline);
+        emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, goalInWei, deadline);
+    }
+    
+    /**
+     * @notice Add a co-founder to the project
+     * @param projectId The ID of the project
+     * @param cofounder Address of the co-founder to add
+     */
+    function addCofounder(uint256 projectId, address cofounder) external {
+        Project storage project = _projects[projectId];
+        if (project.creator == address(0)) revert ProjectNotFound();
+        if (msg.sender != project.creator) revert NotCreator();
+        if (_isCofounder[projectId][cofounder]) revert AlreadyCofounder();
+        if (cofounder == project.creator) revert AlreadyCofounder();
+        
+        project.cofounders.push(cofounder);
+        _isCofounder[projectId][cofounder] = true;
+        
+        emit CofounderAdded(projectId, cofounder);
+    }
+    
+    /**
+     * @notice Get all co-founders of a project
+     * @param projectId The ID of the project
+     */
+    function getCofounders(uint256 projectId) external view returns (address[] memory) {
+        return _projects[projectId].cofounders;
+    }
+    
+    /**
+     * @notice Check if an address is a co-founder
+     * @param projectId The ID of the project
+     * @param account Address to check
+     */
+    function isCofounder(uint256 projectId, address account) external view returns (bool) {
+        return _isCofounder[projectId][account];
     }
 
     // ═════════════════════════════════════════════════════════════════════════════

@@ -1,7 +1,7 @@
 {
   "network": "base-sepolia",
   "chainId": 84532,
-  "deployedAt": "2025-10-18T22:40:41.100Z",
+  "deployedAt": "2025-10-20T22:05:21.329Z",
   "deployer": "0xaa860E97f1a50ca6Ce786AEf9B835052dfD0ee25",
   "contracts": {
     "Reputation": {
@@ -357,7 +357,7 @@
       ]
     },
     "Launchpad": {
-      "address": "0xad6715C528F092D31010407C1D9Eb961A1aB545C",
+      "address": "0x0e4060cB6F2874221546f9CB262D22cDa38824EA",
       "abi": [
         {
           "type": "constructor",
@@ -373,6 +373,11 @@
         {
           "type": "error",
           "name": "AlreadyClaimed",
+          "inputs": []
+        },
+        {
+          "type": "error",
+          "name": "AlreadyCofounder",
           "inputs": []
         },
         {
@@ -407,6 +412,11 @@
         },
         {
           "type": "error",
+          "name": "NotCreatorOrCofounder",
+          "inputs": []
+        },
+        {
+          "type": "error",
           "name": "ProjectNotFound",
           "inputs": []
         },
@@ -424,6 +434,23 @@
           "type": "error",
           "name": "ZeroContribution",
           "inputs": []
+        },
+        {
+          "type": "event",
+          "anonymous": false,
+          "name": "CofounderAdded",
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "cofounder",
+              "indexed": true
+            }
+          ]
         },
         {
           "type": "event",
@@ -490,6 +517,16 @@
               "indexed": false
             },
             {
+              "type": "string",
+              "name": "description",
+              "indexed": false
+            },
+            {
+              "type": "string",
+              "name": "imageUrl",
+              "indexed": false
+            },
+            {
               "type": "uint256",
               "name": "goal",
               "indexed": false
@@ -500,6 +537,23 @@
               "indexed": false
             }
           ]
+        },
+        {
+          "type": "function",
+          "name": "addCofounder",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            },
+            {
+              "type": "address",
+              "name": "cofounder"
+            }
+          ],
+          "outputs": []
         },
         {
           "type": "function",
@@ -523,6 +577,14 @@
             {
               "type": "string",
               "name": "title"
+            },
+            {
+              "type": "string",
+              "name": "description"
+            },
+            {
+              "type": "string",
+              "name": "imageUrl"
             },
             {
               "type": "uint256",
@@ -553,6 +615,25 @@
             }
           ],
           "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "getCofounders",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "address[]",
+              "name": ""
+            }
+          ]
         },
         {
           "type": "function",
@@ -607,6 +688,14 @@
                   "name": "title"
                 },
                 {
+                  "type": "string",
+                  "name": "description"
+                },
+                {
+                  "type": "string",
+                  "name": "imageUrl"
+                },
+                {
                   "type": "uint256",
                   "name": "goal"
                 },
@@ -621,8 +710,35 @@
                 {
                   "type": "bool",
                   "name": "claimed"
+                },
+                {
+                  "type": "address[]",
+                  "name": "cofounders"
                 }
               ]
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "isCofounder",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            },
+            {
+              "type": "address",
+              "name": "account"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "bool",
+              "name": ""
             }
           ]
         },
@@ -653,6 +769,140 @@
               "name": ""
             }
           ]
+        }
+      ]
+    },
+    "UserProfile": {
+      "address": "0xEE45A29585A6576aAe63a18d56aa13af289CE769",
+      "abi": [
+        {
+          "type": "event",
+          "anonymous": false,
+          "name": "ProfileUpdated",
+          "inputs": [
+            {
+              "type": "address",
+              "name": "user",
+              "indexed": true
+            },
+            {
+              "type": "string",
+              "name": "name",
+              "indexed": false
+            },
+            {
+              "type": "string",
+              "name": "description",
+              "indexed": false
+            },
+            {
+              "type": "string",
+              "name": "avatarUrl",
+              "indexed": false
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "getProfile",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "address",
+              "name": "_user"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "string",
+              "name": "name"
+            },
+            {
+              "type": "string",
+              "name": "description"
+            },
+            {
+              "type": "string",
+              "name": "avatarUrl"
+            },
+            {
+              "type": "bool",
+              "name": "exists"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "hasProfile",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "address",
+              "name": "_user"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "bool",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "profiles",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "address",
+              "name": ""
+            }
+          ],
+          "outputs": [
+            {
+              "type": "string",
+              "name": "name"
+            },
+            {
+              "type": "string",
+              "name": "description"
+            },
+            {
+              "type": "string",
+              "name": "avatarUrl"
+            },
+            {
+              "type": "bool",
+              "name": "exists"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "setProfile",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "string",
+              "name": "_name"
+            },
+            {
+              "type": "string",
+              "name": "_description"
+            },
+            {
+              "type": "string",
+              "name": "_avatarUrl"
+            }
+          ],
+          "outputs": []
         }
       ]
     }

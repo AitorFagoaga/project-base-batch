@@ -45,6 +45,17 @@ async function main() {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // USER PROFILE CONTRACT
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  console.log("\n👤 Deploying UserProfile contract...");
+  const UserProfileFactory = await ethers.getContractFactory("UserProfile");
+  const userProfile = await UserProfileFactory.deploy();
+  await userProfile.waitForDeployment();
+  const userProfileAddress = await userProfile.getAddress();
+  console.log("✅ UserProfile deployed at:", userProfileAddress);
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // LAUNCHPAD CONTRACT
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -77,6 +88,7 @@ async function main() {
   // Get ABIs for saving
   const ReputationFactoryForAbi = await ethers.getContractFactory("Reputation");
   const LaunchpadFactoryForAbi = await ethers.getContractFactory("Launchpad");
+  const UserProfileFactoryForAbi = await ethers.getContractFactory("UserProfile");
 
   const deploymentInfo = {
     network: "base-sepolia",
@@ -92,6 +104,10 @@ async function main() {
         address: launchpadAddress,
         abi: JSON.parse(LaunchpadFactoryForAbi.interface.formatJson()),
       },
+      UserProfile: {
+        address: userProfileAddress,
+        abi: JSON.parse(UserProfileFactoryForAbi.interface.formatJson()),
+      },
     },
   };
 
@@ -103,6 +119,7 @@ async function main() {
   console.log("\n📝 Add these to your .env:");
   console.log(`NEXT_PUBLIC_REPUTATION_ADDRESS=${reputationAddress}`);
   console.log(`NEXT_PUBLIC_LAUNCHPAD_ADDRESS=${launchpadAddress}`);
+  console.log(`NEXT_PUBLIC_USERPROFILE_ADDRESS=${userProfileAddress}`);
 }
 
 main()
