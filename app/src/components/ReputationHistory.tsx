@@ -46,7 +46,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
       try {
         const latest = await publicClient.getBlockNumber();
         // Reduced from 500000 to 10000 blocks to avoid RPC overload
-        const from = latest > 10000n ? latest - 10000n : 0n;
+        const from = latest > BigInt(10000) ? latest - BigInt(10000) : BigInt(0);
         const event = parseAbiItem(
           "event BoostGiven(address indexed booster, address indexed recipient, uint256 power)"
         );
@@ -62,7 +62,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
             logs.map((l) => ({
               booster: (l.args?.booster ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
               power: BigInt(l.args?.power ?? 0),
-              blockNumber: l.blockNumber ?? 0n,
+              blockNumber: l.blockNumber ?? BigInt(0),
             }))
           );
         }
@@ -91,7 +91,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
       if (!publicClient || !EVENT_MANAGER.address) return;
       try {
         const latest = await publicClient.getBlockNumber();
-        const from = latest > 500000n ? latest - 500000n : 0n;
+        const from = latest > BigInt(500000) ? latest - BigInt(500000) : BigInt(0);
         const event = parseAbiItem(
           "event MedalClaimed(uint256 indexed eventId, uint256 indexed medalId, address indexed claimer)"
         );
@@ -112,8 +112,8 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
           blockNumber: bigint;
         }[] = [];
         for (const l of logs) {
-          const medalId = Number(l.args?.medalId || 0n);
-          const eventId = Number(l.args?.eventId || 0n);
+          const medalId = Number(l.args?.medalId || BigInt(0));
+          const eventId = Number(l.args?.eventId || BigInt(0));
           try {
             const m = (await publicClient.readContract({
               address: EVENT_MANAGER.address,
@@ -123,7 +123,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
             })) as any;
             const name = String(m?.name ?? m?.[2] ?? "");
             const iconUrl = String(m?.iconUrl ?? m?.[4] ?? "");
-            items.push({ eventId, medalId, name, iconUrl, blockNumber: l.blockNumber ?? 0n });
+            items.push({ eventId, medalId, name, iconUrl, blockNumber: l.blockNumber ?? BigInt(0) });
           } catch {}
         }
         if (!ignore) setMedalClaims(items);
@@ -157,7 +157,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
     for (const m of medalClaims) {
       items.push({ type: "medal", title: m.name || `Medalla #${m.medalId}`, icon: m.iconUrl, when: m.blockNumber });
     }
-    return items.sort((a, b) => Number((b.when ?? 0n) - (a.when ?? 0n)));
+    return items.sort((a, b) => Number((b.when ?? BigInt(0)) - (a.when ?? BigInt(0))));
   }, [genesis, boosts, medalClaims]);
 
   if (timeline.length === 0) return null;

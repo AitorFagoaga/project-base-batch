@@ -68,8 +68,8 @@ export default function ReputationPage() {
 
               <div className="flex items-center justify-center py-8">
                 <ReputationBadge
-                  reputation={reputation || BigInt(0)}
-                  genesisReputation={genesisReputation}
+                  reputation={(reputation as bigint) || BigInt(0)}
+                  genesisReputation={(genesisReputation as bigint) || undefined}
                   showGenesis={true}
                   className="text-2xl px-6 py-3"
                 />
