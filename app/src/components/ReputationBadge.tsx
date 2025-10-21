@@ -1,5 +1,7 @@
 "use client";
 
+import { Icon } from "./Icon";
+
 /**
  * Reputation badge component with visual tiers
  */
@@ -24,37 +26,37 @@ export function ReputationBadge({
   let tier = "Newcomer";
   let bgColor = "bg-gray-200";
   let textColor = "text-gray-700";
-  let icon = "🌱";
+  let iconName: "star" | "crown" | "award" | "sparkles" | "target" = "target";
 
   if (rep >= 500) {
     tier = "Legend";
     bgColor = "bg-purple-200";
     textColor = "text-purple-800";
-    icon = "👑";
+    iconName = "crown";
   } else if (rep >= 200) {
     tier = "Expert";
     bgColor = "bg-blue-200";
     textColor = "text-blue-800";
-    icon = "⭐";
+    iconName = "star";
   } else if (rep >= 50) {
     tier = "Builder";
     bgColor = "bg-green-200";
     textColor = "text-green-800";
-    icon = "🔨";
+    iconName = "award";
   } else if (rep >= 10) {
     tier = "Contributor";
     bgColor = "bg-yellow-200";
     textColor = "text-yellow-800";
-    icon = "✨";
+    iconName = "sparkles";
   }
 
   return (
     <div className={`inline-flex items-center gap-2 ${className}`}>
       <div
-        className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${bgColor} ${textColor}`}
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${bgColor} ${textColor}`}
         title={`Reputation: ${rep} points`}
       >
-        <span>{icon}</span>
+        <Icon name={iconName} size="xs" />
         <span>{tier}</span>
         <span className="font-bold">{rep}</span>
       </div>
@@ -64,7 +66,7 @@ export function ReputationBadge({
           className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 border border-purple-300"
           title={`Genesis Verified: ${genesis} points from verified achievements`}
         >
-          <span>🔒</span>
+          <Icon name="award" size="xs" />
           <span className="font-semibold">Verified</span>
         </div>
       )}

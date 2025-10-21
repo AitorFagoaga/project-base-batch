@@ -10,6 +10,7 @@ import { parseEther } from "viem";
 import { CONTRACTS } from "@/lib/contracts";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
+import { Icon } from "@/components/Icon";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1200&q=80";
@@ -21,6 +22,7 @@ export default function CreateProjectPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [category, setCategory] = useState("DeFi");
   const [goalEth, setGoalEth] = useState("");
   const [durationDays, setDurationDays] = useState("");
 
@@ -102,7 +104,7 @@ export default function CreateProjectPage() {
         address: CONTRACTS.launchpad.address,
         abi: CONTRACTS.launchpad.abi,
         functionName: "createProject",
-        args: [title, description, imageUrl, goalInWei, BigInt(duration)],
+        args: [title, description, imageUrl, category, goalInWei, BigInt(duration)],
       });
 
       toast.success("📝 Transaction sent to MetaMask");
@@ -168,8 +170,9 @@ export default function CreateProjectPage() {
 
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
-                    <label htmlFor="title" className="input-label text-base">
-                      📝 Project Title *
+                    <label htmlFor="title" className="input-label text-base flex items-center gap-2">
+                      <Icon name="edit" size="sm" />
+                      Project Title *
                     </label>
                     <input
                       id="title"
@@ -191,28 +194,57 @@ export default function CreateProjectPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="imageUrl" className="input-label text-base">
-                      🖼️ Cover Image
+                    <label htmlFor="category" className="input-label text-base flex items-center gap-2">
+                      <Icon name="tag" size="sm" />
+                      Category *
                     </label>
-                    <input
-                      id="imageUrl"
-                      type="url"
-                      value={imageUrl}
-                      onChange={(event) => setImageUrl(event.target.value)}
-                      placeholder="https://... or ipfs://..."
+                    <select
+                      id="category"
+                      value={category}
+                      onChange={(event) => setCategory(event.target.value)}
                       className="input-field text-base"
                       disabled={isPending || isConfirming}
-                      maxLength={200}
-                    />
+                      required
+                    >
+                      <option value="DeFi">DeFi</option>
+                      <option value="NFT">NFT & Collectibles</option>
+                      <option value="Gaming">Gaming</option>
+                      <option value="Social">Social</option>
+                      <option value="Infrastructure">Infrastructure</option>
+                      <option value="Education">Education</option>
+                      <option value="Impact">Impact</option>
+                      <option value="Other">Other</option>
+                    </select>
                     <p className="mt-2 text-xs text-gray-500">
-                      Optional, but helps tell your project&apos;s story.
+                      Choose the category that best fits your project.
                     </p>
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="description" className="input-label text-base">
-                    📄 Description
+                  <label htmlFor="imageUrl" className="input-label text-base flex items-center gap-2">
+                    <Icon name="image" size="sm" />
+                    Cover Image
+                  </label>
+                  <input
+                    id="imageUrl"
+                    type="url"
+                    value={imageUrl}
+                    onChange={(event) => setImageUrl(event.target.value)}
+                    placeholder="https://... or ipfs://..."
+                    className="input-field text-base"
+                    disabled={isPending || isConfirming}
+                    maxLength={200}
+                  />
+                  <p className="mt-2 text-xs text-gray-500">
+                    Optional, but helps tell your project&apos;s story.
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="description" className="input-label text-base flex items-center gap-2">
+                    <Icon name="edit" size="sm" />
+                    Description
                   </label>
                   <textarea
                     id="description"
@@ -245,8 +277,9 @@ export default function CreateProjectPage() {
 
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
-                    <label htmlFor="goal" className="input-label text-base">
-                      💰 Funding Goal (ETH) *
+                    <label htmlFor="goal" className="input-label text-base flex items-center gap-2">
+                      <Icon name="coins" size="sm" />
+                      Funding Goal (ETH) *
                     </label>
                     <div className="relative">
                       <input
@@ -332,9 +365,16 @@ export default function CreateProjectPage() {
                 <button
                   type="submit"
                   disabled={isPending || isConfirming}
-                  className="btn-primary w-full sm:w-auto"
+                  className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
                 >
-                  {isPending || isConfirming ? "Processing..." : "🚀 Create Project"}
+                  {isPending || isConfirming ? (
+                    "Processing..."
+                  ) : (
+                    <>
+                      <Icon name="rocket" size="sm" />
+                      Create Project
+                    </>
+                  )}
                 </button>
               </div>
             </form>

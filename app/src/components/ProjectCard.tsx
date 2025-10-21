@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ReputationBadge } from "./ReputationBadge";
 import { UserAvatar } from "./UserAvatar";
 import { formatEther } from "viem";
+import { Icon } from "./Icon";
 
 /**
  * Project card with reputation display, image, and creator avatar
@@ -16,6 +17,7 @@ interface ProjectCardProps {
     title: string;
     description?: string;
     imageUrl?: string;
+    category?: string;
     goal: bigint;
     deadline: bigint;
     fundsRaised: bigint;
@@ -37,6 +39,7 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
     fundsRaised: project.fundsRaised ?? BigInt(0),
     description: project.description ?? "",
     imageUrl: project.imageUrl ?? "",
+    category: project.category ?? "",
     cofounders: project.cofounders ?? [],
   };
 
@@ -62,9 +65,16 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
           sizes="(min-width: 1280px) 320px, (min-width: 768px) 280px, 100vw"
         />
         <div className="absolute inset-x-4 top-4 flex items-center justify-between">
-          <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-gray-500 shadow">
-            #{safeProject.id.toString()}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-gray-500 shadow">
+              #{safeProject.id.toString()}
+            </span>
+            {safeProject.category && (
+              <span className="rounded-full bg-indigo-500/90 px-3 py-1 text-xs font-semibold text-white shadow">
+                {safeProject.category}
+              </span>
+            )}
+          </div>
           {isLoadingReputation ? (
             <div className="h-7 w-24 rounded-full bg-white/70 animate-pulse" />
           ) : (
@@ -127,9 +137,10 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
           </Link>
           <button
             type="button"
-            className="flex items-center gap-2 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-500 transition hover:border-indigo-500 hover:text-indigo-600"
+            className="flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-500 transition hover:border-indigo-500 hover:text-indigo-600"
           >
-            ⭐ Inspirador
+            <Icon name="sparkles" size="xs" />
+            Inspirar
           </button>
         </div>
       </div>

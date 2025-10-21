@@ -1,12 +1,12 @@
 /**
  * Contract addresses and ABIs for Base Sepolia deployment
  * Auto-generated from /deployments/base-sepolia.json
- * Last updated: 2025-10-21T03:16:18.148Z
+ * Last updated: 2025-10-21T11:02:12.304Z
  */
 
 export const CONTRACTS = {
   reputation: {
-    address: "0xd5CD8869eAd10e9Ca20421B92943ac47b61FAc38" as `0x${string}`,
+    address: "0x4bFEd65431969Ef98D6A2e294bB5b5da149D1C6F" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -659,7 +659,7 @@ export const CONTRACTS = {
 ] as const,
   },
   launchpad: {
-    address: "0x9152E4C151FdA6301b3Aa7F2F93bB68f1DE39176" as `0x${string}`,
+    address: "0xD478494B0960Fc0198E12F57c40951825B03dAE5" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -854,6 +854,11 @@ export const CONTRACTS = {
         "indexed": false
       },
       {
+        "type": "string",
+        "name": "category",
+        "indexed": false
+      },
+      {
         "type": "uint256",
         "name": "goal",
         "indexed": false
@@ -956,6 +961,10 @@ export const CONTRACTS = {
       {
         "type": "string",
         "name": "imageUrl"
+      },
+      {
+        "type": "string",
+        "name": "category"
       },
       {
         "type": "uint256",
@@ -1103,6 +1112,10 @@ export const CONTRACTS = {
             "name": "imageUrl"
           },
           {
+            "type": "string",
+            "name": "category"
+          },
+          {
             "type": "uint256",
             "name": "goal"
           },
@@ -1239,7 +1252,7 @@ export const CONTRACTS = {
 ] as const,
   },
   userProfile: {
-    address: "0x2E3B74Fc3598031D5b4C9af83bF05523aE325bE0" as `0x${string}`,
+    address: "0x5EAD5409fA791a2FdBf090187BC202B861F88D41" as `0x${string}`,
     abi: [
   {
     "type": "event",

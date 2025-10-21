@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { ReputationHistory } from "@/components/ReputationHistory";
+import { Icon } from "@/components/Icon";
 
 interface PageProps {
   params: { address: string };
@@ -28,7 +29,7 @@ export default function ProfilePage({ params }: PageProps) {
   // Copy address to clipboard
   const copyAddress = () => {
     navigator.clipboard.writeText(address);
-    toast.success("¡Dirección copiada al portapapeles! 📋");
+    toast.success("¡Dirección copiada al portapapeles!");
   };
 
   // Get user profile
@@ -117,102 +118,121 @@ export default function ProfilePage({ params }: PageProps) {
   return (
     <SharedPageLayout title={pageTitle} description={pageDescription}>
       <NetworkGuard>
-        {/* Profile Header */}
-        <div className="card mb-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-            {/* Avatar */}
-            <div className="flex-shrink-0">
-              <UserAvatar address={address} size="lg" showReputation={false} clickable={false} />
-            </div>
+        {/* Profile Header - Enhanced Card */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-1 shadow-2xl mb-8">
+          <div className="bg-white rounded-xl p-8">
+            <div className="flex flex-col md:flex-row items-start md:items-start gap-8">
+              {/* Avatar - Larger and more prominent */}
+              <div className="flex-shrink-0 mx-auto md:mx-0">
+                <UserAvatar address={address} size="xl" showReputation={true} clickable={false} />
+              </div>
 
-            {/* Profile Info */}
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {isLoadingProfile ? (
-                    <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
-                  ) : profile?.exists ? (
-                    profile.name
-                  ) : (
-                    <span className="text-gray-600">Usuario sin perfil</span>
+              {/* Profile Info */}
+              <div className="flex-1 w-full">
+                {/* Name and Edit Button */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                  <div>
+                    <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                      {isLoadingProfile ? (
+                        <div className="h-10 w-64 bg-gray-200 rounded animate-pulse"></div>
+                      ) : profile?.exists ? (
+                        profile.name
+                      ) : (
+                        <span className="text-gray-500">Usuario sin perfil</span>
+                      )}
+                    </h1>
+                    {/* Address with better styling */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm text-gray-600 font-mono bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-2 rounded-lg border border-gray-200">
+                        {address.slice(0, 10)}...{address.slice(-8)}
+                      </span>
+                      <button
+                        onClick={copyAddress}
+                        className="rounded-lg bg-gray-50 hover:bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 transition-all border border-gray-200 hover:border-gray-300 flex items-center gap-1.5"
+                        title="Copiar dirección completa"
+                      >
+                        <Icon name="copy" size="xs" />
+                      </button>
+                      <a
+                        href={`https://sepolia.basescan.org/address/${address}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-lg bg-indigo-50 hover:bg-indigo-100 px-3 py-2 text-xs font-medium text-indigo-700 transition-all border border-indigo-200 hover:border-indigo-300 flex items-center gap-1.5"
+                      >
+                        <Icon name="external" size="xs" />
+                        Ver en BaseScan
+                      </a>
+                    </div>
+                  </div>
+
+                  {isOwnProfile && (
+                    <Link
+                      href="/profile/edit"
+                      className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:from-indigo-600 hover:to-purple-600 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
+                      title="Editar perfil"
+                    >
+                      <Icon name="edit" size="sm" />
+                      Editar Perfil
+                    </Link>
                   )}
-                </h2>
-                {isOwnProfile && (
-                  <Link
-                    href="/profile/edit"
-                    className="rounded-lg bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-600"
-                    title="Editar perfil"
-                  >
-                    ✏️ Editar Perfil
-                  </Link>
+                </div>
+
+                {/* Description */}
+                {profile?.description && (
+                  <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-xl border border-gray-200">
+                    <p className="text-gray-700 text-base leading-relaxed">{profile.description}</p>
+                  </div>
+                )}
+
+                {/* Stats Grid - More prominent */}
+                <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-6">
+                  {/* Reputation */}
+                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+                    <div className="absolute top-0 right-0 opacity-10">
+                      <Icon name="star" size={64} className="text-white" />
+                    </div>
+                    <div className="relative z-10">
+                      <div className="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1">Reputación Total</div>
+                      <div className="text-4xl font-bold">{reputation}</div>
+                      <div className="text-xs opacity-75 mt-1">puntos acumulados</div>
+                    </div>
+                  </div>
+
+                  {/* Projects Created */}
+                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+                    <div className="absolute top-0 right-0 opacity-10">
+                      <Icon name="rocket" size={64} className="text-white" />
+                    </div>
+                    <div className="relative z-10">
+                      <div className="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1">Proyectos</div>
+                      <div className="text-4xl font-bold">{createdCount ?? 0}</div>
+                      <div className="text-xs opacity-75 mt-1">proyectos creados</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                {!isOwnProfile && connectedAddress && (
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowBoostForm(!showBoostForm)}
+                      className="flex-1 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 px-6 py-3 text-sm font-bold text-white transition-all hover:from-yellow-500 hover:to-orange-600 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                    >
+                      {showBoostForm ? (
+                        <>
+                          <Icon name="x" size="sm" />
+                          Cancelar
+                        </>
+                      ) : (
+                        <>
+                          <Icon name="zap" size="sm" />
+                          Dar Boost
+                        </>
+                      )}
+                    </button>
+                  </div>
                 )}
               </div>
-
-              {/* Address */}
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm text-gray-600 font-mono bg-gray-100 px-3 py-1 rounded-lg">
-                  {address.slice(0, 10)}...{address.slice(-8)}
-                </span>
-                <button
-                  onClick={copyAddress}
-                  className="rounded-lg bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200"
-                  title="Copiar dirección completa"
-                >
-                  📋 Copiar
-                </button>
-                <a
-                  href={`https://sepolia.basescan.org/address/${address}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-                >
-                  🔍 BaseScan
-                </a>
-              </div>
-
-              {/* Description */}
-              {profile?.description && (
-                <p className="text-gray-700 mb-4 max-w-2xl">{profile.description}</p>
-              )}
-
-              {/* Stats */}
-              <div className="flex flex-wrap gap-6">
-                {/* Reputation */}
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500">
-                    <span className="text-white text-lg font-bold">⭐</span>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">{reputation}</div>
-                    <div className="text-xs text-gray-600 font-medium">Reputación</div>
-                  </div>
-                </div>
-
-                {/* Projects Created */}
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500">
-                    <span className="text-white text-lg font-bold">🚀</span>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900" id="project-count">
-                      0
-                    </div>
-                    <div className="text-xs text-gray-600 font-medium">Proyectos</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Boost Button - Only show if not own profile and connected */}
-              {!isOwnProfile && connectedAddress && (
-                <div className="mt-6">
-                  <button
-                    onClick={() => setShowBoostForm(!showBoostForm)}
-                    className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-600"
-                  >
-                    {showBoostForm ? "❌ Cancelar" : "⚡ Boost Usuario"}
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -223,8 +243,9 @@ export default function ProfilePage({ params }: PageProps) {
         {/* Boost Form - Show when button clicked */}
         {showBoostForm && !isOwnProfile && connectedAddress && (
           <div className="card mb-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              ⚡ Boost a {profile?.name || address.slice(0, 10)}
+            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Icon name="zap" size="lg" className="text-yellow-500" />
+              Boost a {profile?.name || address.slice(0, 10)}
             </h3>
             <BoostForm targetUser={address as `0x${string}`} />
           </div>
@@ -232,8 +253,9 @@ export default function ProfilePage({ params }: PageProps) {
 
         {/* User's Projects */}
         <div className="mb-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            📂 Proyectos Creados
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <Icon name="folder" size="lg" className="text-indigo-600" />
+            Proyectos Creados
           </h2>
           {createdCount !== null && <p className="text-sm text-gray-500 mb-4">Total: {createdCount}</p>}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
