@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useAccount } from "wagmi";
 import { ConnectButton } from "./ConnectButton";
 import { usePathname } from "next/navigation";
+import { Icon } from "./Icon";
 
 export function Header() {
   const { address } = useAccount();
@@ -16,67 +17,72 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors flex items-center gap-2"
             >
-              <span className="text-3xl">🚀</span>
+              <Icon name="rocket" size="xl" className="text-indigo-600" />
               <span className="hidden sm:inline">Meritocratic Launchpad</span>
               <span className="sm:hidden">ML</span>
             </Link>
             
             <nav className="hidden md:flex items-center gap-2">
-              <Link 
-                href="/" 
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  isActive('/') 
-                    ? 'bg-white/40 text-gray-900 shadow-sm' 
+              <Link
+                href="/"
+                className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                  isActive('/')
+                    ? 'bg-white/40 text-gray-900 shadow-sm'
                     : 'text-gray-700 hover:bg-white/20 hover:text-gray-900'
                 }`}
               >
-                📊 Proyectos
+                <Icon name="chart" size="sm" />
+                Proyectos
               </Link>
-              <Link 
-                href="/create" 
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  isActive('/create') 
-                    ? 'bg-white/40 text-gray-900 shadow-sm' 
+              <Link
+                href="/create"
+                className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                  isActive('/create')
+                    ? 'bg-white/40 text-gray-900 shadow-sm'
                     : 'text-gray-700 hover:bg-white/20 hover:text-gray-900'
                 }`}
               >
-                ✨ Crear
+                <Icon name="sparkles" size="sm" />
+                Crear
               </Link>
-              <Link 
-                href="/reputation" 
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  isActive('/reputation') 
-                    ? 'bg-white/40 text-gray-900 shadow-sm' 
+              <Link
+                href="/reputation"
+                className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                  isActive('/reputation')
+                    ? 'bg-white/40 text-gray-900 shadow-sm'
                     : 'text-gray-700 hover:bg-white/20 hover:text-gray-900'
                 }`}
               >
-                ⭐ Reputación
+                <Icon name="star" size="sm" />
+                Reputación
               </Link>
               {address && (
                 <>
-                  <Link 
+                  <Link
                     href={`/profile/${address}`}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
                       pathname?.startsWith('/profile/') && !pathname?.includes('/edit')
-                        ? 'bg-white/40 text-gray-900 shadow-sm' 
+                        ? 'bg-white/40 text-gray-900 shadow-sm'
                         : 'text-gray-700 hover:bg-white/20 hover:text-gray-900'
                     }`}
                   >
-                    👤 Mi Perfil
+                    <Icon name="user" size="sm" />
+                    Mi Perfil
                   </Link>
-                  <Link 
+                  <Link
                     href="/profile/edit"
-                    className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                    className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
                       isActive('/profile/edit')
-                        ? 'bg-purple-600 text-white shadow-md' 
+                        ? 'bg-purple-600 text-white shadow-md'
                         : 'bg-purple-500/80 text-white hover:bg-purple-600 shadow-sm'
                     }`}
                   >
-                    ✏️ Editar
+                    <Icon name="edit" size="sm" />
+                    Editar
                   </Link>
                 </>
               )}
@@ -90,57 +96,62 @@ export function Header() {
 
         {/* Mobile Navigation */}
         <nav className="md:hidden mt-4 flex flex-wrap gap-2">
-          <Link 
-            href="/" 
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              isActive('/') 
-                ? 'bg-white/40 text-gray-900 shadow-sm' 
+          <Link
+            href="/"
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
+              isActive('/')
+                ? 'bg-white/40 text-gray-900 shadow-sm'
                 : 'text-gray-700 hover:bg-white/20'
             }`}
           >
-            📊 Proyectos
+            <Icon name="chart" size="xs" />
+            Proyectos
           </Link>
-          <Link 
-            href="/create" 
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              isActive('/create') 
-                ? 'bg-white/40 text-gray-900 shadow-sm' 
+          <Link
+            href="/create"
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
+              isActive('/create')
+                ? 'bg-white/40 text-gray-900 shadow-sm'
                 : 'text-gray-700 hover:bg-white/20'
             }`}
           >
-            ✨ Crear
+            <Icon name="sparkles" size="xs" />
+            Crear
           </Link>
-          <Link 
-            href="/reputation" 
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              isActive('/reputation') 
-                ? 'bg-white/40 text-gray-900 shadow-sm' 
+          <Link
+            href="/reputation"
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
+              isActive('/reputation')
+                ? 'bg-white/40 text-gray-900 shadow-sm'
                 : 'text-gray-700 hover:bg-white/20'
             }`}
           >
-            ⭐ Reputación
+            <Icon name="star" size="xs" />
+            Reputación
           </Link>
           {address && (
             <>
-              <Link 
+              <Link
                 href={`/profile/${address}`}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
                   pathname?.startsWith('/profile/') && !pathname?.includes('/edit')
-                    ? 'bg-white/40 text-gray-900 shadow-sm' 
+                    ? 'bg-white/40 text-gray-900 shadow-sm'
                     : 'text-gray-700 hover:bg-white/20'
                 }`}
               >
-                👤 Perfil
+                <Icon name="user" size="xs" />
+                Perfil
               </Link>
-              <Link 
+              <Link
                 href="/profile/edit"
-                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
                   isActive('/profile/edit')
-                    ? 'bg-purple-600 text-white shadow-md' 
+                    ? 'bg-purple-600 text-white shadow-md'
                     : 'bg-purple-500/80 text-white hover:bg-purple-600'
                 }`}
               >
-                ✏️ Editar
+                <Icon name="edit" size="xs" />
+                Editar
               </Link>
             </>
           )}

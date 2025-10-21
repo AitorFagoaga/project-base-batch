@@ -20,6 +20,7 @@ contract Launchpad is ReentrancyGuard {
         string title;
         string description;
         string imageUrl;
+        string category;
         uint256 goal; // in wei
         uint256 deadline; // timestamp
         uint256 fundsRaised;
@@ -65,6 +66,7 @@ contract Launchpad is ReentrancyGuard {
         string title,
         string description,
         string imageUrl,
+        string category,
         uint256 goal,
         uint256 deadline
     );
@@ -196,6 +198,7 @@ contract Launchpad is ReentrancyGuard {
      * @param title Project title
      * @param description Project description
      * @param imageUrl Project image URL (IPFS or hosted)
+     * @param category Project category
      * @param goalInWei Funding goal in wei
      * @param durationInDays Duration of the campaign in days
      * @return projectId The ID of the newly created project
@@ -204,6 +207,7 @@ contract Launchpad is ReentrancyGuard {
         string calldata title,
         string calldata description,
         string calldata imageUrl,
+        string calldata category,
         uint256 goalInWei,
         uint256 durationInDays
     ) external returns (uint256 projectId) {
@@ -213,7 +217,8 @@ contract Launchpad is ReentrancyGuard {
         require(bytes(title).length <= 100, "Title too long");
         require(bytes(description).length <= 1000, "Description too long");
         require(bytes(imageUrl).length <= 200, "Image URL too long");
-        
+        require(bytes(category).length <= 50, "Category too long");
+
         uint256 deadline = block.timestamp + (durationInDays * 1 days);
 
         projectId = _projectIdCounter++;
@@ -224,6 +229,7 @@ contract Launchpad is ReentrancyGuard {
             title: title,
             description: description,
             imageUrl: imageUrl,
+            category: category,
             goal: goalInWei,
             deadline: deadline,
             fundsRaised: 0,
@@ -231,7 +237,7 @@ contract Launchpad is ReentrancyGuard {
             cofounders: new address[](0)
         });
 
-        emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, goalInWei, deadline);
+        emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, category, goalInWei, deadline);
     }
     
     /**

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ConnectButton } from "./ConnectButton";
 import { useIsContractOwner } from "@/hooks/useIsContractOwner";
 import { useAccount } from "wagmi";
+import { Icon } from "./Icon";
 
 interface SharedPageLayoutProps {
   children: React.ReactNode;
@@ -12,26 +13,33 @@ interface SharedPageLayoutProps {
   description: string;
 }
 
+interface NavItem {
+  href: string;
+  label: string;
+  icon: "chart" | "sparkles" | "star" | "user" | "crown" | "calendar";
+  pattern: RegExp;
+}
+
 export function SharedPageLayout({ children, title, description }: SharedPageLayoutProps) {
   const pathname = usePathname();
   const { isOwner } = useIsContractOwner();
   const { address } = useAccount();
 
-  const baseNavItems = [
-    { href: "/", label: "📊 Projects", pattern: /^\/$/ },
-    { href: "/create", label: "✨ Create Project", pattern: /^\/create$/ },
-    { href: "/reputation", label: "⭐ Reputation", pattern: /^\/reputation$/ },
+  const baseNavItems: NavItem[] = [
+    { href: "/", label: "Projects", icon: "chart", pattern: /^\/$/ },
+    { href: "/create", label: "Create Project", icon: "sparkles", pattern: /^\/create$/ },
+    { href: "/reputation", label: "Reputation", icon: "star", pattern: /^\/reputation$/ },
   ];
-  
+
   // Add profile link if connected
-  const profileNavItem = address 
-    ? { href: `/profile/${address}`, label: "👤 My Profile", pattern: /^\/profile\/[^/]+$/ }
+  const profileNavItem: NavItem | null = address
+    ? { href: `/profile/${address}`, label: "My Profile", icon: "user", pattern: /^\/profile\/[^/]+$/ }
     : null;
-  
-  const adminNavItem = { href: "/admin", label: "👑 Admin", pattern: /^\/admin$/ };
-  
-  const eventsNavItem = { href: "/events", label: "🎟️ Events", pattern: /^\/events(\/.*)?$/ };
-  const navItems = [
+
+  const adminNavItem: NavItem = { href: "/admin", label: "Admin", icon: "crown", pattern: /^\/admin$/ };
+
+  const eventsNavItem: NavItem = { href: "/events", label: "Events", icon: "calendar", pattern: /^\/events(\/.*)?$/ };
+  const navItems: NavItem[] = [
     ...baseNavItems,
     eventsNavItem,
     ...(profileNavItem ? [profileNavItem] : []),
@@ -60,12 +68,13 @@ export function SharedPageLayout({ children, title, description }: SharedPageLay
               <Link
                 key={item.href}
                 href={item.href}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
                   isActive(item.pattern)
                     ? "bg-white text-gray-900 shadow-md"
                     : "text-gray-500 hover:text-gray-900"
                 }`}
               >
+                <Icon name={item.icon} size="sm" />
                 {item.label}
               </Link>
             ))}

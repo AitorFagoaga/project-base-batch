@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useReadContract } from "wagmi";
 import { CONTRACTS } from "@/lib/contracts";
 import { ProjectCard } from "@/components/ProjectCard";
@@ -7,6 +8,7 @@ import { NetworkGuard } from "@/components/NetworkGuard";
 import { EmptyState } from "@/components/UIComponents";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 
 type ProjectContractResponse = {
   id?: bigint;
@@ -14,6 +16,7 @@ type ProjectContractResponse = {
   title?: string;
   description?: string;
   imageUrl?: string;
+  category?: string;
   goal?: bigint;
   deadline?: bigint;
   fundsRaised?: bigint;
@@ -22,7 +25,12 @@ type ProjectContractResponse = {
 } & {
   [key: number]: unknown;
 };
+
+const CATEGORIES = ["All", "DeFi", "NFT", "Gaming", "Social", "Infrastructure", "Education", "Impact", "Other"];
+
 export default function Home() {
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
   // Read total project count
   const { data: projectCount } = useReadContract({
     address: CONTRACTS.launchpad.address,
@@ -36,16 +44,14 @@ export default function Home() {
       ? `Explore ${totalProjects} live project${totalProjects > 1 ? "s" : ""} backed by on-chain reputation.`
       : "Be the first to launch a reputation-backed project on the Meritocratic Launchpad.";
 
-  const filterLabels = ["All", "Trending", "Collectibles", "Impact", "DeFi", "Education"];
-
   return (
     <SharedPageLayout title="Active Projects" description={projectsLabel}>
       <NetworkGuard>
         <div className="space-y-10">
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr),auto] xl:items-center">
             <div className="relative flex-1">
-              <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
-                🔍
+              <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center">
+                <Icon name="search" size="sm" className="text-gray-400" />
               </span>
               <input
                 type="search"
@@ -64,16 +70,17 @@ export default function Home() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            {filterLabels.map((label, index) => (
+            {CATEGORIES.map((category) => (
               <button
-                key={label}
+                key={category}
+                onClick={() => setSelectedCategory(category)}
                 className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
-                  index === 0
+                  selectedCategory === category
                     ? "border-indigo-500 bg-indigo-500 text-white shadow-md"
                     : "border-gray-200 bg-white text-gray-600 hover:border-indigo-400 hover:text-gray-900"
                 }`}
               >
-                {label}
+                {category === "NFT" ? "NFT & Collectibles" : category}
               </button>
             ))}
           </div>
@@ -83,13 +90,14 @@ export default function Home() {
               title="No Projects Yet"
               description="Be the first to launch a project on our reputation-based crowdfunding platform. Connect your wallet and create your project now!"
               action={
-                <Link href="/create" className="btn-primary inline-block">
-                  🚀 Launch the First Project
+                <Link href="/create" className="btn-primary inline-flex items-center gap-2">
+                  <Icon name="rocket" size="sm" />
+                  Launch the First Project
                 </Link>
               }
             />
           ) : (
-            <ProjectList count={totalProjects} />
+            <ProjectList count={totalProjects} selectedCategory={selectedCategory} />
           )}
         </div>
       </NetworkGuard>
@@ -100,7 +108,7 @@ export default function Home() {
 /**
  * Component to render all projects (optimized with loading states)
  */
-function ProjectList({ count }: { count: number }) {
+function ProjectList({ count, selectedCategory }: { count: number; selectedCategory: string }) {
   const projectIds = Array.from({ length: count }, (_, i) => i);
 
   return (
@@ -133,7 +141,7 @@ function ProjectList({ count }: { count: number }) {
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 2xl:grid-cols-4">
         {projectIds.map((id) => (
-          <ProjectWithReputation key={id} projectId={BigInt(id)} />
+          <ProjectWithReputation key={id} projectId={BigInt(id)} selectedCategory={selectedCategory} />
         ))}
       </div>
     </>
@@ -143,7 +151,7 @@ function ProjectList({ count }: { count: number }) {
 /**
  * Component that fetches project + creator reputation (optimized with error handling)
  */
-function ProjectWithReputation({ projectId }: { projectId: bigint }) {
+function ProjectWithReputation({ projectId, selectedCategory }: { projectId: bigint; selectedCategory: string }) {
   const { data: projectData, isLoading: projectLoading, error: projectError } = useReadContract({
     address: CONTRACTS.launchpad.address,
     abi: CONTRACTS.launchpad.abi,
@@ -151,9 +159,9 @@ function ProjectWithReputation({ projectId }: { projectId: bigint }) {
     args: [projectId],
   });
 
-  // Extract creator address from project data
-  const creatorAddress = projectData 
-    ? (projectData as [bigint, string, string, string, string, bigint, bigint, bigint, boolean, readonly string[]])[1]
+  // Extract creator address from project data (updated with category field)
+  const creatorAddress = projectData
+    ? (projectData as [bigint, string, string, string, string, string, bigint, bigint, bigint, boolean, readonly string[]])[1]
     : undefined;
 
   const { data: reputation, isLoading: repLoading } = useReadContract({
@@ -187,21 +195,22 @@ function ProjectWithReputation({ projectId }: { projectId: bigint }) {
 
   // Handle both object and array format from viem
   let project;
-  
+
   if (Array.isArray(projectData)) {
-    // Array format
-    const data = projectData as [bigint, string, string, string, string, bigint, bigint, bigint, boolean, readonly string[]];
+    // Array format (updated with category)
+    const data = projectData as [bigint, string, string, string, string, string, bigint, bigint, bigint, boolean, readonly string[]];
     project = {
       id: data[0],
       creator: data[1],
       title: data[2],
       description: data[3] || '',
       imageUrl: data[4] || '',
-      goal: data[5],
-      deadline: data[6],
-      fundsRaised: data[7],
-      claimed: data[8] || false,
-      cofounders: data[9] || [],
+      category: data[5] || '',
+      goal: data[6],
+      deadline: data[7],
+      fundsRaised: data[8],
+      claimed: data[9] || false,
+      cofounders: data[10] || [],
     };
   } else {
     // Object format (viem v2 returns objects)
@@ -212,12 +221,18 @@ function ProjectWithReputation({ projectId }: { projectId: bigint }) {
       title: data.title ?? data[2],
       description: data.description ?? data[3] ?? '',
       imageUrl: data.imageUrl ?? data[4] ?? '',
-      goal: data.goal ?? data[5],
-      deadline: data.deadline ?? data[6],
-      fundsRaised: data.fundsRaised ?? data[7] ?? BigInt(0),
-      claimed: data.claimed ?? data[8] ?? false,
-      cofounders: data.cofounders ?? data[9] ?? [],
+      category: data.category ?? data[5] ?? '',
+      goal: data.goal ?? data[6],
+      deadline: data.deadline ?? data[7],
+      fundsRaised: data.fundsRaised ?? data[8] ?? BigInt(0),
+      claimed: data.claimed ?? data[9] ?? false,
+      cofounders: data.cofounders ?? data[10] ?? [],
     };
+  }
+
+  // Filter by category
+  if (selectedCategory !== "All" && project.category !== selectedCategory) {
+    return null;
   }
 
   // Validate required fields
