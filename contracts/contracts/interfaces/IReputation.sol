@@ -17,13 +17,19 @@ interface IReputation {
 
     /// @notice Returns the reputation score of an address
     function reputationOf(address account) external view returns (uint256);
-    
+
+    /// @notice Returns Genesis reputation only (Layer 1)
+    function genesisReputationOf(address account) external view returns (uint256);
+
+    /// @notice Returns Boost reputation only (Layer 2)
+    function boostReputationOf(address account) external view returns (uint256);
+
     /// @notice Returns the timestamp of the last boost given by an address
     function lastBoostAt(address booster) external view returns (uint256);
-    
+
     /// @notice Returns the current cooldown period in seconds
     function cooldown() external view returns (uint256);
-    
+
     /// @notice Calculates the boost power for a given booster
     function boostPower(address booster) external view returns (uint256);
     

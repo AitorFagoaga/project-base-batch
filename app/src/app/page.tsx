@@ -5,9 +5,23 @@ import { CONTRACTS } from "@/lib/contracts";
 import { ProjectCard } from "@/components/ProjectCard";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { EmptyState } from "@/components/UIComponents";
-import { Header } from "@/components/Header";
+import { SharedPageLayout } from "@/components/SharedPageLayout";
 import Link from "next/link";
 
+type ProjectContractResponse = {
+  id?: bigint;
+  creator?: string;
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  goal?: bigint;
+  deadline?: bigint;
+  fundsRaised?: bigint;
+  claimed?: boolean;
+  cofounders?: readonly string[];
+} & {
+  [key: number]: unknown;
+};
 export default function Home() {
   // Read total project count
   const { data: projectCount } = useReadContract({
@@ -17,52 +31,29 @@ export default function Home() {
   });
 
   const totalProjects = projectCount ? Number(projectCount) : 0;
+  const projectsLabel =
+    totalProjects > 0
+      ? `Explore ${totalProjects} live project${totalProjects > 1 ? "s" : ""} backed by on-chain reputation.`
+      : "Be the first to launch a reputation-backed project on the Meritocratic Launchpad.";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
-      <Header />
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <NetworkGuard>
-          <div className="mb-10 text-center animate-fadeIn">
-            <h2 className="text-4xl font-bold text-gray-900 drop-shadow-sm mb-3">
-              Active Projects
-            </h2>
-            <p className="text-gray-800 text-lg font-medium">
-              {totalProjects > 0 ? (
-                <>{totalProjects} project{totalProjects > 1 ? 's' : ''} launched · Fund projects backed by verified reputation</>
-              ) : (
-                <>Be the first to launch a project on the Meritocratic Launchpad</>
-              )}
-            </p>
-          </div>
-
-          {totalProjects === 0 ? (
-            <EmptyState
-              title="No Projects Yet"
-              description="Be the first to launch a project on our reputation-based crowdfunding platform. Connect your wallet and create your project now!"
-              action={
-                <Link href="/create" className="btn-primary inline-block">
-                  🚀 Launch the First Project
-                </Link>
-              }
-            />
-          ) : (
-            <ProjectList count={totalProjects} />
-          )}
-        </NetworkGuard>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-center text-gray-600 text-sm">
-            Built on Base Sepolia · Open Source
-          </p>
-        </div>
-      </footer>
-    </div>
+    <SharedPageLayout title="Active Projects" description={projectsLabel}>
+      <NetworkGuard>
+        {totalProjects === 0 ? (
+          <EmptyState
+            title="No Projects Yet"
+            description="Be the first to launch a project on our reputation-based crowdfunding platform. Connect your wallet and create your project now!"
+            action={
+              <Link href="/create" className="btn-primary inline-block">
+                🚀 Launch the First Project
+              </Link>
+            }
+          />
+        ) : (
+          <ProjectList count={totalProjects} />
+        )}
+      </NetworkGuard>
+    </SharedPageLayout>
   );
 }
 
@@ -74,10 +65,25 @@ function ProjectList({ count }: { count: number }) {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          Loading {count} projects...
-        </p>
+      <div className="glass-card px-6 py-5 mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shadow-lg shadow-indigo-500/20">
+        <div className="flex items-center gap-4">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-xl">
+            📡
+          </span>
+          <div>
+            <p className="text-base font-semibold text-gray-900">
+              Showing {count} project{count !== 1 ? "s" : ""} across the launchpad
+            </p>
+            <p className="text-sm text-gray-600">
+              Updated in real time via on-chain reads. Discover projects backed by reputation.
+            </p>
+          </div>
+        </div>
+
+        <span className="inline-flex items-center gap-2 self-start rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-md sm:self-auto">
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-300 shadow animate-pulse"></span>
+          Live on Base Sepolia
+        </span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projectIds.map((id) => (
@@ -116,7 +122,7 @@ function ProjectWithReputation({ projectId }: { projectId: bigint }) {
 
   if (projectError) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+      <div className="glass-card border border-red-200 bg-red-50/70 p-6 text-sm text-red-700">
         <p className="text-red-600 text-sm">Error loading project #{projectId.toString()}</p>
       </div>
     );
@@ -124,11 +130,11 @@ function ProjectWithReputation({ projectId }: { projectId: bigint }) {
 
   if (projectLoading || !projectData) {
     return (
-      <div className="bg-gray-100 rounded-lg p-6 animate-pulse">
-        <div className="h-48 bg-gray-200 rounded-t-lg mb-4"></div>
-        <div className="h-6 bg-gray-200 rounded mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+      <div className="card h-full animate-pulse space-y-4">
+        <div className="h-48 w-full rounded-2xl bg-gradient-to-br from-purple-200/60 to-pink-200/60"></div>
+        <div className="h-6 rounded bg-gray-200"></div>
+        <div className="h-4 rounded bg-gray-200 w-5/6"></div>
+        <div className="h-4 rounded bg-gray-200 w-2/3"></div>
       </div>
     );
   }
@@ -153,7 +159,7 @@ function ProjectWithReputation({ projectId }: { projectId: bigint }) {
     };
   } else {
     // Object format (viem v2 returns objects)
-    const data = projectData as any;
+    const data = projectData as ProjectContractResponse;
     project = {
       id: data.id ?? data[0],
       creator: data.creator ?? data[1],

@@ -18,6 +18,8 @@ contract Launchpad is ReentrancyGuard {
         uint256 id;
         address creator;
         string title;
+        string description;
+        string imageUrl;
         uint256 goal; // in wei
         uint256 deadline; // timestamp
         uint256 fundsRaised;
@@ -48,6 +50,8 @@ contract Launchpad is ReentrancyGuard {
         uint256 indexed projectId,
         address indexed creator,
         string title,
+        string description,
+        string imageUrl,
         uint256 goal,
         uint256 deadline
     );
@@ -126,34 +130,39 @@ contract Launchpad is ReentrancyGuard {
     /**
      * @notice Creates a new crowdfunding project
      * @param title Project title
-     * @param goalInEth Funding goal in ETH (will be converted to wei)
+     * @param description Project description
+     * @param imageUrl Project image URL
+     * @param goal Funding goal in wei
      * @param durationInDays Duration of the campaign in days
      * @return projectId The ID of the newly created project
      */
     function createProject(
         string calldata title,
-        uint256 goalInEth,
+        string calldata description,
+        string calldata imageUrl,
+        uint256 goal,
         uint256 durationInDays
     ) external returns (uint256 projectId) {
-        if (goalInEth == 0) revert InvalidGoal();
+        if (goal == 0) revert InvalidGoal();
         if (durationInDays == 0) revert InvalidDuration();
-        
-        uint256 goalInWei = goalInEth * 1 ether;
+
         uint256 deadline = block.timestamp + (durationInDays * 1 days);
-        
+
         projectId = _projectIdCounter++;
-        
+
         _projects[projectId] = Project({
             id: projectId,
             creator: msg.sender,
             title: title,
-            goal: goalInWei,
+            description: description,
+            imageUrl: imageUrl,
+            goal: goal,
             deadline: deadline,
             fundsRaised: 0,
             claimed: false
         });
-        
-        emit ProjectCreated(projectId, msg.sender, title, goalInWei, deadline);
+
+        emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, goal, deadline);
     }
 
     // ═════════════════════════════════════════════════════════════════════════════
