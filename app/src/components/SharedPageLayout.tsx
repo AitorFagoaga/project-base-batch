@@ -25,64 +25,56 @@ export function SharedPageLayout({ children, title, description }: SharedPageLay
   const isActive = (pattern: RegExp) => pattern.test(pathname);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
-      <header className="glass-card border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 drop-shadow-sm">
-                🚀 Meritocratic Launchpad
-              </h1>
-              <p className="text-gray-800 mt-1 font-medium">
-                Reputation-based crowdfunding on Base Sepolia
-              </p>
-            </div>
-            <ConnectButton />
+    <div className="min-h-screen flex flex-col bg-[#f5f6fb]">
+      <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-4 sm:px-6 lg:px-10 py-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-indigo-500">
+              Meritocratic Launchpad
+            </p>
+            <h1 className="text-xl font-semibold text-gray-900">
+              Reputation-based crowdfunding on Base Sepolia
+            </h1>
           </div>
+          <ConnectButton />
         </div>
-      </header>
-
-      <nav className="glass-card border-b border-white/20 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap gap-2 py-4">
+        <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10 pb-4">
+          <nav className="flex flex-wrap items-center gap-2 rounded-full bg-gray-100/90 p-1">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
                   isActive(item.pattern)
-                    ? "text-gray-900 bg-white/40 shadow-md scale-105"
-                    : "text-gray-800 hover:text-gray-900 hover:bg-white/20"
+                    ? "bg-white text-gray-900 shadow-md"
+                    : "text-gray-500 hover:text-gray-900"
                 }`}
               >
                 {item.label}
               </Link>
             ))}
-          </div>
+          </nav>
         </div>
-      </nav>
+      </header>
 
-      <div className="flex-1 flex flex-col">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-6">
-          <div className="text-center animate-fadeIn">
-            <h2 className="text-4xl font-bold text-gray-900 drop-shadow-sm mb-3">
+      <div className="flex-1">
+        <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10 py-12">
+          <section className="mb-12 rounded-3xl bg-white px-8 py-10 shadow-[0_30px_80px_-40px_rgba(79,70,229,0.45)] ring-1 ring-gray-100">
+            <h2 className="text-4xl font-semibold text-gray-900 sm:text-5xl">
               {title}
             </h2>
-            <p className="text-gray-800 text-lg font-medium">
+            <p className="mt-4 max-w-3xl text-lg text-gray-500">
               {description}
             </p>
-          </div>
+          </section>
+          <main className="space-y-12">{children}</main>
         </div>
-
-        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          {children}
-        </main>
       </div>
 
-      <footer className="mt-auto border-t border-white/20 bg-white/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col gap-2 text-sm text-gray-700 sm:flex-row sm:items-center sm:justify-between">
+      <footer className="mt-auto border-t border-gray-200 bg-white">
+        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-2 px-4 sm:px-6 lg:px-10 py-4 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between">
           <span>Built on Base Sepolia · Open Source</span>
-          <span className="text-gray-500">
+          <span className="text-gray-400">
             Empowering reputation-backed crowdfunding.
           </span>
         </div>
