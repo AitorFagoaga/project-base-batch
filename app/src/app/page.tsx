@@ -42,7 +42,7 @@ export default function Home() {
     <SharedPageLayout title="Active Projects" description={projectsLabel}>
       <NetworkGuard>
         <div className="space-y-10">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr),auto] xl:items-center">
             <div className="relative flex-1">
               <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
                 🔍
@@ -131,7 +131,7 @@ function ProjectList({ count }: { count: number }) {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 2xl:grid-cols-4">
         {projectIds.map((id) => (
           <ProjectWithReputation key={id} projectId={BigInt(id)} />
         ))}

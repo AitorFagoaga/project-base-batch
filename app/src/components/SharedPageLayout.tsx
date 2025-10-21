@@ -27,7 +27,7 @@ export function SharedPageLayout({ children, title, description }: SharedPageLay
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f6fb]">
       <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-4 sm:px-6 lg:px-10 py-4">
+        <div className="flex w-full items-center justify-between px-6 py-4 lg:px-10">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-indigo-500">
               Meritocratic Launchpad
@@ -38,8 +38,8 @@ export function SharedPageLayout({ children, title, description }: SharedPageLay
           </div>
           <ConnectButton />
         </div>
-        <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10 pb-4">
-          <nav className="flex flex-wrap items-center gap-2 rounded-full bg-gray-100/90 p-1">
+        <div className="w-full px-4 pb-4 lg:px-10">
+          <nav className="flex flex-wrap items-center gap-3 rounded-full bg-gray-100/90 p-1">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -57,22 +57,20 @@ export function SharedPageLayout({ children, title, description }: SharedPageLay
         </div>
       </header>
 
-      <div className="flex-1">
-        <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10 py-12">
-          <section className="mb-12 rounded-3xl bg-white px-8 py-10 shadow-[0_30px_80px_-40px_rgba(79,70,229,0.45)] ring-1 ring-gray-100">
-            <h2 className="text-4xl font-semibold text-gray-900 sm:text-5xl">
-              {title}
-            </h2>
-            <p className="mt-4 max-w-3xl text-lg text-gray-500">
-              {description}
-            </p>
-          </section>
-          <main className="space-y-12">{children}</main>
-        </div>
+      <div className="flex-1 px-4 py-10 sm:px-6 lg:px-10">
+        <section className="mb-10 rounded-3xl bg-white px-8 py-12 shadow-[0_30px_80px_-40px_rgba(79,70,229,0.45)] ring-1 ring-gray-100">
+          <h2 className="text-4xl font-semibold text-gray-900 sm:text-5xl">
+            {title}
+          </h2>
+          <p className="mt-4 max-w-4xl text-lg text-gray-500">
+            {description}
+          </p>
+        </section>
+        <main className="space-y-12">{children}</main>
       </div>
 
       <footer className="mt-auto border-t border-gray-200 bg-white">
-        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-2 px-4 sm:px-6 lg:px-10 py-4 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex w-full flex-col gap-2 px-4 py-4 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between lg:px-10">
           <span>Built on Base Sepolia · Open Source</span>
           <span className="text-gray-400">
             Empowering reputation-backed crowdfunding.
