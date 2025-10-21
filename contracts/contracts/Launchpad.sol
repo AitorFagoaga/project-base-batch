@@ -68,6 +68,11 @@ contract Launchpad is ReentrancyGuard {
         uint256 amount
     );
 
+    event ProjectDeleted(
+        uint256 indexed projectId,
+        address indexed creator
+    );
+
     // ═════════════════════════════════════════════════════════════════════════════
     // ERRORS
     // ═════════════════════════════════════════════════════════════════════════════
@@ -82,6 +87,7 @@ contract Launchpad is ReentrancyGuard {
     error DeadlinePassed();
     error ZeroContribution();
     error TransferFailed();
+    error ProjectAlreadyFunded();
 
     // ═════════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR
@@ -197,20 +203,44 @@ contract Launchpad is ReentrancyGuard {
      */
     function claimFunds(uint256 projectId) external nonReentrant {
         Project storage project = _projects[projectId];
-        
+
         if (project.creator == address(0)) revert ProjectNotFound();
         if (msg.sender != project.creator) revert NotCreator();
         if (block.timestamp < project.deadline) revert DeadlineNotReached();
         if (project.fundsRaised < project.goal) revert GoalNotReached();
         if (project.claimed) revert AlreadyClaimed();
-        
+
         project.claimed = true;
         uint256 amount = project.fundsRaised;
-        
+
         emit FundsClaimed(projectId, msg.sender, amount);
-        
+
         // Transfer funds to creator
         (bool success, ) = payable(msg.sender).call{value: amount}("");
         if (!success) revert TransferFailed();
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════════
+    // DELETE
+    // ═════════════════════════════════════════════════════════════════════════════
+
+    /**
+     * @notice Delete a project that hasn't reached its goal
+     * @param projectId The ID of the project to delete
+     * @dev Only callable by project creator. Cannot delete if goal was reached.
+     */
+    function deleteProject(uint256 projectId) external {
+        Project storage project = _projects[projectId];
+
+        if (project.creator == address(0)) revert ProjectNotFound();
+        if (msg.sender != project.creator) revert NotCreator();
+        if (project.fundsRaised >= project.goal) revert ProjectAlreadyFunded();
+
+        address creator = project.creator;
+
+        // Delete the project by resetting the creator to address(0)
+        delete _projects[projectId];
+
+        emit ProjectDeleted(projectId, creator);
     }
 }

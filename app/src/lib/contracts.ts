@@ -1,13 +1,13 @@
 /**
  * Contract addresses and ABIs for Base Sepolia deployment
  * Auto-generated from /deployments/base-sepolia.json
- * Last updated: 2025-10-20T23:14:55.592Z
+ * Last updated: 2025-10-21T01:47:20.472Z
  * Owner: 0x31a42406422E72dC790cF42eD978458B0b00bd06
  */
 
 export const CONTRACTS = {
   reputation: {
-    address: "0x6A9F0A968BF23df10AB954E788a1A99718388816" as `0x${string}`,
+    address: "0x8C2d4bEDb55E7AE960b5A5e0ACd12929756Ae909" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -660,7 +660,7 @@ export const CONTRACTS = {
 ] as const,
   },
   launchpad: {
-    address: "0x95469D42822E8C323e6FC4c7f2cF46EC26249195" as `0x${string}`,
+    address: "0xbcA09965De8e071bB0861C297651929d0bE3cE93" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -706,6 +706,11 @@ export const CONTRACTS = {
   {
     "type": "error",
     "name": "NotCreator",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ProjectAlreadyFunded",
     "inputs": []
   },
   {
@@ -815,6 +820,23 @@ export const CONTRACTS = {
     ]
   },
   {
+    "type": "event",
+    "anonymous": false,
+    "name": "ProjectDeleted",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "creator",
+        "indexed": true
+      }
+    ]
+  },
+  {
     "type": "function",
     "name": "claimFunds",
     "constant": false,
@@ -860,6 +882,19 @@ export const CONTRACTS = {
         "name": "projectId"
       }
     ]
+  },
+  {
+    "type": "function",
+    "name": "deleteProject",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      }
+    ],
+    "outputs": []
   },
   {
     "type": "function",
