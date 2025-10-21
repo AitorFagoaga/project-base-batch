@@ -36,22 +36,62 @@ export default function Home() {
       ? `Explore ${totalProjects} live project${totalProjects > 1 ? "s" : ""} backed by on-chain reputation.`
       : "Be the first to launch a reputation-backed project on the Meritocratic Launchpad.";
 
+  const filterLabels = ["All", "Trending", "Collectibles", "Impact", "DeFi", "Education"];
+
   return (
     <SharedPageLayout title="Active Projects" description={projectsLabel}>
       <NetworkGuard>
-        {totalProjects === 0 ? (
-          <EmptyState
-            title="No Projects Yet"
-            description="Be the first to launch a project on our reputation-based crowdfunding platform. Connect your wallet and create your project now!"
-            action={
-              <Link href="/create" className="btn-primary inline-block">
-                🚀 Launch the First Project
+        <div className="space-y-10">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative flex-1">
+              <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
+                🔍
+              </span>
+              <input
+                type="search"
+                placeholder="Search projects, creators, or categories"
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-12 pr-6 text-sm text-gray-700 shadow-inner focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              />
+            </div>
+            <div className="flex gap-3">
+              <button className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-600 shadow-sm hover:border-indigo-400 hover:text-gray-900">
+                Sort by • Latest
+              </button>
+              <Link href="/create" className="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-xl">
+                Create Project
               </Link>
-            }
-          />
-        ) : (
-          <ProjectList count={totalProjects} />
-        )}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            {filterLabels.map((label, index) => (
+              <button
+                key={label}
+                className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
+                  index === 0
+                    ? "border-indigo-500 bg-indigo-500 text-white shadow-md"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-indigo-400 hover:text-gray-900"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {totalProjects === 0 ? (
+            <EmptyState
+              title="No Projects Yet"
+              description="Be the first to launch a project on our reputation-based crowdfunding platform. Connect your wallet and create your project now!"
+              action={
+                <Link href="/create" className="btn-primary inline-block">
+                  🚀 Launch the First Project
+                </Link>
+              }
+            />
+          ) : (
+            <ProjectList count={totalProjects} />
+          )}
+        </div>
       </NetworkGuard>
     </SharedPageLayout>
   );
@@ -65,27 +105,33 @@ function ProjectList({ count }: { count: number }) {
 
   return (
     <>
-      <div className="glass-card px-6 py-5 mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shadow-lg shadow-indigo-500/20">
-        <div className="flex items-center gap-4">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-xl">
-            📡
-          </span>
-          <div>
-            <p className="text-base font-semibold text-gray-900">
-              Showing {count} project{count !== 1 ? "s" : ""} across the launchpad
-            </p>
-            <p className="text-sm text-gray-600">
-              Updated in real time via on-chain reads. Discover projects backed by reputation.
-            </p>
+      <div className="rounded-3xl border border-gray-100 bg-gradient-to-r from-indigo-50 via-white to-purple-50 px-6 py-6 mb-8 shadow-inner">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/10 text-xl text-indigo-600">
+              📡
+            </span>
+            <div>
+              <p className="text-base font-semibold text-gray-900">
+                Showing {count} project{count !== 1 ? "s" : ""} across the launchpad
+              </p>
+              <p className="text-sm text-gray-600">
+                Updated in real time via on-chain reads. Discover projects backed by reputation.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wide text-indigo-600 shadow-sm ring-1 ring-indigo-100">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live on Base Sepolia
+            </span>
+            <Link href="/reputation" className="text-sm font-semibold text-indigo-600 hover:underline">
+              View reputation tiers →
+            </Link>
           </div>
         </div>
-
-        <span className="inline-flex items-center gap-2 self-start rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-md sm:self-auto">
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-300 shadow animate-pulse"></span>
-          Live on Base Sepolia
-        </span>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         {projectIds.map((id) => (
           <ProjectWithReputation key={id} projectId={BigInt(id)} />
         ))}
