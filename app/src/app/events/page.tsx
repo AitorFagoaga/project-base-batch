@@ -8,7 +8,7 @@ import { EVENT_MANAGER } from "@/lib/eventManager";
 
 function useTotalEvents() {
   const { data: total } = useReadContract({ address: EVENT_MANAGER.address, abi: EVENT_MANAGER.abi, functionName: "eventCount" });
-  return Number((total as bigint) || 0n);
+  return Number((total as bigint) || BigInt(0));
 }
 
 function EventCard({ id }: { id: number }) {

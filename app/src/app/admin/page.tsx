@@ -16,7 +16,7 @@ export default function AdminPage() {
     functionName: "owner",
   });
 
-  const isOwner = address && owner && address.toLowerCase() === owner.toLowerCase();
+  const isOwner = address && owner && address.toLowerCase() === (owner as string).toLowerCase();
 
   return (
     <SharedPageLayout
@@ -46,7 +46,7 @@ export default function AdminPage() {
             <div className="mt-6 inline-block px-6 py-3 bg-gray-100 rounded-xl border-2 border-gray-200">
               <p className="text-sm text-gray-600 mb-1 font-semibold">Contract Owner</p>
               <p className="text-gray-900 font-mono text-sm">
-                {owner ? `${owner.slice(0, 10)}...${owner.slice(-8)}` : "Loading..."}
+                {owner ? `${(owner as string).slice(0, 10)}...${(owner as string).slice(-8)}` : "Loading..."}
               </p>
             </div>
           </div>

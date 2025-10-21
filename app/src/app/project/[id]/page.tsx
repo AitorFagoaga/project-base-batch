@@ -72,16 +72,16 @@ export default function ProjectDetailPage() {
     } else {
       const data = projectData as ProjectContractResponse;
       project = {
-        id: data.id ?? data[0],
-        creator: data.creator ?? data[1],
-        title: data.title ?? data[2],
-        description: data.description ?? data[3] ?? "",
-        imageUrl: data.imageUrl ?? data[4] ?? "",
-        goal: data.goal ?? data[5],
-        deadline: data.deadline ?? data[6],
-        fundsRaised: data.fundsRaised ?? data[7] ?? BigInt(0),
-        claimed: data.claimed ?? data[8] ?? false,
-        cofounders: data.cofounders ?? data[9] ?? [],
+        id: (data.id ?? data[0]) as bigint,
+        creator: (data.creator ?? data[1]) as string,
+        title: (data.title ?? data[2]) as string,
+        description: (data.description ?? data[3] ?? "") as string,
+        imageUrl: (data.imageUrl ?? data[4] ?? "") as string,
+        goal: (data.goal ?? data[5]) as bigint,
+        deadline: (data.deadline ?? data[6]) as bigint,
+        fundsRaised: (data.fundsRaised ?? data[7] ?? BigInt(0)) as bigint,
+        claimed: (data.claimed ?? data[8] ?? false) as boolean,
+        cofounders: (data.cofounders ?? data[9] ?? []) as readonly string[],
       };
     }
   }

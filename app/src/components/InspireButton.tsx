@@ -83,7 +83,7 @@ export function InspireButton({ projectId, creatorAddress }: InspireButtonProps)
           ¿Te inspira este proyecto?
         </h3>
         <p className="text-sm text-gray-600 mb-4">
-          Otorga una medalla de "Inspirador" al creador y dale <strong>3 puntos de reputación</strong>
+          Otorga una medalla de &quot;Inspirador&quot; al creador y dale <strong>3 puntos de reputación</strong>
         </p>
       </div>
 
