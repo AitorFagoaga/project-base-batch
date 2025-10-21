@@ -1,11 +1,11 @@
 {
   "network": "base-sepolia",
   "chainId": 84532,
-  "deployedAt": "2025-10-20T23:14:55.592Z",
+  "deployedAt": "2025-10-21T01:47:20.472Z",
   "deployer": "0x31a42406422E72dC790cF42eD978458B0b00bd06",
   "contracts": {
     "Reputation": {
-      "address": "0x6A9F0A968BF23df10AB954E788a1A99718388816",
+      "address": "0x8C2d4bEDb55E7AE960b5A5e0ACd12929756Ae909",
       "abi": [
         {
           "type": "constructor",
@@ -658,7 +658,7 @@
       ]
     },
     "Launchpad": {
-      "address": "0x95469D42822E8C323e6FC4c7f2cF46EC26249195",
+      "address": "0xbcA09965De8e071bB0861C297651929d0bE3cE93",
       "abi": [
         {
           "type": "constructor",
@@ -704,6 +704,11 @@
         {
           "type": "error",
           "name": "NotCreator",
+          "inputs": []
+        },
+        {
+          "type": "error",
+          "name": "ProjectAlreadyFunded",
           "inputs": []
         },
         {
@@ -813,6 +818,23 @@
           ]
         },
         {
+          "type": "event",
+          "anonymous": false,
+          "name": "ProjectDeleted",
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "creator",
+              "indexed": true
+            }
+          ]
+        },
+        {
           "type": "function",
           "name": "claimFunds",
           "constant": false,
@@ -858,6 +880,19 @@
               "name": "projectId"
             }
           ]
+        },
+        {
+          "type": "function",
+          "name": "deleteProject",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            }
+          ],
+          "outputs": []
         },
         {
           "type": "function",
