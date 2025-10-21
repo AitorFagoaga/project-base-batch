@@ -6,6 +6,10 @@ import { ReputationBadge } from "./ReputationBadge";
 import { UserAvatar } from "./UserAvatar";
 import { formatEther } from "viem";
 import { Icon } from "./Icon";
+import { useWriteContract, useWaitForTransactionReceipt, useReadContract, useAccount } from "wagmi";
+import { CONTRACTS } from "@/lib/contracts";
+import toast from "react-hot-toast";
+import { useEffect } from "react";
 
 /**
  * Project card with reputation display, image, and creator avatar
@@ -29,6 +33,59 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, creatorReputation, isLoadingReputation }: ProjectCardProps) {
+  const { address } = useAccount();
+  const { writeContract, data: hash, isPending } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  // Check if user already inspired this project
+  const { data: hasInspired } = useReadContract({
+    address: CONTRACTS.launchpad.address,
+    abi: CONTRACTS.launchpad.abi,
+    functionName: "hasInspired",
+    args: address && project.id !== undefined ? [project.id, address] : undefined,
+    query: {
+      enabled: !!address && project.id !== undefined,
+    },
+  });
+
+  const alreadyInspired = hasInspired === true;
+  const isOwnProject = address?.toLowerCase() === project.creator?.toLowerCase();
+
+  const handleInspire = async () => {
+    if (isOwnProject) {
+      toast.error("❌ No puedes inspirar tu propio proyecto");
+      return;
+    }
+
+    if (alreadyInspired) {
+      toast.error("❌ Ya inspiraste este proyecto");
+      return;
+    }
+
+    try {
+      writeContract({
+        address: CONTRACTS.launchpad.address,
+        abi: CONTRACTS.launchpad.abi,
+        functionName: "inspireProject",
+        args: [project.id],
+      });
+
+      toast.success("📝 Transacción enviada");
+    } catch (err: any) {
+      console.error("Inspire error:", err);
+      toast.error(err?.message || "Error al inspirar el proyecto");
+    }
+  };
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("✨ ¡Inspiraste este proyecto! El creador recibió 3 puntos de reputación", {
+        duration: 5000,
+        icon: "🎖️",
+      });
+    }
+  }, [isSuccess]);
+
   if (!project || project.goal === undefined || project.fundsRaised === undefined || project.deadline === undefined) {
     console.error("Invalid project data in ProjectCard:", project);
     return null;
@@ -75,11 +132,13 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
               </span>
             )}
           </div>
-          {isLoadingReputation ? (
-            <div className="h-7 w-24 rounded-full bg-white/70 animate-pulse" />
-          ) : (
-            <ReputationBadge reputation={creatorReputation} />
-          )}
+          <div className="bg-white/95 rounded-full shadow-lg px-2 py-1">
+            {isLoadingReputation ? (
+              <div className="h-6 w-20 rounded-full bg-gray-200 animate-pulse" />
+            ) : (
+              <ReputationBadge reputation={creatorReputation} />
+            )}
+          </div>
         </div>
       </div>
 
@@ -135,13 +194,22 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
           >
             Ver Proyecto
           </Link>
-          <button
-            type="button"
-            className="flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-500 transition hover:border-indigo-500 hover:text-indigo-600"
-          >
-            <Icon name="sparkles" size="xs" />
-            Inspirar
-          </button>
+          {!isOwnProject && (
+            <button
+              type="button"
+              onClick={handleInspire}
+              disabled={isPending || isConfirming || alreadyInspired}
+              className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition ${
+                alreadyInspired
+                  ? "border-green-300 bg-green-50 text-green-700 cursor-not-allowed"
+                  : "border-gray-200 text-gray-500 hover:border-indigo-500 hover:text-indigo-600"
+              }`}
+              title={alreadyInspired ? "Ya inspiraste este proyecto" : "Inspirar proyecto"}
+            >
+              <Icon name="sparkles" size="xs" />
+              {alreadyInspired ? "Inspirado ✓" : isPending || isConfirming ? "..." : "Inspirar"}
+            </button>
+          )}
         </div>
       </div>
     </div>

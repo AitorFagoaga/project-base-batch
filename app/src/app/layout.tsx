@@ -8,7 +8,16 @@ import { wagmiConfig } from "@/lib/wagmi";
 import { Toaster } from "react-hot-toast";
 import "../styles/globals.css";
 
-const queryClient = new QueryClient();
+// Create QueryClient outside component to avoid recreation on every render
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 2,
+      staleTime: 5000, // 5 seconds
+    },
+  },
+});
 
 export default function RootLayout({
   children,

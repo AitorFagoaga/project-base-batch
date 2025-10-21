@@ -19,7 +19,7 @@ const CATEGORY_CONFIG: Record<string, { icon: string; label: string; color: stri
   OSS: { icon: "💻", label: "Open Source", color: "bg-green-100 text-green-800" },
   DAO: { icon: "🏛️", label: "DAO", color: "bg-purple-100 text-purple-800" },
   BUILDER: { icon: "🔨", label: "Builder", color: "bg-blue-100 text-blue-800" },
-  CUSTOM: { icon: "✨", label: "Custom", color: "bg-gray-100 text-gray-800" },
+  CUSTOM: { icon: "⭐", label: "Inspiración", color: "bg-amber-100 text-amber-800" },
 };
 
 export function GenesisBreakdown({ address }: GenesisBreakdownProps) {

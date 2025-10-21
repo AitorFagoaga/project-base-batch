@@ -33,17 +33,20 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
     }));
   }, [genesisData]);
 
-  // 2) Boost logs (BoostGiven)
+  // 2) Boost logs (BoostGiven) - Optimized to avoid RPC overload
   const publicClient = usePublicClient();
   const [boosts, setBoosts] = useState<{ booster: `0x${string}`; power: bigint; blockNumber: bigint }[]>([]);
+  const [isLoadingBoosts, setIsLoadingBoosts] = useState(false);
 
   useEffect(() => {
     let ignore = false;
     async function loadBoosts() {
-      if (!publicClient) return;
+      if (!publicClient || isLoadingBoosts) return;
+      setIsLoadingBoosts(true);
       try {
         const latest = await publicClient.getBlockNumber();
-        const from = latest > 500000n ? latest - 500000n : 0n;
+        // Reduced from 500000 to 10000 blocks to avoid RPC overload
+        const from = latest > 10000n ? latest - 10000n : 0n;
         const event = parseAbiItem(
           "event BoostGiven(address indexed booster, address indexed recipient, uint256 power)"
         );
@@ -64,7 +67,9 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
           );
         }
       } catch (e) {
-        // silent
+        console.error("Error loading boosts:", e);
+      } finally {
+        setIsLoadingBoosts(false);
       }
     }
     loadBoosts();

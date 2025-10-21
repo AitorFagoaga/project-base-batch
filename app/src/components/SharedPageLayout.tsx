@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ConnectButton } from "./ConnectButton";
 import { useIsContractOwner } from "@/hooks/useIsContractOwner";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { Icon } from "./Icon";
+import { EVENT_MANAGER } from "@/lib/eventManager";
 
 interface SharedPageLayoutProps {
   children: React.ReactNode;
@@ -25,6 +26,26 @@ export function SharedPageLayout({ children, title, description }: SharedPageLay
   const { isOwner } = useIsContractOwner();
   const { address } = useAccount();
 
+  // Check if user is EventManager admin
+  const { data: adminRole } = useReadContract({ 
+    address: EVENT_MANAGER.address, 
+    abi: EVENT_MANAGER.abi, 
+    functionName: "ADMIN_ROLE",
+    query: {
+      enabled: !!address
+    }
+  });
+  
+  const { data: isEventAdmin, isLoading: isLoadingAdmin } = useReadContract({ 
+    address: EVENT_MANAGER.address, 
+    abi: EVENT_MANAGER.abi, 
+    functionName: "hasRole", 
+    args: adminRole && address ? [adminRole as `0x${string}`, address] : undefined,
+    query: { 
+      enabled: !!address && !!adminRole 
+    } 
+  });
+
   const baseNavItems: NavItem[] = [
     { href: "/", label: "Projects", icon: "chart", pattern: /^\/$/ },
     { href: "/create", label: "Create Project", icon: "sparkles", pattern: /^\/create$/ },
@@ -39,11 +60,15 @@ export function SharedPageLayout({ children, title, description }: SharedPageLay
   const adminNavItem: NavItem = { href: "/admin", label: "Admin", icon: "crown", pattern: /^\/admin$/ };
 
   const eventsNavItem: NavItem = { href: "/events", label: "Events", icon: "calendar", pattern: /^\/events(\/.*)?$/ };
+  
+  // Show admin if user is contract owner OR event admin (explicit === true check)
+  const showAdmin = isOwner || isEventAdmin === true;
+  
   const navItems: NavItem[] = [
     ...baseNavItems,
     eventsNavItem,
     ...(profileNavItem ? [profileNavItem] : []),
-    ...(isOwner ? [adminNavItem] : [])
+    ...(showAdmin ? [adminNavItem] : [])
   ];
   
   const isActive = (pattern: RegExp) => pattern.test(pathname);

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useState, useEffect } from "react";
+import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
 import { EVENT_MANAGER } from "@/lib/eventManager";
 import toast from "react-hot-toast";
@@ -9,7 +9,6 @@ import toast from "react-hot-toast";
 interface MedalDraft { name: string; description: string; iconUrl: string; points: number; maxClaims: number; }
 
 export default function CreateEventPage() {
-  const { address } = useAccount();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -21,6 +20,19 @@ export default function CreateEventPage() {
 
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("✅ Evento creado exitosamente. Espera la aprobación del admin.", { duration: 5000 });
+      // Reset form
+      setTitle("");
+      setDescription("");
+      setLocation("");
+      setDate("");
+      setTime("");
+      setMedals([{ name: "Asistente", description: "Participación en el evento", iconUrl: "", points: 10, maxClaims: 0 }]);
+    }
+  }, [isSuccess]);
 
   const addMedal = () => setMedals((m) => [...m, { name: "", description: "", iconUrl: "", points: 0, maxClaims: 0 }]);
   const removeMedal = (idx: number) => setMedals((m) => m.filter((_, i) => i !== idx));
@@ -34,7 +46,20 @@ export default function CreateEventPage() {
     if (medals.length === 0) return toast.error("Agrega al menos una medalla");
 
     const dt = new Date(`${date}T${time}:00Z`).getTime();
-    if (!dt || isNaN(dt)) return toast.error("Fecha/hora inválidas");
+    if (!dt || Number.isNaN(dt)) return toast.error("Fecha/hora inválidas");
+
+    console.log("Submitting event with data:", {
+      title,
+      description,
+      location,
+      datetime: BigInt(Math.floor(dt / 1000)),
+      timeText: `${time} UTC`,
+      medalNames: medals.map((m) => m.name),
+      medalDescriptions: medals.map((m) => m.description),
+      medalIcons: medals.map((m) => m.iconUrl),
+      medalPoints: medals.map((m) => m.points),
+      medalMaxClaims: medals.map((m) => m.maxClaims),
+    });
 
     try {
       writeContract({
@@ -50,12 +75,13 @@ export default function CreateEventPage() {
           medals.map((m) => m.name),
           medals.map((m) => m.description),
           medals.map((m) => m.iconUrl),
-          medals.map((m) => BigInt(m.points)) as any,
-          medals.map((m) => BigInt(m.maxClaims)) as any,
+          medals.map((m) => m.points),
+          medals.map((m) => m.maxClaims),
         ],
       });
+      toast.success("📝 Transacción enviada");
     } catch (err) {
-      console.error(err);
+      console.error("Error submitting event:", err);
       toast.error("No se pudo crear el evento");
     }
   };
@@ -131,7 +157,19 @@ export default function CreateEventPage() {
         <button type="submit" disabled={isPending || isConfirming} className="btn-primary w-full py-3">
           {isPending || isConfirming ? "Creando..." : "Enviar solicitud"}
         </button>
-        {isSuccess && <p className="text-green-600">Solicitud enviada. Espera la aprobación del admin.</p>}
+        {hash && (
+          <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+            <p className="text-xs text-green-800 mb-2">✓ Transacción enviada</p>
+            <a
+              href={`https://sepolia.basescan.org/tx/${hash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-600 hover:underline"
+            >
+              Ver en BaseScan ↗
+            </a>
+          </div>
+        )}
       </form>
     </SharedPageLayout>
   );
