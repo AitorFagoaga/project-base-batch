@@ -1,11 +1,12 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useReadContract, useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { CONTRACTS } from "@/lib/contracts";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { ReputationBadge } from "@/components/ReputationBadge";
 import { FundForm } from "@/components/FundForm";
+import { InspireButton } from "@/components/InspireButton";
 import { ContributorsHistory } from "@/components/ContributorsHistory";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
 import { UserAvatar } from "@/components/UserAvatar";
@@ -13,6 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatEther } from "viem";
 import toast from "react-hot-toast";
+import { useState, useEffect } from "react";
 
 type NormalizedProject = {
   id: bigint;
@@ -33,8 +35,10 @@ type ProjectContractResponse = Partial<NormalizedProject> & {
 
 export default function ProjectDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const projectId = BigInt(params?.id as string);
   const { address } = useAccount();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const {
     data: projectData,
@@ -95,9 +99,14 @@ export default function ProjectDetailPage() {
     },
   });
 
-  const { writeContract, data: claimHash, isPending } = useWriteContract();
-  const { isLoading: isClaimConfirming } = useWaitForTransactionReceipt({
+  const { writeContract: writeClaim, data: claimHash, isPending: isClaimPending } = useWriteContract();
+  const { isLoading: isClaimConfirming, isSuccess: isClaimSuccess } = useWaitForTransactionReceipt({
     hash: claimHash,
+  });
+
+  const { writeContract: writeDelete, data: deleteHash, isPending: isDeletePending } = useWriteContract();
+  const { isLoading: isDeleteConfirming, isSuccess: isDeleteSuccess } = useWaitForTransactionReceipt({
+    hash: deleteHash,
   });
 
   const handleClaim = () => {
@@ -105,7 +114,7 @@ export default function ProjectDetailPage() {
       return;
     }
 
-    writeContract({
+    writeClaim({
       address: CONTRACTS.launchpad.address,
       abi: CONTRACTS.launchpad.abi,
       functionName: "claimFunds",
@@ -114,6 +123,30 @@ export default function ProjectDetailPage() {
 
     toast.success("Claim transaction submitted!");
   };
+
+  const handleDelete = () => {
+    if (!project) {
+      return;
+    }
+
+    writeDelete({
+      address: CONTRACTS.launchpad.address,
+      abi: CONTRACTS.launchpad.abi,
+      functionName: "deleteProject",
+      args: [projectId],
+    });
+
+    setShowDeleteConfirm(false);
+    toast.success("Delete transaction submitted!");
+  };
+
+  // Redirect to home after successful deletion
+  useEffect(() => {
+    if (isDeleteSuccess) {
+      toast.success("Project deleted successfully!");
+      router.push("/");
+    }
+  }, [isDeleteSuccess, router]);
 
   const now = Math.floor(Date.now() / 1000);
   let isActive = false;
@@ -151,6 +184,11 @@ export default function ProjectDetailPage() {
       !project.claimed &&
       address?.toLowerCase() === project.creator.toLowerCase();
   }
+
+  const canDelete =
+    project &&
+    !goalReached &&
+    address?.toLowerCase() === project.creator.toLowerCase();
 
   let reputationValue = BigInt(0);
   if (reputation) {
@@ -316,10 +354,10 @@ export default function ProjectDetailPage() {
                       </p>
                       <button
                         onClick={handleClaim}
-                        disabled={isPending || isClaimConfirming}
+                        disabled={isClaimPending || isClaimConfirming}
                         className="btn-primary"
                       >
-                        {isPending || isClaimConfirming ? "Claiming..." : "Claim Funds"}
+                        {isClaimPending || isClaimConfirming ? "Claiming..." : "Claim Funds"}
                       </button>
                       {claimHash && (
                         <div className="mt-3 text-sm">
@@ -333,6 +371,23 @@ export default function ProjectDetailPage() {
                           </a>
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {canDelete && (
+                    <div className="rounded-2xl border-2 border-red-200 bg-red-50/80 p-5">
+                      <p className="text-red-800 font-semibold mb-3">
+                        ⚠️ Delete this project
+                      </p>
+                      <p className="text-sm text-red-700 mb-3">
+                        This action cannot be undone. The project will be permanently removed from the launchpad.
+                      </p>
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                      >
+                        Delete Project
+                      </button>
                     </div>
                   )}
                 </div>
@@ -373,7 +428,17 @@ export default function ProjectDetailPage() {
 
               <div className="space-y-6">
                 {isActive && !project.claimed ? (
-                  <FundForm projectId={projectId} onSuccess={() => refetchProject()} />
+                  <>
+                    <FundForm 
+                      projectId={projectId} 
+                      creatorAddress={project.creator}
+                      onSuccess={() => refetchProject()} 
+                    />
+                    <InspireButton 
+                      projectId={projectId}
+                      creatorAddress={project.creator}
+                    />
+                  </>
                 ) : (
                   <div className="card space-y-3">
                     <h3 className="text-xl font-semibold text-gray-900">
@@ -391,6 +456,54 @@ export default function ProjectDetailPage() {
               </div>
             </div>
           </>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="card max-w-md mx-4 p-6 space-y-4">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Confirm Deletion
+              </h3>
+              <p className="text-gray-700">
+                Are you sure you want to delete this project? This action cannot be undone.
+              </p>
+              {project && project.fundsRaised > BigInt(0) && (
+                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  ⚠️ Note: This project has {formatEther(project.fundsRaised)} ETH in contributions.
+                  Deleting it will make the project inaccessible.
+                </p>
+              )}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeletePending || isDeleteConfirming}
+                  className="flex-1 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+                >
+                  {isDeletePending || isDeleteConfirming ? "Deleting..." : "Yes, Delete"}
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isDeletePending || isDeleteConfirming}
+                  className="flex-1 rounded-full bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-300 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+              {deleteHash && (
+                <div className="text-sm">
+                  <a
+                    href={`https://sepolia.basescan.org/tx/${deleteHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    View transaction on BaseScan ↗
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </NetworkGuard>
     </SharedPageLayout>

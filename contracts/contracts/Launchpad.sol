@@ -20,8 +20,6 @@ contract Launchpad is ReentrancyGuard {
         string title;
         string description;
         string imageUrl;
-        string description; // Project description
-        string imageUrl; // Project image (IPFS or URL)
         uint256 goal; // in wei
         uint256 deadline; // timestamp
         uint256 fundsRaised;
@@ -53,6 +51,9 @@ contract Launchpad is ReentrancyGuard {
     
     /// @notice Whether a contribution is anonymous
     mapping(uint256 => mapping(address => bool)) private _isAnonymous;
+    
+    /// @notice Track if a user has inspired a project
+    mapping(uint256 => mapping(address => bool)) private _hasInspired;
 
     // ═════════════════════════════════════════════════════════════════════════════
     // EVENTS
@@ -62,8 +63,6 @@ contract Launchpad is ReentrancyGuard {
         uint256 indexed projectId,
         address indexed creator,
         string title,
-        string description,
-        string imageUrl,
         string description,
         string imageUrl,
         uint256 goal,
@@ -88,6 +87,18 @@ contract Launchpad is ReentrancyGuard {
         uint256 amount
     );
 
+    event ProjectDeleted(
+        uint256 indexed projectId,
+        address indexed creator
+    );
+    
+    event ProjectInspired(
+        uint256 indexed projectId,
+        address indexed inspirer,
+        address indexed creator,
+        uint256 reputationAwarded
+    );
+
     // ═════════════════════════════════════════════════════════════════════════════
     // ERRORS
     // ═════════════════════════════════════════════════════════════════════════════
@@ -102,8 +113,12 @@ contract Launchpad is ReentrancyGuard {
     error DeadlinePassed();
     error ZeroContribution();
     error TransferFailed();
+    error ProjectAlreadyFunded();
     error NotCreatorOrCofounder();
     error AlreadyCofounder();
+    error CannotFundOwnProject();
+    error AlreadyInspired();
+    error CannotInspireOwnProject();
 
     // ═════════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR
@@ -162,20 +177,26 @@ contract Launchpad is ReentrancyGuard {
     function isContributionAnonymous(uint256 projectId, address backer) external view returns (bool) {
         return _isAnonymous[projectId][backer];
     }
+    
+    /**
+     * @notice Check if a user has already inspired a project
+     * @param projectId The ID of the project
+     * @param inspirer The address to check
+     */
+    function hasInspired(uint256 projectId, address inspirer) external view returns (bool) {
+        return _hasInspired[projectId][inspirer];
+    }
 
     // ═════════════════════════════════════════════════════════════════════════════
-    // PROJECT CREATION
+    // MUTATIVE FUNCTIONS
     // ═════════════════════════════════════════════════════════════════════════════
     
     /**
      * @notice Creates a new crowdfunding project
      * @param title Project title
      * @param description Project description
-     * @param imageUrl Project image URL
-     * @param goal Funding goal in wei
-     * @param description Project description
      * @param imageUrl Project image URL (IPFS or hosted)
-     * @param goalInEth Funding goal in ETH (will be converted to wei)
+     * @param goalInWei Funding goal in wei
      * @param durationInDays Duration of the campaign in days
      * @return projectId The ID of the newly created project
      */
@@ -183,20 +204,16 @@ contract Launchpad is ReentrancyGuard {
         string calldata title,
         string calldata description,
         string calldata imageUrl,
-        uint256 goal,
-        string calldata description,
-        string calldata imageUrl,
-        uint256 goalInEth,
+        uint256 goalInWei,
         uint256 durationInDays
     ) external returns (uint256 projectId) {
-        if (goal == 0) revert InvalidGoal();
+        if (goalInWei == 0) revert InvalidGoal();
         if (durationInDays == 0) revert InvalidDuration();
 
         require(bytes(title).length <= 100, "Title too long");
         require(bytes(description).length <= 1000, "Description too long");
         require(bytes(imageUrl).length <= 200, "Image URL too long");
         
-        uint256 goalInWei = goalInEth * 1 ether;
         uint256 deadline = block.timestamp + (durationInDays * 1 days);
 
         projectId = _projectIdCounter++;
@@ -207,9 +224,6 @@ contract Launchpad is ReentrancyGuard {
             title: title,
             description: description,
             imageUrl: imageUrl,
-            goal: goal,
-            description: description,
-            imageUrl: imageUrl,
             goal: goalInWei,
             deadline: deadline,
             fundsRaised: 0,
@@ -217,8 +231,6 @@ contract Launchpad is ReentrancyGuard {
             cofounders: new address[](0)
         });
 
-        emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, goal, deadline);
-        
         emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, goalInWei, deadline);
     }
     
@@ -272,6 +284,7 @@ contract Launchpad is ReentrancyGuard {
         Project storage project = _projects[projectId];
         if (project.creator == address(0)) revert ProjectNotFound();
         if (block.timestamp >= project.deadline) revert DeadlinePassed();
+        if (msg.sender == project.creator) revert CannotFundOwnProject();
         
         // Track first-time contributor
         if (_contributions[projectId][msg.sender] == 0) {
@@ -283,6 +296,22 @@ contract Launchpad is ReentrancyGuard {
         _isAnonymous[projectId][msg.sender] = isAnonymous;
         
         emit ContributionMade(projectId, msg.sender, msg.value, isAnonymous);
+
+        // Award reputation based on amount: 1 point per 0.001 ETH (1e15 wei)
+        uint256 points = msg.value / 1e15;
+        if (points > 0) {
+            // Tag as INVESTMENT for UI history; keep reason compact
+            try reputation.awardGenesisWithCategory(
+                msg.sender,
+                points,
+                "INVESTMENT",
+                "Investment"
+            ) {
+                // ok
+            } catch {
+                // ignore failures to avoid breaking funding flow
+            }
+        }
     }
 
     // ═════════════════════════════════════════════════════════════════════════════
@@ -296,20 +325,98 @@ contract Launchpad is ReentrancyGuard {
      */
     function claimFunds(uint256 projectId) external nonReentrant {
         Project storage project = _projects[projectId];
-        
+
         if (project.creator == address(0)) revert ProjectNotFound();
         if (msg.sender != project.creator) revert NotCreator();
         if (block.timestamp < project.deadline) revert DeadlineNotReached();
         if (project.fundsRaised < project.goal) revert GoalNotReached();
         if (project.claimed) revert AlreadyClaimed();
-        
+
         project.claimed = true;
         uint256 amount = project.fundsRaised;
-        
+
         emit FundsClaimed(projectId, msg.sender, amount);
-        
+
         // Transfer funds to creator
         (bool success, ) = payable(msg.sender).call{value: amount}("");
         if (!success) revert TransferFailed();
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════════
+    // DELETE
+    // ═════════════════════════════════════════════════════════════════════════════
+
+    /**
+     * @notice Delete a project that hasn't reached its goal
+     * @param projectId The ID of the project to delete
+     * @dev Only callable by project creator. Cannot delete if goal was reached.
+     */
+    function deleteProject(uint256 projectId) external {
+        Project storage project = _projects[projectId];
+
+        if (project.creator == address(0)) revert ProjectNotFound();
+        if (msg.sender != project.creator) revert NotCreator();
+        if (project.fundsRaised >= project.goal) revert ProjectAlreadyFunded();
+
+        address creator = project.creator;
+
+        // Delete the project by resetting the creator to address(0)
+        delete _projects[projectId];
+
+        emit ProjectDeleted(projectId, creator);
+    }
+    
+    // ═════════════════════════════════════════════════════════════════════════════
+    // INSPIRE
+    // ═════════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * @notice Inspire a project by giving its creator 3 reputation points
+     * @param projectId The ID of the project to inspire
+     * @dev Can only inspire once per project. Cannot inspire own projects.
+     */
+    function inspireProject(uint256 projectId) external {
+        Project storage project = _projects[projectId];
+        
+        if (project.creator == address(0)) revert ProjectNotFound();
+        if (msg.sender == project.creator) revert CannotInspireOwnProject();
+        if (_hasInspired[projectId][msg.sender]) revert AlreadyInspired();
+        
+        // Mark as inspired
+        _hasInspired[projectId][msg.sender] = true;
+        
+        // Award 3 reputation points to the project creator
+        uint256 reputationPoints = 3;
+        reputation.awardGenesisWithCategory(
+            project.creator,
+            reputationPoints,
+            "CUSTOM",
+            string(abi.encodePacked("Inspired by project #", _uint2str(projectId)))
+        );
+        
+        emit ProjectInspired(projectId, msg.sender, project.creator, reputationPoints);
+    }
+    
+    // Helper function to convert uint to string
+    function _uint2str(uint256 _i) internal pure returns (string memory) {
+        if (_i == 0) {
+            return "0";
+        }
+        uint256 j = _i;
+        uint256 len;
+        while (j != 0) {
+            len++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint256 k = len;
+        while (_i != 0) {
+            k = k - 1;
+            uint8 temp = (48 + uint8(_i - _i / 10 * 10));
+            bytes1 b1 = bytes1(temp);
+            bstr[k] = b1;
+            _i /= 10;
+        }
+        return string(bstr);
     }
 }

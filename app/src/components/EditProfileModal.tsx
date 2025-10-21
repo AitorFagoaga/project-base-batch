@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
 import { CONTRACTS } from "@/lib/contracts";
 import toast from "react-hot-toast";
@@ -71,13 +71,15 @@ export function EditProfileModal({ isOpen, onClose, currentProfile, userAddress 
     }
   };
 
-  if (isSuccess) {
-    toast.success("✅ ¡Perfil actualizado!", { duration: 3000 });
-    setTimeout(() => {
-      onClose();
-      window.location.reload();
-    }, 1500);
-  }
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("✅ ¡Perfil actualizado!", { duration: 3000 });
+      setTimeout(() => {
+        onClose();
+        window.location.reload();
+      }, 1500);
+    }
+  }, [isSuccess, onClose]);
 
   if (!isOpen) return null;
 

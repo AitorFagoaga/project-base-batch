@@ -1,11 +1,11 @@
 {
   "network": "base-sepolia",
   "chainId": 84532,
-  "deployedAt": "2025-10-20T23:14:55.592Z",
-  "deployer": "0x31a42406422E72dC790cF42eD978458B0b00bd06",
+  "deployedAt": "2025-10-21T03:15:42.933Z",
+  "deployer": "0xaa860E97f1a50ca6Ce786AEf9B835052dfD0ee25",
   "contracts": {
     "Reputation": {
-      "address": "0x6A9F0A968BF23df10AB954E788a1A99718388816",
+      "address": "0xd5CD8869eAd10e9Ca20421B92943ac47b61FAc38",
       "abi": [
         {
           "type": "constructor",
@@ -135,50 +135,22 @@
         {
           "type": "event",
           "anonymous": false,
-          "name": "RoleRevoked",
+          "name": "ParamsUpdated",
           "inputs": [
             {
-              "type": "bytes32",
-              "name": "role",
-              "indexed": true
+              "type": "uint256",
+              "name": "cooldown",
+              "indexed": false
             },
             {
-              "type": "address",
-              "name": "account",
-              "indexed": true
+              "type": "uint256",
+              "name": "baselinePower",
+              "indexed": false
             },
             {
-              "type": "address",
-              "name": "sender",
-              "indexed": true
-            }
-          ]
-        },
-        {
-          "type": "function",
-          "name": "ADMIN_ROLE",
-          "constant": true,
-          "stateMutability": "view",
-          "payable": false,
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "bytes32",
-              "name": ""
-            }
-          ]
-        },
-        {
-          "type": "function",
-          "name": "DEFAULT_ADMIN_ROLE",
-          "constant": true,
-          "stateMutability": "view",
-          "payable": false,
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "bytes32",
-              "name": ""
+              "type": "uint256",
+              "name": "minRepToBoost",
+              "indexed": false
             }
           ]
         },
@@ -573,14 +545,14 @@
         },
         {
           "type": "function",
-          "name": "genesisReputationOf",
+          "name": "lastBoostAt",
           "constant": true,
           "stateMutability": "view",
           "payable": false,
           "inputs": [
             {
               "type": "address",
-              "name": "account"
+              "name": "booster"
             }
           ],
           "outputs": [
@@ -686,7 +658,7 @@
       ]
     },
     "Launchpad": {
-      "address": "0x95469D42822E8C323e6FC4c7f2cF46EC26249195",
+      "address": "0x9152E4C151FdA6301b3Aa7F2F93bB68f1DE39176",
       "abi": [
         {
           "type": "constructor",
@@ -707,6 +679,21 @@
         {
           "type": "error",
           "name": "AlreadyCofounder",
+          "inputs": []
+        },
+        {
+          "type": "error",
+          "name": "AlreadyInspired",
+          "inputs": []
+        },
+        {
+          "type": "error",
+          "name": "CannotFundOwnProject",
+          "inputs": []
+        },
+        {
+          "type": "error",
+          "name": "CannotInspireOwnProject",
           "inputs": []
         },
         {
@@ -742,6 +729,11 @@
         {
           "type": "error",
           "name": "NotCreatorOrCofounder",
+          "inputs": []
+        },
+        {
+          "type": "error",
+          "name": "ProjectAlreadyFunded",
           "inputs": []
         },
         {
@@ -799,6 +791,11 @@
             {
               "type": "uint256",
               "name": "amount",
+              "indexed": false
+            },
+            {
+              "type": "bool",
+              "name": "isAnonymous",
               "indexed": false
             }
           ]
@@ -868,6 +865,50 @@
           ]
         },
         {
+          "type": "event",
+          "anonymous": false,
+          "name": "ProjectDeleted",
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "creator",
+              "indexed": true
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "anonymous": false,
+          "name": "ProjectInspired",
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "inspirer",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "creator",
+              "indexed": true
+            },
+            {
+              "type": "uint256",
+              "name": "reputationAwarded",
+              "indexed": false
+            }
+          ]
+        },
+        {
           "type": "function",
           "name": "addCofounder",
           "constant": false,
@@ -917,7 +958,7 @@
             },
             {
               "type": "uint256",
-              "name": "goal"
+              "name": "goalInWei"
             },
             {
               "type": "uint256",
@@ -933,6 +974,19 @@
         },
         {
           "type": "function",
+          "name": "deleteProject",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
           "name": "fundProject",
           "constant": false,
           "stateMutability": "payable",
@@ -941,6 +995,10 @@
             {
               "type": "uint256",
               "name": "projectId"
+            },
+            {
+              "type": "bool",
+              "name": "isAnonymous"
             }
           ],
           "outputs": []
@@ -983,6 +1041,25 @@
           "outputs": [
             {
               "type": "uint256",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "getContributors",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "address[]",
               "name": ""
             }
           ]
@@ -1050,6 +1127,42 @@
         },
         {
           "type": "function",
+          "name": "hasInspired",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            },
+            {
+              "type": "address",
+              "name": "inspirer"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "bool",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "inspireProject",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
           "name": "isCofounder",
           "constant": true,
           "stateMutability": "view",
@@ -1062,6 +1175,29 @@
             {
               "type": "address",
               "name": "account"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "bool",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "isContributionAnonymous",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            },
+            {
+              "type": "address",
+              "name": "backer"
             }
           ],
           "outputs": [
@@ -1102,7 +1238,7 @@
       ]
     },
     "UserProfile": {
-      "address": "0xEE45A29585A6576aAe63a18d56aa13af289CE769",
+      "address": "0x2E3B74Fc3598031D5b4C9af83bF05523aE325bE0",
       "abi": [
         {
           "type": "event",
@@ -1232,6 +1368,753 @@
             }
           ],
           "outputs": []
+        }
+      ]
+    },
+    "EventManager": {
+      "address": "0x0DE94299D493A52726d44B636d73f2F3aEdAA3F8",
+      "abi": [
+        {
+          "type": "constructor",
+          "stateMutability": "undefined",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "address",
+              "name": "initialAdmin"
+            }
+          ]
+        },
+        {
+          "type": "error",
+          "name": "AccessControlBadConfirmation",
+          "inputs": []
+        },
+        {
+          "type": "error",
+          "name": "AccessControlUnauthorizedAccount",
+          "inputs": [
+            {
+              "type": "address",
+              "name": "account"
+            },
+            {
+              "type": "bytes32",
+              "name": "neededRole"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "anonymous": false,
+          "name": "EventApproved",
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "eventId",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "admin",
+              "indexed": true
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "anonymous": false,
+          "name": "EventRejected",
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "eventId",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "admin",
+              "indexed": true
+            },
+            {
+              "type": "string",
+              "name": "reason",
+              "indexed": false
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "anonymous": false,
+          "name": "EventSubmitted",
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "eventId",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "creator",
+              "indexed": true
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "anonymous": false,
+          "name": "MedalAwarded",
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "eventId",
+              "indexed": true
+            },
+            {
+              "type": "uint256",
+              "name": "medalId",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "recipient",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "by",
+              "indexed": false
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "anonymous": false,
+          "name": "MedalClaimed",
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "eventId",
+              "indexed": true
+            },
+            {
+              "type": "uint256",
+              "name": "medalId",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "claimer",
+              "indexed": true
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "anonymous": false,
+          "name": "MedalCreated",
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "eventId",
+              "indexed": true
+            },
+            {
+              "type": "uint256",
+              "name": "medalId",
+              "indexed": true
+            },
+            {
+              "type": "string",
+              "name": "name",
+              "indexed": false
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "anonymous": false,
+          "name": "RoleAdminChanged",
+          "inputs": [
+            {
+              "type": "bytes32",
+              "name": "role",
+              "indexed": true
+            },
+            {
+              "type": "bytes32",
+              "name": "previousAdminRole",
+              "indexed": true
+            },
+            {
+              "type": "bytes32",
+              "name": "newAdminRole",
+              "indexed": true
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "anonymous": false,
+          "name": "RoleGranted",
+          "inputs": [
+            {
+              "type": "bytes32",
+              "name": "role",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "account",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "sender",
+              "indexed": true
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "anonymous": false,
+          "name": "RoleRevoked",
+          "inputs": [
+            {
+              "type": "bytes32",
+              "name": "role",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "account",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "sender",
+              "indexed": true
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "ADMIN_ROLE",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "bytes32",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "DEFAULT_ADMIN_ROLE",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "bytes32",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "approveEvent",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "eventId"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "awardMedal",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "medalId"
+            },
+            {
+              "type": "address",
+              "name": "to"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "claimMedal",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "medalId"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "eventCount",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "uint256",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "getEvent",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "eventId"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "tuple",
+              "name": "",
+              "components": [
+                {
+                  "type": "uint256",
+                  "name": "id"
+                },
+                {
+                  "type": "address",
+                  "name": "creator"
+                },
+                {
+                  "type": "string",
+                  "name": "title"
+                },
+                {
+                  "type": "string",
+                  "name": "description"
+                },
+                {
+                  "type": "string",
+                  "name": "location"
+                },
+                {
+                  "type": "uint64",
+                  "name": "datetime"
+                },
+                {
+                  "type": "string",
+                  "name": "timeText"
+                },
+                {
+                  "type": "uint8",
+                  "name": "status"
+                },
+                {
+                  "type": "string",
+                  "name": "rejectReason"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "getEventMedals",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "eventId"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "tuple[]",
+              "name": "",
+              "components": [
+                {
+                  "type": "uint256",
+                  "name": "id"
+                },
+                {
+                  "type": "uint256",
+                  "name": "eventId"
+                },
+                {
+                  "type": "string",
+                  "name": "name"
+                },
+                {
+                  "type": "string",
+                  "name": "description"
+                },
+                {
+                  "type": "string",
+                  "name": "iconUrl"
+                },
+                {
+                  "type": "uint32",
+                  "name": "points"
+                },
+                {
+                  "type": "uint32",
+                  "name": "maxClaims"
+                },
+                {
+                  "type": "uint32",
+                  "name": "claimsCount"
+                },
+                {
+                  "type": "bool",
+                  "name": "active"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "getMedal",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "medalId"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "tuple",
+              "name": "",
+              "components": [
+                {
+                  "type": "uint256",
+                  "name": "id"
+                },
+                {
+                  "type": "uint256",
+                  "name": "eventId"
+                },
+                {
+                  "type": "string",
+                  "name": "name"
+                },
+                {
+                  "type": "string",
+                  "name": "description"
+                },
+                {
+                  "type": "string",
+                  "name": "iconUrl"
+                },
+                {
+                  "type": "uint32",
+                  "name": "points"
+                },
+                {
+                  "type": "uint32",
+                  "name": "maxClaims"
+                },
+                {
+                  "type": "uint32",
+                  "name": "claimsCount"
+                },
+                {
+                  "type": "bool",
+                  "name": "active"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "getRoleAdmin",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "bytes32",
+              "name": "role"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "bytes32",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "grantAdmin",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "address",
+              "name": "account"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "grantRole",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "bytes32",
+              "name": "role"
+            },
+            {
+              "type": "address",
+              "name": "account"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "hasClaimed",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": ""
+            },
+            {
+              "type": "address",
+              "name": ""
+            }
+          ],
+          "outputs": [
+            {
+              "type": "bool",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "hasRole",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "bytes32",
+              "name": "role"
+            },
+            {
+              "type": "address",
+              "name": "account"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "bool",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "medalCount",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "uint256",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "rejectEvent",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "eventId"
+            },
+            {
+              "type": "string",
+              "name": "reason"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "renounceRole",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "bytes32",
+              "name": "role"
+            },
+            {
+              "type": "address",
+              "name": "callerConfirmation"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "revokeAdmin",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "address",
+              "name": "account"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "revokeRole",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "bytes32",
+              "name": "role"
+            },
+            {
+              "type": "address",
+              "name": "account"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "setMedalActive",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "medalId"
+            },
+            {
+              "type": "bool",
+              "name": "active"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "submitEvent",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "string",
+              "name": "title"
+            },
+            {
+              "type": "string",
+              "name": "description"
+            },
+            {
+              "type": "string",
+              "name": "location"
+            },
+            {
+              "type": "uint64",
+              "name": "datetime"
+            },
+            {
+              "type": "string",
+              "name": "timeText"
+            },
+            {
+              "type": "string[]",
+              "name": "medalNames"
+            },
+            {
+              "type": "string[]",
+              "name": "medalDescriptions"
+            },
+            {
+              "type": "string[]",
+              "name": "medalIcons"
+            },
+            {
+              "type": "uint32[]",
+              "name": "medalPoints"
+            },
+            {
+              "type": "uint32[]",
+              "name": "medalMaxClaims"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "uint256",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "supportsInterface",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "bytes4",
+              "name": "interfaceId"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "bool",
+              "name": ""
+            }
+          ]
         }
       ]
     }

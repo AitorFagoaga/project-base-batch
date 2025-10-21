@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt, useAccount, useReadContract } from "wagmi";
 import { CONTRACTS } from "@/lib/contracts";
 import toast from "react-hot-toast";
@@ -84,10 +84,12 @@ export function BoostForm({ targetUser }: BoostFormProps = {}) {
     }
   };
 
-  if (isSuccess) {
-    toast.success("Boost given successfully!");
-    setRecipientAddress("");
-  }
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("Boost given successfully!");
+      setRecipientAddress("");
+    }
+  }, [isSuccess]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);

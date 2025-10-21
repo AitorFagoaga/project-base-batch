@@ -1,13 +1,12 @@
 /**
  * Contract addresses and ABIs for Base Sepolia deployment
  * Auto-generated from /deployments/base-sepolia.json
- * Last updated: 2025-10-20T23:14:55.592Z
- * Owner: 0x31a42406422E72dC790cF42eD978458B0b00bd06
+ * Last updated: 2025-10-21T03:16:18.148Z
  */
 
 export const CONTRACTS = {
   reputation: {
-    address: "0x6A9F0A968BF23df10AB954E788a1A99718388816" as `0x${string}`,
+    address: "0xd5CD8869eAd10e9Ca20421B92943ac47b61FAc38" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -660,7 +659,7 @@ export const CONTRACTS = {
 ] as const,
   },
   launchpad: {
-    address: "0x95469D42822E8C323e6FC4c7f2cF46EC26249195" as `0x${string}`,
+    address: "0x9152E4C151FdA6301b3Aa7F2F93bB68f1DE39176" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -676,6 +675,26 @@ export const CONTRACTS = {
   {
     "type": "error",
     "name": "AlreadyClaimed",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "AlreadyCofounder",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "AlreadyInspired",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CannotFundOwnProject",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CannotInspireOwnProject",
     "inputs": []
   },
   {
@@ -710,6 +729,16 @@ export const CONTRACTS = {
   },
   {
     "type": "error",
+    "name": "NotCreatorOrCofounder",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ProjectAlreadyFunded",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "ProjectNotFound",
     "inputs": []
   },
@@ -731,6 +760,23 @@ export const CONTRACTS = {
   {
     "type": "event",
     "anonymous": false,
+    "name": "CofounderAdded",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "cofounder",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
     "name": "ContributionMade",
     "inputs": [
       {
@@ -746,6 +792,11 @@ export const CONTRACTS = {
       {
         "type": "uint256",
         "name": "amount",
+        "indexed": false
+      },
+      {
+        "type": "bool",
+        "name": "isAnonymous",
         "indexed": false
       }
     ]
@@ -815,6 +866,67 @@ export const CONTRACTS = {
     ]
   },
   {
+    "type": "event",
+    "anonymous": false,
+    "name": "ProjectDeleted",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "creator",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "ProjectInspired",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "inspirer",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "creator",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "reputationAwarded",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "addCofounder",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      },
+      {
+        "type": "address",
+        "name": "cofounder"
+      }
+    ],
+    "outputs": []
+  },
+  {
     "type": "function",
     "name": "claimFunds",
     "constant": false,
@@ -847,7 +959,7 @@ export const CONTRACTS = {
       },
       {
         "type": "uint256",
-        "name": "goal"
+        "name": "goalInWei"
       },
       {
         "type": "uint256",
@@ -863,6 +975,19 @@ export const CONTRACTS = {
   },
   {
     "type": "function",
+    "name": "deleteProject",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
     "name": "fundProject",
     "constant": false,
     "stateMutability": "payable",
@@ -871,9 +996,32 @@ export const CONTRACTS = {
       {
         "type": "uint256",
         "name": "projectId"
+      },
+      {
+        "type": "bool",
+        "name": "isAnonymous"
       }
     ],
     "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "getCofounders",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address[]",
+        "name": ""
+      }
+    ]
   },
   {
     "type": "function",
@@ -894,6 +1042,25 @@ export const CONTRACTS = {
     "outputs": [
       {
         "type": "uint256",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getContributors",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address[]",
         "name": ""
       }
     ]
@@ -950,8 +1117,94 @@ export const CONTRACTS = {
           {
             "type": "bool",
             "name": "claimed"
+          },
+          {
+            "type": "address[]",
+            "name": "cofounders"
           }
         ]
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "hasInspired",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      },
+      {
+        "type": "address",
+        "name": "inspirer"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "inspireProject",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "isCofounder",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      },
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "isContributionAnonymous",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      },
+      {
+        "type": "address",
+        "name": "backer"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": ""
       }
     ]
   },
@@ -986,138 +1239,138 @@ export const CONTRACTS = {
 ] as const,
   },
   userProfile: {
-    address: "0xEE45A29585A6576aAe63a18d56aa13af289CE769" as `0x${string}`,
+    address: "0x2E3B74Fc3598031D5b4C9af83bF05523aE325bE0" as `0x${string}`,
     abi: [
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "ProfileUpdated",
+    "inputs": [
       {
-        "type": "event",
-        "anonymous": false,
-        "name": "ProfileUpdated",
-        "inputs": [
-          {
-            "type": "address",
-            "name": "user",
-            "indexed": true
-          },
-          {
-            "type": "string",
-            "name": "name",
-            "indexed": false
-          },
-          {
-            "type": "string",
-            "name": "description",
-            "indexed": false
-          },
-          {
-            "type": "string",
-            "name": "avatarUrl",
-            "indexed": false
-          }
-        ]
+        "type": "address",
+        "name": "user",
+        "indexed": true
       },
       {
-        "type": "function",
-        "name": "getProfile",
-        "constant": true,
-        "stateMutability": "view",
-        "payable": false,
-        "inputs": [
-          {
-            "type": "address",
-            "name": "_user"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "string",
-            "name": "name"
-          },
-          {
-            "type": "string",
-            "name": "description"
-          },
-          {
-            "type": "string",
-            "name": "avatarUrl"
-          },
-          {
-            "type": "bool",
-            "name": "exists"
-          }
-        ]
+        "type": "string",
+        "name": "name",
+        "indexed": false
       },
       {
-        "type": "function",
-        "name": "hasProfile",
-        "constant": true,
-        "stateMutability": "view",
-        "payable": false,
-        "inputs": [
-          {
-            "type": "address",
-            "name": "_user"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "bool",
-            "name": ""
-          }
-        ]
+        "type": "string",
+        "name": "description",
+        "indexed": false
       },
       {
-        "type": "function",
-        "name": "profiles",
-        "constant": true,
-        "stateMutability": "view",
-        "payable": false,
-        "inputs": [
-          {
-            "type": "address",
-            "name": ""
-          }
-        ],
-        "outputs": [
-          {
-            "type": "string",
-            "name": "name"
-          },
-          {
-            "type": "string",
-            "name": "description"
-          },
-          {
-            "type": "string",
-            "name": "avatarUrl"
-          },
-          {
-            "type": "bool",
-            "name": "exists"
-          }
-        ]
-      },
-      {
-        "type": "function",
-        "name": "setProfile",
-        "constant": false,
-        "payable": false,
-        "inputs": [
-          {
-            "type": "string",
-            "name": "_name"
-          },
-          {
-            "type": "string",
-            "name": "_description"
-          },
-          {
-            "type": "string",
-            "name": "_avatarUrl"
-          }
-        ],
-        "outputs": []
+        "type": "string",
+        "name": "avatarUrl",
+        "indexed": false
       }
-    ] as const,
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getProfile",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "_user"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "string",
+        "name": "name"
+      },
+      {
+        "type": "string",
+        "name": "description"
+      },
+      {
+        "type": "string",
+        "name": "avatarUrl"
+      },
+      {
+        "type": "bool",
+        "name": "exists"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "hasProfile",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "_user"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "profiles",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ],
+    "outputs": [
+      {
+        "type": "string",
+        "name": "name"
+      },
+      {
+        "type": "string",
+        "name": "description"
+      },
+      {
+        "type": "string",
+        "name": "avatarUrl"
+      },
+      {
+        "type": "bool",
+        "name": "exists"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "setProfile",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "string",
+        "name": "_name"
+      },
+      {
+        "type": "string",
+        "name": "_description"
+      },
+      {
+        "type": "string",
+        "name": "_avatarUrl"
+      }
+    ],
+    "outputs": []
+  }
+] as const,
   },
 } as const;
 

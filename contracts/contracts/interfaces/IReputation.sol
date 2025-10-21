@@ -35,6 +35,14 @@ interface IReputation {
     
     /// @notice Awards genesis reputation to a single address (owner only)
     function awardGenesis(address recipient, uint256 amount, string calldata reason) external;
+
+    /// @notice Awards genesis reputation with a category tag (admin only)
+    function awardGenesisWithCategory(
+        address recipient,
+        uint256 amount,
+        string calldata category,
+        string calldata reason
+    ) external;
     
     /// @notice Awards genesis reputation to multiple addresses (owner only)
     function awardGenesisBatch(

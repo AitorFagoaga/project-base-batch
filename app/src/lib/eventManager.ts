@@ -22,6 +22,7 @@ export const EVENT_MANAGER = {
         { type: "string", name: "timeText" },
         { type: "string[]", name: "medalNames" },
         { type: "string[]", name: "medalDescriptions" },
+        { type: "string[]", name: "medalIcons" },
         { type: "uint32[]", name: "medalPoints" },
         { type: "uint32[]", name: "medalMaxClaims" },
       ],
@@ -69,6 +70,7 @@ export const EVENT_MANAGER = {
             { type: "uint256", name: "eventId" },
             { type: "string", name: "name" },
             { type: "string", name: "description" },
+            { type: "string", name: "iconUrl" },
             { type: "uint32", name: "points" },
             { type: "uint32", name: "maxClaims" },
             { type: "uint32", name: "claimsCount" },
@@ -90,6 +92,7 @@ export const EVENT_MANAGER = {
             { type: "uint256", name: "eventId" },
             { type: "string", name: "name" },
             { type: "string", name: "description" },
+            { type: "string", name: "iconUrl" },
             { type: "uint32", name: "points" },
             { type: "uint32", name: "maxClaims" },
             { type: "uint32", name: "claimsCount" },
@@ -104,4 +107,3 @@ export const EVENT_MANAGER = {
 };
 
 export type EventManagerABI = typeof EVENT_MANAGER.abi;
-

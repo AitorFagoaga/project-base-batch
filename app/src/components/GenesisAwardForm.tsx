@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { CONTRACTS } from "@/lib/contracts";
 import { parseEther, isAddress } from "viem";
@@ -137,14 +137,16 @@ export function GenesisAwardForm() {
   };
 
   // Handle success
-  if (isSuccess) {
-    toast.success("Genesis reputation awarded!");
-    setTimeout(() => {
-      setRecipient("");
-      setReason("");
-      setBatchData("");
-    }, 1000);
-  }
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("Genesis reputation awarded!");
+      setTimeout(() => {
+        setRecipient("");
+        setReason("");
+        setBatchData("");
+      }, 1000);
+    }
+  }, [isSuccess]);
 
   return (
     <div className="grid grid-cols-1 gap-6">

@@ -1,9 +1,8 @@
 "use client";
 
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, usePublicClient, useReadContract } from "wagmi";
 import { CONTRACTS } from "@/lib/contracts";
 import { UserAvatar } from "@/components/UserAvatar";
-import { EditProfileModal } from "@/components/EditProfileModal";
 import { ProjectCard } from "@/components/ProjectCard";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
@@ -11,6 +10,7 @@ import { BoostForm } from "@/components/BoostForm";
 import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { ReputationHistory } from "@/components/ReputationHistory";
 
 interface PageProps {
   params: { address: string };
@@ -19,8 +19,9 @@ interface PageProps {
 export default function ProfilePage({ params }: PageProps) {
   const { address } = params;
   const { address: connectedAddress } = useAccount();
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const publicClient = usePublicClient();
   const [showBoostForm, setShowBoostForm] = useState(false);
+  const [createdCount, setCreatedCount] = useState<number | null>(null);
 
   const isOwnProfile = connectedAddress?.toLowerCase() === address.toLowerCase();
 
@@ -73,6 +74,30 @@ export default function ProfilePage({ params }: PageProps) {
   const reputation = reputationData ? Number(reputationData) : 0;
   const totalProjects = projectCount ? Number(projectCount) : 0;
 
+  // Compute user's created project count via multicall
+  if (publicClient && createdCount === null && totalProjects > 0) {
+    (async () => {
+      try {
+        const calls = Array.from({ length: totalProjects }, (_, i) => ({
+          address: CONTRACTS.launchpad.address as `0x${string}`,
+          abi: CONTRACTS.launchpad.abi as any,
+          functionName: "getProject" as const,
+          args: [BigInt(i)],
+        }));
+        const res = await (publicClient as any).multicall({ contracts: calls, allowFailure: true });
+        const cnt = res.reduce((acc: number, r: any) => {
+          const v: any = r?.result;
+          if (!v) return acc;
+          const creator = (v.creator ?? v[1] ?? "").toString();
+          return creator && creator.toLowerCase() === address.toLowerCase() ? acc + 1 : acc;
+        }, 0);
+        setCreatedCount(cnt);
+      } catch {
+        setCreatedCount(0);
+      }
+    })();
+  }
+
   // Find user's projects
   const userProjects: number[] = [];
   for (let i = 0; i < totalProjects; i++) {
@@ -113,22 +138,13 @@ export default function ProfilePage({ params }: PageProps) {
                   )}
                 </h2>
                 {isOwnProfile && (
-                  <>
-                    <button
-                      onClick={() => setIsEditModalOpen(true)}
-                      className="rounded-lg bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
-                      title="Editar perfil (modal rápido)"
-                    >
-                      ✏️ Editar
-                    </button>
-                    <Link
-                      href="/profile/edit"
-                      className="rounded-lg bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-600"
-                      title="Editar perfil (página completa)"
-                    >
-                      📝 Editar Perfil
-                    </Link>
-                  </>
+                  <Link
+                    href="/profile/edit"
+                    className="rounded-lg bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-600"
+                    title="Editar perfil"
+                  >
+                    ✏️ Editar Perfil
+                  </Link>
                 )}
               </div>
 
@@ -201,6 +217,9 @@ export default function ProfilePage({ params }: PageProps) {
           </div>
         </div>
 
+        {/* Reputation History */}
+        <ReputationHistory address={address as `0x${string}`} />
+
         {/* Boost Form - Show when button clicked */}
         {showBoostForm && !isOwnProfile && connectedAddress && (
           <div className="card mb-8">
@@ -216,6 +235,7 @@ export default function ProfilePage({ params }: PageProps) {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             📂 Proyectos Creados
           </h2>
+          {createdCount !== null && <p className="text-sm text-gray-500 mb-4">Total: {createdCount}</p>}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {userProjects.map((projectId) => (
               <UserProjectCard
@@ -226,16 +246,6 @@ export default function ProfilePage({ params }: PageProps) {
             ))}
           </div>
         </div>
-
-        {/* Edit Profile Modal */}
-        {isOwnProfile && (
-          <EditProfileModal
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-            currentProfile={profile || undefined}
-            userAddress={address}
-          />
-        )}
       </NetworkGuard>
     </SharedPageLayout>
   );

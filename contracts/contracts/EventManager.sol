@@ -37,6 +37,7 @@ contract EventManager is AccessControl {
         uint256 eventId;
         string name;
         string description;
+        string iconUrl; // image/icon URL for UI
         uint32 points;      // optional reputation points for display only
         uint32 maxClaims;   // 0 = unlimited
         uint32 claimsCount; // number of successful claims
@@ -100,6 +101,7 @@ contract EventManager is AccessControl {
         string calldata timeText,
         string[] calldata medalNames,
         string[] calldata medalDescriptions,
+        string[] calldata medalIcons,
         uint32[] calldata medalPoints,
         uint32[] calldata medalMaxClaims
     ) external returns (uint256) {
@@ -122,7 +124,7 @@ contract EventManager is AccessControl {
         // Create medals
         uint256 len = medalNames.length;
         require(
-            len == medalDescriptions.length && len == medalPoints.length && len == medalMaxClaims.length,
+            len == medalDescriptions.length && len == medalIcons.length && len == medalPoints.length && len == medalMaxClaims.length,
             "Medal array length mismatch"
         );
         for (uint256 i = 0; i < len; i++) {
@@ -132,6 +134,7 @@ contract EventManager is AccessControl {
                 eventId: id,
                 name: medalNames[i],
                 description: medalDescriptions[i],
+                iconUrl: medalIcons[i],
                 points: medalPoints[i],
                 maxClaims: medalMaxClaims[i],
                 claimsCount: 0,
@@ -219,4 +222,3 @@ contract EventManager is AccessControl {
         return _medals[medalId];
     }
 }
-

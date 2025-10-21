@@ -44,6 +44,13 @@ describe("Launchpad", function () {
           10, 
           30
         ); // 10 ETH, 30 days
+        .createProject(
+          "My Project",
+          "Description",
+          "https://example.com/image.jpg",
+          ethers.parseEther("10"),
+          30
+        );
 
       await expect(tx).to.emit(launchpad, "ProjectCreated");
 
@@ -58,18 +65,22 @@ describe("Launchpad", function () {
     it("Should revert with zero goal", async function () {
       await expect(
         launchpad.connect(creator).createProject("Test", "Description", "", 0, 30)
+        launchpad.connect(creator).createProject("Test", "Desc", "img.jpg", 0, 30)
       ).to.be.revertedWithCustomError(launchpad, "InvalidGoal");
     });
 
     it("Should revert with zero duration", async function () {
       await expect(
         launchpad.connect(creator).createProject("Test", "Description", "", 10, 0)
+        launchpad.connect(creator).createProject("Test", "Desc", "img.jpg", ethers.parseEther("10"), 0)
       ).to.be.revertedWithCustomError(launchpad, "InvalidDuration");
     });
 
     it("Should increment project counter", async function () {
       await launchpad.connect(creator).createProject("Project 1", "Desc 1", "", 5, 30);
       await launchpad.connect(creator).createProject("Project 2", "Desc 2", "", 8, 30);
+      await launchpad.connect(creator).createProject("Project 1", "Desc 1", "img1.jpg", ethers.parseEther("5"), 30);
+      await launchpad.connect(creator).createProject("Project 2", "Desc 2", "img2.jpg", ethers.parseEther("8"), 30);
 
       expect(await launchpad.projectCount()).to.equal(2);
     });
@@ -80,6 +91,7 @@ describe("Launchpad", function () {
 
     beforeEach(async function () {
       await launchpad.connect(creator).createProject("Test Project", "Test description", "", 5, 30);
+      await launchpad.connect(creator).createProject("Test Project", "Test Description", "test.jpg", ethers.parseEther("5"), 30);
       projectId = 0;
     });
 
@@ -131,6 +143,7 @@ describe("Launchpad", function () {
 
     beforeEach(async function () {
       await launchpad.connect(creator).createProject("Test Project", "Test description", "", 5, 30);
+      await launchpad.connect(creator).createProject("Test Project", "Test Description", "test.jpg", ethers.parseEther("5"), 30);
       projectId = 0;
     });
 
@@ -267,6 +280,81 @@ describe("Launchpad", function () {
       expect(await launchpad.reputation()).to.equal(
         await reputation.getAddress()
       );
+    });
+  });
+
+  describe("Deleting Projects", function () {
+    let projectId: number;
+
+    beforeEach(async function () {
+      await launchpad.connect(creator).createProject("Test Project", "Test Description", "test.jpg", ethers.parseEther("5"), 30);
+      projectId = 0;
+    });
+
+    it("Should allow creator to delete an unfunded project", async function () {
+      await expect(launchpad.connect(creator).deleteProject(projectId))
+        .to.emit(launchpad, "ProjectDeleted")
+        .withArgs(projectId, creator.address);
+
+      const project = await launchpad.getProject(projectId);
+      expect(project.creator).to.equal(ethers.ZeroAddress);
+    });
+
+    it("Should allow creator to delete a partially funded project (below goal)", async function () {
+      // Fund partially (3 ETH out of 5 ETH goal)
+      await launchpad
+        .connect(backer1)
+        .fundProject(projectId, { value: ethers.parseEther("3") });
+
+      await expect(launchpad.connect(creator).deleteProject(projectId))
+        .to.emit(launchpad, "ProjectDeleted")
+        .withArgs(projectId, creator.address);
+
+      const project = await launchpad.getProject(projectId);
+      expect(project.creator).to.equal(ethers.ZeroAddress);
+    });
+
+    it("Should revert if non-creator tries to delete", async function () {
+      await expect(
+        launchpad.connect(backer1).deleteProject(projectId)
+      ).to.be.revertedWithCustomError(launchpad, "NotCreator");
+    });
+
+    it("Should revert when trying to delete project that reached its goal", async function () {
+      // Fund the project fully
+      await launchpad
+        .connect(backer1)
+        .fundProject(projectId, { value: ethers.parseEther("5") });
+
+      await expect(
+        launchpad.connect(creator).deleteProject(projectId)
+      ).to.be.revertedWithCustomError(launchpad, "ProjectAlreadyFunded");
+    });
+
+    it("Should revert when trying to delete non-existent project", async function () {
+      await expect(
+        launchpad.connect(creator).deleteProject(999)
+      ).to.be.revertedWithCustomError(launchpad, "ProjectNotFound");
+    });
+
+    it("Should maintain project counter after deletion", async function () {
+      await launchpad.connect(creator).createProject("Project 2", "Desc 2", "img2.jpg", ethers.parseEther("8"), 30);
+
+      expect(await launchpad.projectCount()).to.equal(2);
+
+      // Delete first project
+      await launchpad.connect(creator).deleteProject(projectId);
+
+      // Counter should remain the same
+      expect(await launchpad.projectCount()).to.equal(2);
+    });
+
+    it("Should revert when trying to delete already deleted project", async function () {
+      await launchpad.connect(creator).deleteProject(projectId);
+
+      await expect(
+        launchpad.connect(creator).deleteProject(projectId)
+      ).to.be.revertedWithCustomError(launchpad, "ProjectNotFound");
     });
   });
 });

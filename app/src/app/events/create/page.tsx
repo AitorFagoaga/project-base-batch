@@ -6,7 +6,7 @@ import { SharedPageLayout } from "@/components/SharedPageLayout";
 import { EVENT_MANAGER } from "@/lib/eventManager";
 import toast from "react-hot-toast";
 
-interface MedalDraft { name: string; description: string; points: number; maxClaims: number; }
+interface MedalDraft { name: string; description: string; iconUrl: string; points: number; maxClaims: number; }
 
 export default function CreateEventPage() {
   const { address } = useAccount();
@@ -16,13 +16,13 @@ export default function CreateEventPage() {
   const [date, setDate] = useState(""); // yyyy-mm-dd
   const [time, setTime] = useState(""); // HH:mm
   const [medals, setMedals] = useState<MedalDraft[]>([
-    { name: "Asistente", description: "Participación en el evento", points: 10, maxClaims: 0 },
+    { name: "Asistente", description: "Participación en el evento", iconUrl: "", points: 10, maxClaims: 0 },
   ]);
 
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
-  const addMedal = () => setMedals((m) => [...m, { name: "", description: "", points: 0, maxClaims: 0 }]);
+  const addMedal = () => setMedals((m) => [...m, { name: "", description: "", iconUrl: "", points: 0, maxClaims: 0 }]);
   const removeMedal = (idx: number) => setMedals((m) => m.filter((_, i) => i !== idx));
   const updateMedal = (idx: number, patch: Partial<MedalDraft>) =>
     setMedals((m) => m.map((md, i) => (i === idx ? { ...md, ...patch } : md)));
@@ -49,6 +49,7 @@ export default function CreateEventPage() {
           `${time} UTC`,
           medals.map((m) => m.name),
           medals.map((m) => m.description),
+          medals.map((m) => m.iconUrl),
           medals.map((m) => BigInt(m.points)) as any,
           medals.map((m) => BigInt(m.maxClaims)) as any,
         ],
@@ -111,6 +112,10 @@ export default function CreateEventPage() {
                     <input className="input" value={m.description} onChange={(e) => updateMedal(i, { description: e.target.value })} />
                   </div>
                   <div>
+                    <label className="text-sm text-gray-600">Icono (URL de imagen)</label>
+                    <input className="input" value={m.iconUrl} onChange={(e) => updateMedal(i, { iconUrl: e.target.value })} placeholder="https://..." />
+                  </div>
+                  <div>
                     <label className="text-sm text-gray-600">Máx. claims (0 = ilimitado)</label>
                     <input type="number" className="input" value={m.maxClaims} onChange={(e) => updateMedal(i, { maxClaims: Number(e.target.value) })} />
                   </div>
@@ -131,4 +136,3 @@ export default function CreateEventPage() {
     </SharedPageLayout>
   );
 }
-

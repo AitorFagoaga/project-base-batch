@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
 import { parseEther } from "viem";
 import { CONTRACTS } from "@/lib/contracts";
 import toast from "react-hot-toast";
@@ -11,12 +11,14 @@ import toast from "react-hot-toast";
  */
 interface FundFormProps {
   projectId: bigint;
+  creatorAddress: string;
   onSuccess?: () => void;
 }
 
-export function FundForm({ projectId, onSuccess }: FundFormProps) {
+export function FundForm({ projectId, creatorAddress, onSuccess }: FundFormProps) {
   const [amount, setAmount] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const { address } = useAccount();
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
 
@@ -24,8 +26,16 @@ export function FundForm({ projectId, onSuccess }: FundFormProps) {
     hash,
   });
 
+  // Check if user is trying to fund their own project
+  const isOwnProject = address?.toLowerCase() === creatorAddress?.toLowerCase();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isOwnProject) {
+      toast.error("❌ No puedes financiar tu propio proyecto");
+      return;
+    }
 
     if (!amount || parseFloat(amount) <= 0) {
       toast.error("⚠️ Por favor ingresa una cantidad válida");
@@ -83,6 +93,14 @@ export function FundForm({ projectId, onSuccess }: FundFormProps) {
         <h3 className="text-2xl font-bold text-gray-900 mb-2">💰 Apoya Este Proyecto</h3>
         <p className="text-gray-600 text-sm">Contribuye con ETH para ayudar a alcanzar la meta</p>
       </div>
+
+      {isOwnProject && (
+        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+          <p className="text-sm font-semibold text-red-800">
+            ⚠️ No puedes financiar tu propio proyecto
+          </p>
+        </div>
+      )}
 
       <div>
         <label htmlFor="amount" className="input-label text-base">
@@ -172,8 +190,8 @@ export function FundForm({ projectId, onSuccess }: FundFormProps) {
 
       <button
         type="submit"
-        disabled={isPending || isConfirming || !amount}
-        className="btn-primary w-full text-lg py-4 font-bold"
+        disabled={isPending || isConfirming || !amount || isOwnProject}
+        className="btn-primary w-full text-lg py-4 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPending || isConfirming ? (
           <span className="flex items-center justify-center">

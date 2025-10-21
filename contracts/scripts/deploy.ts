@@ -76,6 +76,33 @@ async function main() {
   const eventManagerAddress = await eventManager.getAddress();
   console.log("✅ EventManager deployed at:", eventManagerAddress);
 
+  // Grant ADMIN_ROLE to additional admins
+  console.log("\n👥 Granting ADMIN_ROLE to additional admins...");
+  const additionalAdmins = [
+    "0xaa860E97f1a50ca6Ce786AEf9B835052dfD0ee25",
+    "0x31a42406422E72dC790cF42eD978458B0b00bd06"
+  ];
+  
+  for (const admin of additionalAdmins) {
+    try {
+      const grantAdminTx = await eventManager.grantAdmin(admin);
+      await grantAdminTx.wait();
+      console.log(`✅ Granted ADMIN_ROLE to ${admin}`);
+    } catch (e) {
+      console.log(`⚠️ Could not grant ADMIN_ROLE to ${admin}:`, (e as Error).message);
+    }
+  }
+
+  // Ensure Launchpad can award Reputation for investments
+  try {
+    const adminRole = await reputation.ADMIN_ROLE();
+    const grantTx = await reputation.grantRole(adminRole, launchpadAddress);
+    await grantTx.wait();
+    console.log("✅ Granted ADMIN_ROLE to Launchpad for Reputation awards");
+  } catch (e) {
+    console.log("⚠️ Could not grant ADMIN_ROLE to Launchpad:", (e as Error).message);
+  }
+
   // SAVE DEPLOYMENT INFO
   // ═══════════════════════════════════════════════════════════════════════════
 

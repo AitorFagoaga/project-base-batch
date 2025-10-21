@@ -9,7 +9,7 @@ import { MedalQR } from "@/components/MedalQR";
 import toast from "react-hot-toast";
 
 type EventTuple = [bigint, `0x${string}`, string, string, string, bigint, string, number, string];
-type MedalTuple = [bigint, bigint, string, string, number, number, number, boolean];
+type MedalTuple = [bigint, bigint, string, string, string, number, number, number, boolean];
 
 export default function EventDetailsPage() {
   const params = useParams();
@@ -62,14 +62,18 @@ export default function EventDetailsPage() {
               const medalId = Number(m[0]);
               const name = m[2];
               const desc = m[3];
-              const points = Number(m[4]);
-              const maxClaims = Number(m[5]);
-              const claimsCount = Number(m[6]);
-              const active = m[7];
+              const iconUrl = m[4];
+              const points = Number(m[5]);
+              const maxClaims = Number(m[6]);
+              const claimsCount = Number(m[7]);
+              const active = m[8];
               const qrLink = `${eventUrl}/events/${id}?medal=${medalId}`;
               return (
                 <div key={medalId} id={`medal-${medalId}`} className="rounded-xl border border-gray-200 bg-white p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-4">
+                    {iconUrl ? (
+                      <img src={iconUrl} alt={name} className="w-12 h-12 rounded-lg object-cover" />
+                    ) : null}
                     <div>
                       <div className="font-semibold text-gray-900">{name} {points ? <span className="text-xs text-indigo-600">({points} pts)</span> : null}</div>
                       <div className="text-sm text-gray-600">{desc}</div>
@@ -104,4 +108,3 @@ export default function EventDetailsPage() {
     </SharedPageLayout>
   );
 }
-
