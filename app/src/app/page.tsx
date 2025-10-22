@@ -160,9 +160,22 @@ function ProjectWithReputation({ projectId, selectedCategory }: { projectId: big
   });
 
   // Extract creator address from project data (updated with category field)
-  const creatorAddress = projectData
-    ? (projectData as [bigint, string, string, string, string, string, bigint, bigint, bigint, boolean, readonly string[]])[1]
-    : undefined;
+  let creatorAddress: string | undefined;
+  if (projectData) {
+    if (Array.isArray(projectData)) {
+      creatorAddress = projectData[1] as string | undefined;
+    } else {
+      const data = projectData as ProjectContractResponse;
+      if (typeof data.creator === "string") {
+        creatorAddress = data.creator;
+      } else if (typeof data[1] === "string") {
+        creatorAddress = data[1] as string;
+      }
+    }
+  }
+  if (creatorAddress && typeof creatorAddress === "string" && !creatorAddress.startsWith("0x")) {
+    creatorAddress = undefined;
+  }
 
   const { data: reputation, isLoading: repLoading } = useReadContract({
     address: CONTRACTS.reputation.address,

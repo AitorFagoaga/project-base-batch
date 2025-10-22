@@ -25,10 +25,10 @@ export function ContributorsHistory({ projectId }: Readonly<ContributorsHistoryP
       <div className="card text-center py-12">
         <div className="text-6xl mb-4">📭</div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          No hay inversores aún
+          No investors yet
         </h3>
         <p className="text-gray-600 text-sm">
-          Sé el primero en apoyar este proyecto
+          Be the first to support this project
         </p>
       </div>
     );
@@ -40,11 +40,11 @@ export function ContributorsHistory({ projectId }: Readonly<ContributorsHistoryP
         <div className="flex items-center gap-2 mb-2">
           <span className="text-2xl">💰</span>
           <h3 className="text-xl font-bold text-gray-900">
-            Historial de Inversores
+            Investor History
           </h3>
         </div>
         <p className="text-gray-600 text-sm">
-          {contributors.length} {contributors.length === 1 ? 'inversor' : 'inversores'} apoyando este proyecto
+          {contributors.length} {contributors.length === 1 ? 'investor' : 'investors'} supporting this project
         </p>
       </div>
 
@@ -128,15 +128,15 @@ function ContributorItem({ address, projectId }: Readonly<ContributorItemProps>)
             ❓
           </div>
           <div>
-            <p className="font-semibold text-gray-900">Inversor Anónimo</p>
-            <p className="text-xs text-gray-500">Identidad privada</p>
+            <p className="font-semibold text-gray-900">Anonymous Investor</p>
+            <p className="text-xs text-gray-500">Private identity</p>
           </div>
         </div>
         <div className="text-right">
           <p className="font-bold text-gray-900 text-lg">
             {formatEther(amount)} ETH
           </p>
-          <p className="text-xs text-gray-500">Contribución</p>
+          <p className="text-xs text-gray-500">Contribution</p>
         </div>
       </div>
     );

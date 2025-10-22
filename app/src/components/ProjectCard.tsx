@@ -53,12 +53,12 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
 
   const handleInspire = async () => {
     if (isOwnProject) {
-      toast.error("❌ No puedes inspirar tu propio proyecto");
+      toast.error("You cannot inspire your own project");
       return;
     }
 
     if (alreadyInspired) {
-      toast.error("❌ Ya inspiraste este proyecto");
+      toast.error("You already inspired this project");
       return;
     }
 
@@ -70,18 +70,17 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
         args: [project.id],
       });
 
-      toast.success("📝 Transacción enviada");
+      toast.success("Transaction sent");
     } catch (err: any) {
       console.error("Inspire error:", err);
-      toast.error(err?.message || "Error al inspirar el proyecto");
+      toast.error(err?.message || "Error inspiring project");
     }
   };
 
   useEffect(() => {
     if (isSuccess) {
-      toast.success("✨ ¡Inspiraste este proyecto! El creador recibió 3 puntos de reputación", {
+      toast.success("You inspired this project! The creator received 3 reputation points", {
         duration: 5000,
-        icon: "🎖️",
       });
     }
   }, [isSuccess]);
@@ -146,14 +145,14 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
         <div className="space-y-2">
           <h3 className="text-base font-semibold text-gray-900 line-clamp-1">{safeProject.title}</h3>
           <p className="text-sm text-gray-500 line-clamp-2">
-            {safeProject.description || "Sin descripción todavía. ¡Cuéntale al mundo por qué deberían apoyarte!"}
+            {safeProject.description || "No description yet. Tell the world why they should support you!"}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <UserAvatar address={safeProject.creator} size="sm" showReputation={false} />
           <div className="flex-1">
-            <p className="text-xs uppercase tracking-wide text-gray-400">Creador</p>
+            <p className="text-xs uppercase tracking-wide text-gray-400">Creator</p>
             <p className="font-mono text-sm font-semibold text-gray-700">
               {safeProject.creator.slice(0, 6)}...{safeProject.creator.slice(-4)}
             </p>
@@ -167,7 +166,7 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
 
         <div className="space-y-2 rounded-2xl bg-gray-50/80 p-2.5">
           <div className="flex items-center justify-between text-xs text-gray-500">
-            <span className="font-medium text-gray-700">Recaudado</span>
+            <span className="font-medium text-gray-700">Raised</span>
             <span className="font-semibold text-gray-900">
               {raisedEth} / {goalEth} ETH
             </span>
@@ -176,13 +175,13 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
             <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
           </div>
           <div className="flex items-center justify-between text-xs uppercase tracking-wide text-gray-400">
-            <span>{progressPercent.toFixed(0)}% completado</span>
+            <span>{progressPercent.toFixed(0)}% funded</span>
             <span>
               {isActive
-                ? `${daysRemaining} día${daysRemaining === 1 ? "" : "s"} restantes`
+                ? `${daysRemaining} day${daysRemaining === 1 ? "" : "s"} left`
                 : safeProject.claimed
-                ? "Fondos reclamados"
-                : "Campaña finalizada"}
+                ? "Funds claimed"
+                : "Campaign ended"}
             </span>
           </div>
         </div>
@@ -192,7 +191,7 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
             href={`/project/${safeProject.id}`}
             className="rounded-full bg-gray-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-600"
           >
-            Ver Proyecto
+            View Project
           </Link>
           {!isOwnProject && (
             <button
@@ -204,10 +203,10 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
                   ? "border-green-300 bg-green-50 text-green-700 cursor-not-allowed"
                   : "border-gray-200 text-gray-500 hover:border-indigo-500 hover:text-indigo-600"
               }`}
-              title={alreadyInspired ? "Ya inspiraste este proyecto" : "Inspirar proyecto"}
+              title={alreadyInspired ? "You already inspired this project" : "Inspire project"}
             >
               <Icon name="sparkles" size="xs" />
-              {alreadyInspired ? "Inspirado ✓" : isPending || isConfirming ? "..." : "Inspirar"}
+              {alreadyInspired ? "Inspired ✓" : isPending || isConfirming ? "..." : "Inspire"}
             </button>
           )}
         </div>
