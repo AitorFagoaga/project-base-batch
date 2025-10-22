@@ -605,14 +605,20 @@ export default function CreateProjectPage() {
 
               <div className="group overflow-hidden rounded-2xl border-2 border-gray-200/80 bg-white shadow-lg transition-all hover:shadow-xl hover:border-blue-300/60">
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-purple-100 via-blue-50 to-pink-100">
-                  <Image
-                    src={previewImage}
-                    alt="Project preview"
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    priority={false}
-                    sizes="(min-width: 1024px) 340px, 100vw"
-                  />
+                  {previewImage && previewImage.startsWith('http') ? (
+                    <Image
+                      src={previewImage}
+                      alt="Project preview"
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      priority={false}
+                      sizes="(min-width: 1024px) 340px, 100vw"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-6xl">🖼️</span>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
                 <div className="space-y-4 p-6">

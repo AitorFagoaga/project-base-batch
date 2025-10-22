@@ -37,6 +37,38 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
     ? goalAmount - raisedAmount 
     : undefined;
 
+  // Check if goal is reached
+  const isGoalReached = remainingAmount !== undefined && remainingAmount <= 0n;
+
+  // Don't render form if goal is reached
+  if (isGoalReached) {
+    return (
+      <div className="card space-y-4">
+        <div className="flex items-center gap-3">
+          <CheckCircle className="w-8 h-8 text-green-600" />
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">🎉 ¡Objetivo Alcanzado!</h3>
+            <p className="text-gray-600">Este proyecto ya alcanzó su meta de financiación.</p>
+          </div>
+        </div>
+        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-green-900">Meta:</span>
+            <span className="text-lg font-bold text-green-700">
+              {goalAmount ? formatEther(goalAmount) : '0'} ETH
+            </span>
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-sm font-medium text-green-900">Recaudado:</span>
+            <span className="text-lg font-bold text-green-700">
+              {raisedAmount ? formatEther(raisedAmount) : '0'} ETH
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

@@ -133,17 +133,57 @@ function ProjectItem({ projectId }: ProjectItemProps) {
     args: [projectId],
   });
 
+  // Parse project first to get creator address
+  let project: any = null;
+  let creatorAddress: `0x${string}` | undefined;
+
+  if (projectData) {
+    if (Array.isArray(projectData)) {
+      const data = projectData as any[];
+      project = {
+        id: data[0],
+        creator: data[1],
+        title: data[2],
+        description: data[3] || "",
+        imageUrl: data[4] || "",
+        category: data[5] || "",
+        goal: data[6],
+        deadline: data[7],
+        fundsRaised: data[8],
+        claimed: data[9] || false,
+        cofounders: data[10] || [],
+      };
+      creatorAddress = data[1] as `0x${string}`;
+    } else {
+      const data = projectData as ProjectContractResponse;
+      project = {
+        id: data.id ?? data[0],
+        creator: data.creator ?? data[1],
+        title: data.title ?? data[2],
+        description: data.description ?? data[3] ?? "",
+        imageUrl: data.imageUrl ?? data[4] ?? "",
+        category: data.category ?? data[5] ?? "",
+        goal: data.goal ?? data[6],
+        deadline: data.deadline ?? data[7],
+        fundsRaised: data.fundsRaised ?? data[8] ?? BigInt(0),
+        claimed: data.claimed ?? data[9] ?? false,
+        cofounders: data.cofounders ?? data[10] ?? [],
+      };
+      creatorAddress = (data.creator ?? data[1]) as `0x${string}`;
+    }
+  }
+
   const { data: reputation } = useReadContract({
     address: CONTRACTS.reputation.address,
     abi: CONTRACTS.reputation.abi,
     functionName: "reputationOf",
-    args: projectData ? [(projectData as any)[1] as `0x${string}`] : undefined,
+    args: creatorAddress ? [creatorAddress] : undefined,
     query: {
-      enabled: !!projectData,
+      enabled: !!creatorAddress,
     },
   });
 
-  if (!projectData) {
+  if (!projectData || !project) {
     return (
       <div className="animate-pulse space-y-4">
         <div className="aspect-[16/11] bg-gray-200 rounded-2xl"></div>
@@ -151,38 +191,6 @@ function ProjectItem({ projectId }: ProjectItemProps) {
         <div className="h-3 bg-gray-200 rounded w-1/2"></div>
       </div>
     );
-  }
-
-  let project: any = null;
-
-  if (Array.isArray(projectData)) {
-    const data = projectData as any[];
-    project = {
-      id: data[0],
-      creator: data[1],
-      title: data[2],
-      description: data[3] || "",
-      imageUrl: data[4] || "",
-      goal: data[5],
-      deadline: data[6],
-      fundsRaised: data[7],
-      claimed: data[8] || false,
-      cofounders: data[9] || [],
-    };
-  } else {
-    const data = projectData as ProjectContractResponse;
-    project = {
-      id: data.id ?? data[0],
-      creator: data.creator ?? data[1],
-      title: data.title ?? data[2],
-      description: data.description ?? data[3] ?? "",
-      imageUrl: data.imageUrl ?? data[4] ?? "",
-      goal: data.goal ?? data[5],
-      deadline: data.deadline ?? data[6],
-      fundsRaised: data.fundsRaised ?? data[7] ?? BigInt(0),
-      claimed: data.claimed ?? data[8] ?? false,
-      cofounders: data.cofounders ?? data[9] ?? [],
-    };
   }
 
   let reputationValue = BigInt(0);

@@ -10,7 +10,7 @@ async function main() {
   console.log("👥 Granting admin roles with account:", deployer.address);
   
   // EventManager address from deployment
-  const eventManagerAddress = "0x0DE94299D493A52726d44B636d73f2F3aEdAA3F8"; // Update from latest deployment
+  const eventManagerAddress = "0x4d34f049Ec2AE4542e6e1E5B96A98eF92761F030"; // Updated to latest deployment
   
   const EventManager = await ethers.getContractFactory("EventManager");
   const eventManager = EventManager.attach(eventManagerAddress);

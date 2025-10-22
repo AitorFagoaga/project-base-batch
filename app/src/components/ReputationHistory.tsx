@@ -136,7 +136,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
   }, [publicClient, address]);
 
   // 4) Merge simple timeline
-  const starIcon = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJqKMJiKyrZ1RAnqSQ-XoEuy9684Vk_cmTBA&s";
+  const starIcon = "https://cdn-icons-png.flaticon.com/512/4151/4151213.png";
   const investIcon = "https://cdn-icons-png.flaticon.com/512/3135/3135706.png";
   const timeline = useMemo(() => {
     const items: { type: "genesis" | "boost" | "medal"; title: string; sub?: string; icon?: string; when?: bigint }[] = [];

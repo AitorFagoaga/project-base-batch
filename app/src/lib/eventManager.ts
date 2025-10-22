@@ -1,109 +1,13 @@
 import { env } from "./env";
 
+console.log("🔧 EVENT_MANAGER Configuration:", {
+  address: env.EVENT_MANAGER_ADDRESS,
+  expected: "0x4d34f049Ec2AE4542e6e1E5B96A98eF92761F030"
+});
+
 export const EVENT_MANAGER = {
   address: env.EVENT_MANAGER_ADDRESS,
-  abi: [
-    { type: "constructor", inputs: [{ name: "initialAdmin", type: "address" }], stateMutability: "nonpayable" },
-    // AccessControl bits used for gating
-    { type: "function", name: "ADMIN_ROLE", inputs: [], outputs: [{ type: "bytes32" }], stateMutability: "view" },
-    { type: "function", name: "hasRole", inputs: [{ type: "bytes32", name: "role" }, { type: "address", name: "account" }], outputs: [{ type: "bool" }], stateMutability: "view" },
-    // Counters
-    { type: "function", name: "eventCount", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
-    { type: "function", name: "medalCount", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
-    // Submissions/approvals
-    {
-      type: "function",
-      name: "submitEvent",
-      inputs: [
-        { type: "string", name: "title" },
-        { type: "string", name: "description" },
-        { type: "string", name: "location" },
-        { type: "uint64", name: "datetime" },
-        { type: "string", name: "timeText" },
-        { type: "string[]", name: "medalNames" },
-        { type: "string[]", name: "medalDescriptions" },
-        { type: "string[]", name: "medalIcons" },
-        { type: "uint32[]", name: "medalPoints" },
-        { type: "uint32[]", name: "medalMaxClaims" },
-      ],
-      outputs: [{ type: "uint256" }],
-      stateMutability: "nonpayable",
-    },
-    { type: "function", name: "approveEvent", inputs: [{ type: "uint256", name: "eventId" }], outputs: [], stateMutability: "nonpayable" },
-    { type: "function", name: "rejectEvent", inputs: [{ type: "uint256", name: "eventId" }, { type: "string", name: "reason" }], outputs: [], stateMutability: "nonpayable" },
-    // Medal controls
-    { type: "function", name: "setMedalActive", inputs: [{ type: "uint256", name: "medalId" }, { type: "bool", name: "active" }], outputs: [], stateMutability: "nonpayable" },
-    { type: "function", name: "awardMedal", inputs: [{ type: "uint256", name: "medalId" }, { type: "address", name: "to" }], outputs: [], stateMutability: "nonpayable" },
-    { type: "function", name: "claimMedal", inputs: [{ type: "uint256", name: "medalId" }], outputs: [], stateMutability: "nonpayable" },
-    // Views
-    {
-      type: "function",
-      name: "getEvent",
-      inputs: [{ type: "uint256", name: "eventId" }],
-      outputs: [
-        {
-          type: "tuple",
-          components: [
-            { type: "uint256", name: "id" },
-            { type: "address", name: "creator" },
-            { type: "string", name: "title" },
-            { type: "string", name: "description" },
-            { type: "string", name: "location" },
-            { type: "uint64", name: "datetime" },
-            { type: "string", name: "timeText" },
-            { type: "uint8", name: "status" },
-            { type: "string", name: "rejectReason" },
-          ],
-        },
-      ],
-      stateMutability: "view",
-    },
-    {
-      type: "function",
-      name: "getEventMedals",
-      inputs: [{ type: "uint256", name: "eventId" }],
-      outputs: [
-        {
-          type: "tuple[]",
-          components: [
-            { type: "uint256", name: "id" },
-            { type: "uint256", name: "eventId" },
-            { type: "string", name: "name" },
-            { type: "string", name: "description" },
-            { type: "string", name: "iconUrl" },
-            { type: "uint32", name: "points" },
-            { type: "uint32", name: "maxClaims" },
-            { type: "uint32", name: "claimsCount" },
-            { type: "bool", name: "active" },
-          ],
-        },
-      ],
-      stateMutability: "view",
-    },
-    {
-      type: "function",
-      name: "getMedal",
-      inputs: [{ type: "uint256", name: "medalId" }],
-      outputs: [
-        {
-          type: "tuple",
-          components: [
-            { type: "uint256", name: "id" },
-            { type: "uint256", name: "eventId" },
-            { type: "string", name: "name" },
-            { type: "string", name: "description" },
-            { type: "string", name: "iconUrl" },
-            { type: "uint32", name: "points" },
-            { type: "uint32", name: "maxClaims" },
-            { type: "uint32", name: "claimsCount" },
-            { type: "bool", name: "active" },
-          ],
-        },
-      ],
-      stateMutability: "view",
-    },
-    { type: "function", name: "hasClaimed", inputs: [{ type: "uint256", name: "medalId" }, { type: "address", name: "user" }], outputs: [{ type: "bool" }], stateMutability: "view" },
-  ] as const,
+  abi: [{"inputs":[{"internalType":"address","name":"initialAdmin","type":"address"},{"internalType":"address","name":"_reputation","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"AccessControlBadConfirmation","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"bytes32","name":"neededRole","type":"bytes32"}],"name":"AccessControlUnauthorizedAccount","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"eventId","type":"uint256"},{"indexed":true,"internalType":"address","name":"admin","type":"address"}],"name":"EventApproved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"eventId","type":"uint256"},{"indexed":true,"internalType":"address","name":"admin","type":"address"},{"indexed":false,"internalType":"string","name":"reason","type":"string"}],"name":"EventRejected","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"eventId","type":"uint256"},{"indexed":true,"internalType":"address","name":"creator","type":"address"}],"name":"EventSubmitted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"eventId","type":"uint256"},{"indexed":true,"internalType":"uint256","name":"medalId","type":"uint256"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"address","name":"by","type":"address"}],"name":"MedalAwarded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"eventId","type":"uint256"},{"indexed":true,"internalType":"uint256","name":"medalId","type":"uint256"},{"indexed":true,"internalType":"address","name":"claimer","type":"address"}],"name":"MedalClaimed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"eventId","type":"uint256"},{"indexed":true,"internalType":"uint256","name":"medalId","type":"uint256"},{"indexed":false,"internalType":"string","name":"name","type":"string"}],"name":"MedalCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"previousAdminRole","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"newAdminRole","type":"bytes32"}],"name":"RoleAdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleRevoked","type":"event"},{"inputs":[],"name":"ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DEFAULT_ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"eventId","type":"uint256"}],"name":"approveEvent","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"medalId","type":"uint256"},{"internalType":"address","name":"to","type":"address"}],"name":"awardMedal","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"medalId","type":"uint256"}],"name":"claimMedal","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"eventCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"eventId","type":"uint256"}],"name":"getEvent","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"address","name":"creator","type":"address"},{"internalType":"string","name":"title","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"location","type":"string"},{"internalType":"string","name":"imageUrl","type":"string"},{"internalType":"uint64","name":"datetime","type":"uint64"},{"internalType":"string","name":"timeText","type":"string"},{"internalType":"enum EventManager.Status","name":"status","type":"uint8"},{"internalType":"string","name":"rejectReason","type":"string"}],"internalType":"struct EventManager.EventData","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"eventId","type":"uint256"}],"name":"getEventMedals","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"eventId","type":"uint256"},{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"iconUrl","type":"string"},{"internalType":"uint32","name":"points","type":"uint32"},{"internalType":"uint32","name":"maxClaims","type":"uint32"},{"internalType":"uint32","name":"claimsCount","type":"uint32"},{"internalType":"bool","name":"active","type":"bool"}],"internalType":"struct EventManager.Medal[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"medalId","type":"uint256"}],"name":"getMedal","outputs":[{"components":[{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"eventId","type":"uint256"},{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"iconUrl","type":"string"},{"internalType":"uint32","name":"points","type":"uint32"},{"internalType":"uint32","name":"maxClaims","type":"uint32"},{"internalType":"uint32","name":"claimsCount","type":"uint32"},{"internalType":"bool","name":"active","type":"bool"}],"internalType":"struct EventManager.Medal","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"}],"name":"getRoleAdmin","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"grantAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"grantRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"address","name":"","type":"address"}],"name":"hasClaimed","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"hasRole","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"medalCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"eventId","type":"uint256"},{"internalType":"string","name":"reason","type":"string"}],"name":"rejectEvent","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"callerConfirmation","type":"address"}],"name":"renounceRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"reputation","outputs":[{"internalType":"contract IReputation","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"revokeAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"revokeRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"medalId","type":"uint256"},{"internalType":"bool","name":"active","type":"bool"}],"name":"setMedalActive","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_reputation","type":"address"}],"name":"setReputationContract","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"title","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"location","type":"string"},{"internalType":"string","name":"imageUrl","type":"string"},{"internalType":"uint64","name":"datetime","type":"uint64"},{"internalType":"string","name":"timeText","type":"string"},{"internalType":"string[]","name":"medalNames","type":"string[]"},{"internalType":"string[]","name":"medalDescriptions","type":"string[]"},{"internalType":"string[]","name":"medalIcons","type":"string[]"},{"internalType":"uint32[]","name":"medalPoints","type":"uint32[]"},{"internalType":"uint32[]","name":"medalMaxClaims","type":"uint32[]"}],"name":"submitEvent","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}] as const
 };
 
 export type EventManagerABI = typeof EVENT_MANAGER.abi;

@@ -1,43 +1,127 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useReadContract, useAccount } from "wagmi";
 import Link from "next/link";
-import { useMemo } from "react";
-import { useAccount, useReadContract } from "wagmi";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
 import { EVENT_MANAGER } from "@/lib/eventManager";
 
-function useTotalEvents() {
-  const { data: total } = useReadContract({ address: EVENT_MANAGER.address, abi: EVENT_MANAGER.abi, functionName: "eventCount" });
-  return Number((total as bigint) || 0n);
+interface EventData {
+  id: bigint;
+  creator: `0x${string}`;
+  title: string;
+  description: string;
+  location: string;
+  imageUrl: string;
+  datetime: bigint;
+  timeText: string;
+  status: number; // 0=None, 1=Pending, 2=Approved, 3=Rejected
+  rejectReason: string;
 }
 
-function EventCard({ id }: { id: number }) {
-  const { data } = useReadContract({ address: EVENT_MANAGER.address, abi: EVENT_MANAGER.abi, functionName: "getEvent", args: [BigInt(id)] });
-  const e = data as unknown as [bigint, `0x${string}`, string, string, string, bigint, string, number, string] | undefined;
-  if (!e || Number(e[0]) === 0 || e[7] !== 2) return null;
-  const title = e[2];
-  const description = e[3];
-  const location = e[4];
-  const datetime = Number(e[5]);
-  const timeText = e[6];
-  const date = new Date(datetime * 1000);
+function useTotalEvents() {
+  const { data: total } = useReadContract({ 
+    address: EVENT_MANAGER.address, 
+    abi: EVENT_MANAGER.abi, 
+    functionName: "eventCount" 
+  });
+  return Number(total || BigInt(0));
+}
+
+function EventCard({ id, onLoaded }: Readonly<{ id: number; onLoaded?: (isApproved: boolean) => void }>) {
+  const { data } = useReadContract({ 
+    address: EVENT_MANAGER.address, 
+    abi: EVENT_MANAGER.abi, 
+    functionName: "getEvent", 
+    args: [BigInt(id)] 
+  });
+  
+  const event = data as EventData | undefined;
+  
+  // Only show approved events (status === 2)
+  const isApproved = !!(event && Number(event.id) !== 0 && event.status === 2);
+  
+  // Notify parent about this event's approval status using useEffect
+  useEffect(() => {
+    if (onLoaded && event && Number(event.id) !== 0) {
+      onLoaded(isApproved);
+    }
+  }, [onLoaded, event, isApproved]);
+  
+  // Don't render if no data or not approved
+  if (!data || !isApproved) return null;
+  
+  const date = new Date(Number(event.datetime) * 1000);
+  
   return (
-    <Link href={`/events/${id}`} className="block rounded-2xl p-6 bg-white shadow ring-1 ring-gray-100 hover:shadow-md transition">
-      <h3 className="text-xl font-semibold text-gray-900 mb-1">{title}</h3>
-      <p className="text-gray-600 line-clamp-2 mb-3">{description}</p>
-      <div className="text-sm text-gray-500">
-        <span className="mr-4">📍 {location || "—"}</span>
-        <span>🗓️ {date.toLocaleDateString()} {timeText || ""}</span>
+    <Link href={`/events/${id}`} className="block rounded-2xl bg-white shadow ring-1 ring-gray-100 hover:shadow-md transition overflow-hidden">
+      {event.imageUrl && (
+        <div className="w-full h-48 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src={event.imageUrl} 
+            alt={event.title} 
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+      <div className="p-6">
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">{event.title}</h3>
+        <p className="text-gray-600 mb-4 line-clamp-2">{event.description}</p>
+        <div className="flex items-center gap-4 text-sm text-gray-500">
+          <span>📍 {event.location}</span>
+          <span>🗓️ {date.toLocaleDateString()} {event.timeText}</span>
+        </div>
       </div>
     </Link>
   );
 }
 
 export default function EventsPage() {
+  const [approvedCount, setApprovedCount] = useState(0);
+  const [loadedEvents, setLoadedEvents] = useState<Set<number>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
+  
   const total = useTotalEvents();
   const { address } = useAccount();
-  const { data: adminRole } = useReadContract({ address: EVENT_MANAGER.address, abi: EVENT_MANAGER.abi, functionName: "ADMIN_ROLE" });
-  const { data: isAdmin } = useReadContract({ address: EVENT_MANAGER.address, abi: EVENT_MANAGER.abi, functionName: "hasRole", args: [adminRole as any, address as any], query: { enabled: !!address && !!adminRole } });
+  const { data: adminRole } = useReadContract({ 
+    address: EVENT_MANAGER.address, 
+    abi: EVENT_MANAGER.abi, 
+    functionName: "ADMIN_ROLE" 
+  });
+  const { data: isAdmin } = useReadContract({ 
+    address: EVENT_MANAGER.address, 
+    abi: EVENT_MANAGER.abi, 
+    functionName: "hasRole", 
+    args: adminRole && address ? [adminRole, address] : undefined,
+    query: { enabled: !!address && !!adminRole } 
+  });
+
+  // Detectar cuando terminó de cargar todos los eventos
+  useEffect(() => {
+    if (total > 0 && loadedEvents.size >= total) {
+      setIsLoading(false);
+    } else if (total === 0) {
+      // Si no hay eventos, marcar como cargado inmediatamente
+      setIsLoading(false);
+    }
+  }, [total, loadedEvents.size]);
+
+  const handleEventLoaded = (eventId: number, isApproved: boolean) => {
+    if (!loadedEvents.has(eventId)) {
+      setLoadedEvents(prev => new Set(prev).add(eventId));
+      if (isApproved) {
+        setApprovedCount(prev => prev + 1);
+      }
+    }
+  };
+  
+  const getStatusText = () => {
+    if (isLoading) return 'Cargando eventos...';
+    if (total === 0) return 'No hay eventos creados';
+    if (approvedCount === 0) return 'No hay eventos aprobados';
+    return approvedCount === 1 ? '1 evento aprobado' : `${approvedCount} eventos aprobados`;
+  };
 
   return (
     <SharedPageLayout
@@ -45,18 +129,29 @@ export default function EventsPage() {
       description="Crea y descubre eventos con medallas reclamables mediante QR."
     >
       <div className="flex items-center justify-between">
-        <p className="text-gray-600">{total} eventos</p>
+        <p className="text-gray-600">{getStatusText()}</p>
         <div className="flex gap-2">
           {isAdmin ? <Link href="/events/admin" className="btn-secondary">Admin</Link> : null}
           <Link href="/events/create" className="btn-primary">Crear evento</Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {Array.from({ length: total }, (_, i) => i + 1).map((id) => (
-          <EventCard key={id} id={id} />
-        ))}
-      </div>
+      {total > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {Array.from({ length: total }, (_, i) => i + 1).map((id) => (
+            <EventCard key={id} id={id} onLoaded={(isApproved) => handleEventLoaded(id, isApproved)} />
+          ))}
+        </div>
+      ) : !isLoading ? (
+        <div className="text-center py-16">
+          <div className="text-6xl mb-4">📅</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No hay eventos todavía</h3>
+          <p className="text-gray-600 mb-6">Sé el primero en crear un evento</p>
+          <Link href="/events/create" className="btn-primary inline-block">
+            Crear primer evento
+          </Link>
+        </div>
+      ) : null}
     </SharedPageLayout>
   );
 }

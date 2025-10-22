@@ -12,6 +12,7 @@ export default function CreateEventPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
+  const [imageUrl, setImageUrl] = useState(""); // Logo/imagen del evento
   const [date, setDate] = useState(""); // yyyy-mm-dd
   const [time, setTime] = useState(""); // HH:mm
   const [medals, setMedals] = useState<MedalDraft[]>([
@@ -19,20 +20,47 @@ export default function CreateEventPage() {
   ]);
 
   const { writeContract, data: hash, isPending } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash });
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && hash && receipt) {
+      // Try to extract event ID from logs
+      let eventId: number | null = null;
+      
+      try {
+        // Look for EventSubmitted event in logs
+        const eventSubmittedLog = receipt.logs.find((log) => {
+          // EventSubmitted has eventId as first indexed parameter
+          return log.topics.length > 1;
+        });
+        
+        if (eventSubmittedLog && eventSubmittedLog.topics[1]) {
+          // Decode the eventId from topics[1]
+          eventId = Number.parseInt(eventSubmittedLog.topics[1], 16);
+        }
+      } catch (e) {
+        console.error("Error parsing event ID from logs:", e);
+      }
+
+      console.log("✅ Event Created Successfully:", {
+        transactionHash: hash,
+        eventId,
+        eventManager: EVENT_MANAGER.address,
+        message: "Event is now PENDING (status: 1) and awaiting admin approval"
+      });
+      
       toast.success("✅ Evento creado exitosamente. Espera la aprobación del admin.", { duration: 5000 });
+      
       // Reset form
       setTitle("");
       setDescription("");
       setLocation("");
+      setImageUrl("");
       setDate("");
       setTime("");
       setMedals([{ name: "Asistente", description: "Participación en el evento", iconUrl: "", points: 10, maxClaims: 0 }]);
     }
-  }, [isSuccess]);
+  }, [isSuccess, hash, receipt, imageUrl]);
 
   const addMedal = () => setMedals((m) => [...m, { name: "", description: "", iconUrl: "", points: 0, maxClaims: 0 }]);
   const removeMedal = (idx: number) => setMedals((m) => m.filter((_, i) => i !== idx));
@@ -45,13 +73,21 @@ export default function CreateEventPage() {
     if (!date || !time) return toast.error("Fecha y horario requeridos");
     if (medals.length === 0) return toast.error("Agrega al menos una medalla");
 
-    const dt = new Date(`${date}T${time}:00Z`).getTime();
-    if (!dt || Number.isNaN(dt)) return toast.error("Fecha/hora inválidas");
+    // Fix: Create date in local timezone, not UTC
+    const dt = new Date(`${date}T${time}:00`).getTime();
+    if (!dt || Number.isNaN(dt) || dt < 0) return toast.error("Fecha/hora inválidas");
+
+    // Validar que la fecha no sea anterior a un año desde hoy
+    const oneYearAgo = Date.now() - (365 * 24 * 60 * 60 * 1000);
+    if (dt < oneYearAgo) {
+      return toast.error("La fecha del evento no puede ser anterior a un año desde hoy");
+    }
 
     console.log("Submitting event with data:", {
       title,
       description,
       location,
+      imageUrl,
       datetime: BigInt(Math.floor(dt / 1000)),
       timeText: `${time} UTC`,
       medalNames: medals.map((m) => m.name),
@@ -70,6 +106,7 @@ export default function CreateEventPage() {
           title,
           description,
           location,
+          imageUrl,
           BigInt(Math.floor(dt / 1000)),
           `${time} UTC`,
           medals.map((m) => m.name),
@@ -109,6 +146,29 @@ export default function CreateEventPage() {
             <label className="input-label">Horario</label>
             <input type="time" className="input" value={time} onChange={(e) => setTime(e.target.value)} required />
           </div>
+        </div>
+
+        <div>
+                    <label htmlFor="imageUrl" className="input-label">
+            Logo/Imagen del Evento (opcional)
+          </label>
+          <input 
+            id="imageUrl" 
+            type="url" 
+            className="input-field" 
+            placeholder="https://..." 
+            value={imageUrl} 
+            onChange={(e) => setImageUrl(e.target.value)} 
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            💡 Puedes agregar o cambiar la imagen más tarde desde el panel de admin
+          </p>
+          {imageUrl && (
+            <div className="mt-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imageUrl} alt="Vista previa" className="w-32 h-32 object-cover rounded-lg" />
+            </div>
+          )}
         </div>
 
         <div>

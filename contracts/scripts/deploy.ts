@@ -198,7 +198,7 @@ async function main() {
 
   const eventManager = await deployWithRetry(
     EventManagerFactory,
-    [deployer.address],
+    [deployer.address, reputationAddress], // Pass deployer as initial admin and reputation contract address
     3000000, // 3M gas limit (increased for complex contract)
     ethers.provider,
     "EventManager"

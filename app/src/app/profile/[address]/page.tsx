@@ -7,6 +7,7 @@ import { ProjectCard } from "@/components/ProjectCard";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
 import { BoostForm } from "@/components/BoostForm";
+import { UserEvents } from "@/components/UserEvents";
 import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -267,6 +268,11 @@ export default function ProfilePage({ params }: PageProps) {
               />
             ))}
           </div>
+        </div>
+
+        {/* User's Events */}
+        <div className="mb-10">
+          <UserEvents userAddress={address as `0x${string}`} />
         </div>
       </NetworkGuard>
     </SharedPageLayout>

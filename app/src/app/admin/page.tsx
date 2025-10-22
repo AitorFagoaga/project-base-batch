@@ -3,9 +3,16 @@
 import { useAccount, useReadContract } from "wagmi";
 import { CONTRACTS } from "@/lib/contracts";
 import { NetworkGuard } from "@/components/NetworkGuard";
-import { GenesisAwardForm } from "@/components/GenesisAwardForm";
+import { EventApproval } from "@/components/EventApproval";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
 import { EVENT_MANAGER } from "@/lib/eventManager";
+import Link from "next/link";
+
+// Hardcoded admin addresses (lowercase for comparison)
+const ADMIN_ADDRESSES = [
+  "0xaa860e97f1a50ca6ce786aef9b835052dfd0ee25", // Your address
+  "0x31a42406422e72dc790cf42ed978458b0b00bd06", // Second admin
+];
 
 export default function AdminPage() {
   const { address } = useAccount();
@@ -38,12 +45,13 @@ export default function AdminPage() {
   });
 
   const isReputationOwner = address && reputationOwner && address.toLowerCase() === reputationOwner.toLowerCase();
-  const isAdmin = isReputationOwner || isEventAdmin === true;
+  const isHardcodedAdmin = address && ADMIN_ADDRESSES.includes(address.toLowerCase());
+  const isAdmin = isReputationOwner || isEventAdmin === true || isHardcodedAdmin;
 
   return (
     <SharedPageLayout
-      title="Admin Panel"
-      description="Award Genesis reputation points to verified builders"
+      title="Admin Panel - Aprobar Eventos"
+      description="Aprueba o rechaza eventos creados por usuarios"
     >
       <NetworkGuard>
         {!address && (
@@ -75,13 +83,28 @@ export default function AdminPage() {
                 </p>
               </div>
               <p className="text-sm text-gray-500">or EventManager ADMIN_ROLE holder</p>
+              <p className="text-sm text-gray-500">or Hardcoded Admin Address</p>
             </div>
           </div>
         )}
 
         {address && isAdmin && (
-          <div className="animate-fadeIn">
-            <GenesisAwardForm />
+          <div className="animate-fadeIn space-y-6">
+            <div className="card p-4 bg-indigo-50 border border-indigo-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-indigo-900">🖼️ Gestionar Imágenes de Eventos</h3>
+                  <p className="text-sm text-indigo-700 mt-1">
+                    Agrega o actualiza imágenes para eventos existentes
+                  </p>
+                </div>
+                <Link href="/admin/event-images" className="btn-primary">
+                  Ir a Imágenes
+                </Link>
+              </div>
+            </div>
+            
+            <EventApproval />
           </div>
         )}
       </NetworkGuard>

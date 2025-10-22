@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt, useReadContract, useAccount } from "wagmi";
 import { CONTRACTS } from "@/lib/contracts";
 import toast from "react-hot-toast";
-import { Award, Sparkles, CheckCircle } from "lucide-react";
+import { Sparkles, CheckCircle } from "lucide-react";
 
 interface InspireButtonProps {
   projectId: bigint;
@@ -74,7 +74,11 @@ export function InspireButton({ projectId, creatorAddress }: InspireButtonProps)
       <div className="text-center">
         <div className="mb-3 flex items-center justify-center">
           <div className="rounded-full bg-gradient-to-br from-purple-100 to-pink-100 p-4">
-            <Award className="w-10 h-10 text-purple-600" />
+            <img 
+              src="https://cdn-icons-png.flaticon.com/512/4151/4151213.png" 
+              alt="Inspiration" 
+              className="w-10 h-10"
+            />
           </div>
         </div>
         <h3 className="text-lg font-bold text-gray-900 mb-2">
