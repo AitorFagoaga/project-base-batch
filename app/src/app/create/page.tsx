@@ -11,6 +11,7 @@ import { CONTRACTS } from "@/lib/contracts";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
 import { Icon } from "@/components/Icon";
+import { uploadImageToIPFS, uploadMetadataToIPFS, validateImageFile } from "@/lib/ipfsService";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1200&q=80";
@@ -25,6 +26,16 @@ export default function CreateProjectPage() {
   const [category, setCategory] = useState("DeFi");
   const [goalEth, setGoalEth] = useState("");
   const [durationDays, setDurationDays] = useState("");
+
+  // NFT fields
+  const [nftName, setNftName] = useState("");
+  const [nftDescription, setNftDescription] = useState("");
+  const [nftImage, setNftImage] = useState<File | null>(null);
+  const [nftImagePreview, setNftImagePreview] = useState<string>("");
+
+  // Upload states
+  const [isUploadingToIPFS, setIsUploadingToIPFS] = useState(false);
+  const [uploadStage, setUploadStage] = useState<string>("");
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -61,11 +72,36 @@ export default function CreateProjectPage() {
     setGoalEth(amount);
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleNftImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    setNftImage(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNftImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (!title || !goalEth || !durationDays) {
       toast.error("Please complete all required fields");
+      return;
+    }
+
+    if (!nftName || !nftDescription || !nftImage) {
+      toast.error("Please complete all NFT fields (name, description, and image)");
       return;
     }
 
@@ -98,18 +134,55 @@ export default function CreateProjectPage() {
     }
 
     try {
+      // Stage 1: Upload NFT image to IPFS
+      setIsUploadingToIPFS(true);
+      setUploadStage("Uploading NFT image to IPFS network...");
+
+      const imageUri = await uploadImageToIPFS(nftImage);
+      toast.success("✅ Image uploaded to IPFS");
+
+      // Stage 2: Create and upload NFT metadata to IPFS
+      setUploadStage("Creating your NFT's metadata...");
+
+      const metadata = {
+        name: nftName,
+        description: nftDescription,
+        image: imageUri,
+      };
+
+      const metadataUri = await uploadMetadataToIPFS(metadata);
+      toast.success("✅ Metadata uploaded to IPFS");
+
+      setIsUploadingToIPFS(false);
+      setUploadStage("Please confirm the transaction in your wallet...");
+
+      // Stage 3: Send transaction to blockchain
       const goalInWei = parseEther(goalEth);
 
       writeContract({
         address: CONTRACTS.launchpad.address,
         abi: CONTRACTS.launchpad.abi,
         functionName: "createProject",
-        args: [title, description, imageUrl, category, goalInWei, BigInt(duration)],
+        args: [
+          title,
+          description,
+          imageUrl,
+          category,
+          goalInWei,
+          BigInt(duration),
+          nftName,
+          nftName.substring(0, 10).toUpperCase().replace(/\s/g, ""), // NFT symbol (max 10 chars)
+          metadataUri,
+        ],
       });
 
       toast.success("📝 Transaction sent to MetaMask");
+      setUploadStage("");
     } catch (submitError) {
       console.error("Create project error:", submitError);
+      setIsUploadingToIPFS(false);
+      setUploadStage("");
+
       const errorMessage = submitError instanceof Error ? submitError.message : String(submitError);
 
       if (errorMessage.includes("User rejected") || errorMessage.includes("User denied")) {
@@ -118,6 +191,8 @@ export default function CreateProjectPage() {
         toast.error("💰 Insufficient funds for gas", { duration: 4000 });
       } else if (errorMessage.toLowerCase().includes("gas")) {
         toast.error("⛽ Gas error - try increasing the limit", { duration: 4000 });
+      } else if (errorMessage.includes("Pinata") || errorMessage.includes("IPFS")) {
+        toast.error(`❌ IPFS Upload Error: ${errorMessage.substring(0, 100)}`, { duration: 6000 });
       } else {
         toast.error(`❌ Error: ${errorMessage.substring(0, 80)}`, { duration: 5000 });
       }
@@ -268,10 +343,104 @@ export default function CreateProjectPage() {
               <section className="space-y-5">
                 <header className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900">
+                    Backer NFT Configuration
+                  </h3>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Step 2 of 3
+                  </span>
+                </header>
+
+                <div className="rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 p-5">
+                  <h4 className="text-sm font-semibold uppercase tracking-wide text-indigo-600 mb-2">
+                    💎 Proof-of-Backing NFT
+                  </h4>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    Every backer who invests in your project will automatically receive a unique NFT as proof of their support.
+                    The NFT will record their investment amount on-chain.
+                  </p>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div>
+                    <label htmlFor="nftName" className="input-label text-base flex items-center gap-2">
+                      <Icon name="tag" size="sm" />
+                      NFT Collection Name *
+                    </label>
+                    <input
+                      id="nftName"
+                      type="text"
+                      value={nftName}
+                      onChange={(event) => setNftName(event.target.value)}
+                      placeholder="MyProject Backer NFT"
+                      className="input-field text-base"
+                      disabled={isPending || isConfirming || isUploadingToIPFS}
+                      maxLength={50}
+                      required
+                    />
+                    <p className="mt-2 text-xs text-gray-500">
+                      This will be the name of your NFT collection.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label htmlFor="nftDescription" className="input-label text-base flex items-center gap-2">
+                      <Icon name="edit" size="sm" />
+                      NFT Description *
+                    </label>
+                    <input
+                      id="nftDescription"
+                      type="text"
+                      value={nftDescription}
+                      onChange={(event) => setNftDescription(event.target.value)}
+                      placeholder="Official backer NFT for MyProject"
+                      className="input-field text-base"
+                      disabled={isPending || isConfirming || isUploadingToIPFS}
+                      maxLength={200}
+                      required
+                    />
+                    <p className="mt-2 text-xs text-gray-500">
+                      Describe what this NFT represents.
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="nftImage" className="input-label text-base flex items-center gap-2">
+                    <Icon name="image" size="sm" />
+                    NFT Image *
+                  </label>
+                  <input
+                    id="nftImage"
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    onChange={handleNftImageChange}
+                    className="input-field text-base"
+                    disabled={isPending || isConfirming || isUploadingToIPFS}
+                    required
+                  />
+                  <p className="mt-2 text-xs text-gray-500">
+                    Upload the image for your backer NFT (JPEG, PNG, GIF, or WebP, max 10MB). All backers will receive this same image.
+                  </p>
+                  {nftImagePreview && (
+                    <div className="mt-4 relative w-48 h-48 rounded-lg overflow-hidden border-2 border-indigo-200">
+                      <Image
+                        src={nftImagePreview}
+                        alt="NFT preview"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              <section className="space-y-5">
+                <header className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">
                     Goals and Duration
                   </h3>
                   <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Step 2 of 2
+                    Step 3 of 3
                   </span>
                 </header>
 
@@ -364,10 +533,10 @@ export default function CreateProjectPage() {
                 </p>
                 <button
                   type="submit"
-                  disabled={isPending || isConfirming}
+                  disabled={isPending || isConfirming || isUploadingToIPFS}
                   className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
                 >
-                  {isPending || isConfirming ? (
+                  {isPending || isConfirming || isUploadingToIPFS ? (
                     "Processing..."
                   ) : (
                     <>
@@ -378,6 +547,36 @@ export default function CreateProjectPage() {
                 </button>
               </div>
             </form>
+
+            {/* IPFS Upload Loading Modal */}
+            {(isUploadingToIPFS || uploadStage) && (
+              <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-sm">
+                <div className="bg-white rounded-2xl p-8 max-w-md mx-4 space-y-6 shadow-2xl">
+                  <div className="flex justify-center">
+                    <div className="animate-spin h-16 w-16 border-4 border-purple-500 border-t-transparent rounded-full" />
+                  </div>
+                  <div className="text-center space-y-2">
+                    <h3 className="text-xl font-bold text-gray-900">
+                      {isUploadingToIPFS ? "Uploading to IPFS" : "Preparing Transaction"}
+                    </h3>
+                    <p className="text-gray-700 font-medium">{uploadStage}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600">
+                      This may take 15-30 seconds. Please don&apos;t close this window.
+                    </p>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-xs text-blue-800">
+                      <strong>What&apos;s happening:</strong>
+                      <br />
+                      Your NFT image and metadata are being uploaded to the decentralized IPFS network.
+                      This ensures your backers&apos; NFTs are permanently stored.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <aside className="glass-card rounded-2xl lg:sticky lg:top-28 space-y-8 p-8">
               <div className="space-y-3">

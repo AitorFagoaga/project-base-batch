@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./interfaces/IReputation.sol";
+import "./ProjectNFT.sol";
 
 /**
  * @title Launchpad
@@ -26,6 +27,7 @@ contract Launchpad is ReentrancyGuard {
         uint256 fundsRaised;
         bool claimed;
         address[] cofounders; // List of co-founders
+        address nftContract; // Address of the project's NFT contract
     }
 
     // ═════════════════════════════════════════════════════════════════════════════
@@ -55,6 +57,9 @@ contract Launchpad is ReentrancyGuard {
     
     /// @notice Track if a user has inspired a project
     mapping(uint256 => mapping(address => bool)) private _hasInspired;
+
+    /// @notice Mapping from project ID to NFT contract address
+    mapping(uint256 => address) private _projectNFTs;
 
     // ═════════════════════════════════════════════════════════════════════════════
     // EVENTS
@@ -99,6 +104,14 @@ contract Launchpad is ReentrancyGuard {
         address indexed inspirer,
         address indexed creator,
         uint256 reputationAwarded
+    );
+
+    event NFTMinted(
+        uint256 indexed projectId,
+        address indexed backer,
+        address nftContract,
+        uint256 tokenId,
+        uint256 investmentAmount
     );
 
     // ═════════════════════════════════════════════════════════════════════════════
@@ -189,6 +202,15 @@ contract Launchpad is ReentrancyGuard {
         return _hasInspired[projectId][inspirer];
     }
 
+    /**
+     * @notice Get the NFT contract address for a project
+     * @param projectId The ID of the project
+     * @return Address of the project's NFT contract
+     */
+    function getProjectNFT(uint256 projectId) external view returns (address) {
+        return _projectNFTs[projectId];
+    }
+
     // ═════════════════════════════════════════════════════════════════════════════
     // MUTATIVE FUNCTIONS
     // ═════════════════════════════════════════════════════════════════════════════
@@ -201,6 +223,9 @@ contract Launchpad is ReentrancyGuard {
      * @param category Project category
      * @param goalInWei Funding goal in wei
      * @param durationInDays Duration of the campaign in days
+     * @param nftName Name for the backer NFT collection
+     * @param nftSymbol Symbol for the backer NFT collection
+     * @param nftBaseURI IPFS URI for the NFT metadata
      * @return projectId The ID of the newly created project
      */
     function createProject(
@@ -209,7 +234,10 @@ contract Launchpad is ReentrancyGuard {
         string calldata imageUrl,
         string calldata category,
         uint256 goalInWei,
-        uint256 durationInDays
+        uint256 durationInDays,
+        string calldata nftName,
+        string calldata nftSymbol,
+        string calldata nftBaseURI
     ) external returns (uint256 projectId) {
         if (goalInWei == 0) revert InvalidGoal();
         if (durationInDays == 0) revert InvalidDuration();
@@ -218,10 +246,21 @@ contract Launchpad is ReentrancyGuard {
         require(bytes(description).length <= 1000, "Description too long");
         require(bytes(imageUrl).length <= 200, "Image URL too long");
         require(bytes(category).length <= 50, "Category too long");
+        require(bytes(nftName).length > 0, "NFT name required");
+        require(bytes(nftSymbol).length > 0, "NFT symbol required");
+        require(bytes(nftBaseURI).length > 0, "NFT base URI required");
 
         uint256 deadline = block.timestamp + (durationInDays * 1 days);
 
         projectId = _projectIdCounter++;
+
+        // Deploy new NFT contract for this project
+        ProjectNFT nftContract = new ProjectNFT(
+            nftName,
+            nftSymbol,
+            nftBaseURI,
+            address(this)  // Launchpad is the only minter
+        );
 
         _projects[projectId] = Project({
             id: projectId,
@@ -234,8 +273,11 @@ contract Launchpad is ReentrancyGuard {
             deadline: deadline,
             fundsRaised: 0,
             claimed: false,
-            cofounders: new address[](0)
+            cofounders: new address[](0),
+            nftContract: address(nftContract)
         });
+
+        _projectNFTs[projectId] = address(nftContract);
 
         emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, category, goalInWei, deadline);
     }
@@ -286,22 +328,28 @@ contract Launchpad is ReentrancyGuard {
      */
     function fundProject(uint256 projectId, bool isAnonymous) external payable {
         if (msg.value == 0) revert ZeroContribution();
-        
+
         Project storage project = _projects[projectId];
         if (project.creator == address(0)) revert ProjectNotFound();
         if (block.timestamp >= project.deadline) revert DeadlinePassed();
         if (msg.sender == project.creator) revert CannotFundOwnProject();
-        
+
         // Track first-time contributor
         if (_contributions[projectId][msg.sender] == 0) {
             _contributors[projectId].push(msg.sender);
         }
-        
+
         project.fundsRaised += msg.value;
         _contributions[projectId][msg.sender] += msg.value;
         _isAnonymous[projectId][msg.sender] = isAnonymous;
-        
+
         emit ContributionMade(projectId, msg.sender, msg.value, isAnonymous);
+
+        // Mint NFT to backer
+        ProjectNFT nftContract = ProjectNFT(_projectNFTs[projectId]);
+        uint256 tokenId = nftContract.mintToBacker(msg.sender, msg.value);
+
+        emit NFTMinted(projectId, msg.sender, address(nftContract), tokenId, msg.value);
 
         // Award reputation based on amount: 1 point per 0.001 ETH (1e15 wei)
         uint256 points = msg.value / 1e15;

@@ -5,8 +5,75 @@
  */
 
 export const CONTRACTS = {
+  projectNFT: {
+    // This is a template ABI - actual NFT contract addresses are created per project
+    address: "0x0000000000000000000000000000000000000000" as `0x${string}`,
+    abi: [
+      {
+        "type": "function",
+        "name": "mintToBacker",
+        "inputs": [
+          { "name": "backer", "type": "address" },
+          { "name": "investmentAmount", "type": "uint256" }
+        ],
+        "outputs": [{ "name": "", "type": "uint256" }],
+        "stateMutability": "nonpayable"
+      },
+      {
+        "type": "function",
+        "name": "getInvestmentAmount",
+        "inputs": [{ "name": "tokenId", "type": "uint256" }],
+        "outputs": [{ "name": "", "type": "uint256" }],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "totalSupply",
+        "inputs": [],
+        "outputs": [{ "name": "", "type": "uint256" }],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "baseURI",
+        "inputs": [],
+        "outputs": [{ "name": "", "type": "string" }],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "tokensOfOwner",
+        "inputs": [{ "name": "owner", "type": "address" }],
+        "outputs": [{ "name": "", "type": "uint256[]" }],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "ownerOf",
+        "inputs": [{ "name": "tokenId", "type": "uint256" }],
+        "outputs": [{ "name": "", "type": "address" }],
+        "stateMutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "tokenURI",
+        "inputs": [{ "name": "tokenId", "type": "uint256" }],
+        "outputs": [{ "name": "", "type": "string" }],
+        "stateMutability": "view"
+      },
+      {
+        "type": "event",
+        "name": "NFTMinted",
+        "inputs": [
+          { "name": "backer", "type": "address", "indexed": true },
+          { "name": "tokenId", "type": "uint256", "indexed": true },
+          { "name": "investmentAmount", "type": "uint256", "indexed": false }
+        ]
+      }
+    ] as const,
+  },
   reputation: {
-    address: "0x4bFEd65431969Ef98D6A2e294bB5b5da149D1C6F" as `0x${string}`,
+    address: "0xffEb3beA2A09Fe86bE5D591628AEaEBD01D9d56F" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -659,7 +726,7 @@ export const CONTRACTS = {
 ] as const,
   },
   launchpad: {
-    address: "0xD478494B0960Fc0198E12F57c40951825B03dAE5" as `0x${string}`,
+    address: "0x19e45399b08fdE89172c77348c6e45036EC46252" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -915,6 +982,38 @@ export const CONTRACTS = {
     ]
   },
   {
+    "type": "event",
+    "anonymous": false,
+    "name": "NFTMinted",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "backer",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "nftContract",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "tokenId",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "investmentAmount",
+        "indexed": false
+      }
+    ]
+  },
+  {
     "type": "function",
     "name": "addCofounder",
     "constant": false,
@@ -973,6 +1072,18 @@ export const CONTRACTS = {
       {
         "type": "uint256",
         "name": "durationInDays"
+      },
+      {
+        "type": "string",
+        "name": "nftName"
+      },
+      {
+        "type": "string",
+        "name": "nftSymbol"
+      },
+      {
+        "type": "string",
+        "name": "nftBaseURI"
       }
     ],
     "outputs": [
@@ -1134,6 +1245,10 @@ export const CONTRACTS = {
           {
             "type": "address[]",
             "name": "cofounders"
+          },
+          {
+            "type": "address",
+            "name": "nftContract"
           }
         ]
       }
@@ -1158,6 +1273,25 @@ export const CONTRACTS = {
     "outputs": [
       {
         "type": "bool",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getProjectNFT",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
         "name": ""
       }
     ]
@@ -1252,7 +1386,7 @@ export const CONTRACTS = {
 ] as const,
   },
   userProfile: {
-    address: "0x5EAD5409fA791a2FdBf090187BC202B861F88D41" as `0x${string}`,
+    address: "0xf980371A950ae0E9EC051EB420a5C6724D9Bc1f0" as `0x${string}`,
     abi: [
   {
     "type": "event",
@@ -1387,6 +1521,7 @@ export const CONTRACTS = {
   },
 } as const;
 
+export type ProjectNFTABI = typeof CONTRACTS.projectNFT.abi;
 export type ReputationABI = typeof CONTRACTS.reputation.abi;
 export type LaunchpadABI = typeof CONTRACTS.launchpad.abi;
 export type UserProfileABI = typeof CONTRACTS.userProfile.abi;
