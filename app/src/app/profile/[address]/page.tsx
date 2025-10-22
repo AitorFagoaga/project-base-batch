@@ -13,6 +13,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { ReputationHistory } from "@/components/ReputationHistory";
 import { Icon } from "@/components/Icon";
+import { UserNFTGallery } from "@/components/UserNFTGallery";
 
 interface PageProps {
   params: { address: string };
@@ -240,6 +241,9 @@ export default function ProfilePage({ params }: PageProps) {
 
         {/* Reputation History */}
         <ReputationHistory address={address as `0x${string}`} />
+
+        {/* NFT Gallery */}
+        <UserNFTGallery address={address as `0x${string}`} isOwnProfile={isOwnProfile} />
 
         {/* Boost Form - Show when button clicked */}
         {showBoostForm && !isOwnProfile && connectedAddress && (

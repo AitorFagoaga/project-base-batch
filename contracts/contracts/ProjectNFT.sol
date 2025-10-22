@@ -119,9 +119,22 @@ contract ProjectNFT is ERC721, Ownable {
     }
 
     /**
-     * @dev Override to return the base URI for all tokens
+     * @dev Override base URI accessor used by ERC721
      */
     function _baseURI() internal view override returns (string memory) {
+        return _baseTokenURI;
+    }
+
+    /**
+     * @inheritdoc ERC721
+     * @dev All project NFTs share the same metadata file. The default
+     *      ERC721 implementation appends the tokenId to the base URI,
+     *      which would produce invalid IPFS paths like `ipfs://hash0`.
+     *      We override the behaviour to always return the stored base
+     *      URI so wallets can resolve the metadata (and image) correctly.
+     */
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        if (_ownerOf(tokenId) == address(0)) revert TokenDoesNotExist();
         return _baseTokenURI;
     }
 
