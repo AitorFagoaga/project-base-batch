@@ -549,6 +549,8 @@ export default function ProjectDetailPage() {
                         <FundForm
                           projectId={projectId}
                           creatorAddress={project.creator}
+                          goalAmount={project.goal}
+                          raisedAmount={project.fundsRaised}
                           onSuccess={() => refetchProject()}
                         />
                       ) : (

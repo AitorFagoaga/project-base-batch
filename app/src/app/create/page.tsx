@@ -113,6 +113,20 @@ export default function CreateProjectPage() {
       return;
     }
 
+    if (goal < 0.001) {
+      toast.error("Minimum goal is 0.001 ETH");
+      return;
+    }
+
+    // Validate image URL if provided
+    if (imageUrl.trim()) {
+      const urlPattern = /^(https?:\/\/|ipfs:\/\/)[\w\-._~:/?#[\]@!$&'()*+,;=]+$/i;
+      if (!urlPattern.test(imageUrl.trim())) {
+        toast.error("Please enter a valid image URL (must start with http://, https://, or ipfs://)");
+        return;
+      }
+    }
+
     if (!Number.isInteger(duration) || duration <= 0 || duration > 365) {
       toast.error("Duration must be between 1 and 365 days");
       return;
@@ -199,7 +213,7 @@ export default function CreateProjectPage() {
     }
   };
 
-  const quickAmounts = useMemo(() => ["0.01", "0.05", "0.1"], []);
+  const quickAmounts = useMemo(() => ["0.001", "0.01", "0.05", "0.1"], []);
 
   return (
     <SharedPageLayout

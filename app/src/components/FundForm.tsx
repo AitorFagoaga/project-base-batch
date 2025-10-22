@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
-import { parseEther } from "viem";
+import { parseEther, formatEther } from "viem";
 import { CONTRACTS } from "@/lib/contracts";
 import toast from "react-hot-toast";
 import { Wallet, EyeOff, CreditCard, AlertTriangle, CheckCircle } from "lucide-react";
@@ -13,10 +13,12 @@ import { Wallet, EyeOff, CreditCard, AlertTriangle, CheckCircle } from "lucide-r
 interface FundFormProps {
   projectId: bigint;
   creatorAddress: string;
+  goalAmount?: bigint;
+  raisedAmount?: bigint;
   onSuccess?: () => void;
 }
 
-export function FundForm({ projectId, creatorAddress, onSuccess }: FundFormProps) {
+export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, onSuccess }: FundFormProps) {
   const [amount, setAmount] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const { address } = useAccount();
@@ -30,6 +32,11 @@ export function FundForm({ projectId, creatorAddress, onSuccess }: FundFormProps
   // Check if user is trying to fund their own project
   const isOwnProject = address?.toLowerCase() === creatorAddress?.toLowerCase();
 
+  // Calculate remaining amount needed
+  const remainingAmount = goalAmount && raisedAmount 
+    ? goalAmount - raisedAmount 
+    : undefined;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -41,6 +48,18 @@ export function FundForm({ projectId, creatorAddress, onSuccess }: FundFormProps
     if (!amount || parseFloat(amount) <= 0) {
       toast.error("Please enter a valid amount");
       return;
+    }
+
+    // Validate against remaining amount
+    if (remainingAmount !== undefined) {
+      const contributionAmount = parseEther(amount);
+      if (contributionAmount > remainingAmount) {
+        const maxEth = formatEther(remainingAmount);
+        toast.error(`Cannot contribute more than remaining goal: ${maxEth} ETH`, {
+          duration: 5000,
+        });
+        return;
+      }
     }
 
     try {
@@ -96,6 +115,14 @@ export function FundForm({ projectId, creatorAddress, onSuccess }: FundFormProps
         </div>
         <p className="text-gray-600 text-sm">Contribute ETH to help reach the goal</p>
       </div>
+
+      {remainingAmount !== undefined && remainingAmount > 0n && (
+        <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
+          <p className="text-sm text-blue-800">
+            <span className="font-semibold">Remaining:</span> {formatEther(remainingAmount)} ETH to reach goal
+          </p>
+        </div>
+      )}
 
       {isOwnProject && (
         <div className="rounded-lg bg-red-50 border border-red-200 p-4">
