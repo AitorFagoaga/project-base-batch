@@ -8,6 +8,8 @@ import { ReputationBadge } from "@/components/ReputationBadge";
 import { FundForm } from "@/components/FundForm";
 import { InspireButton } from "@/components/InspireButton";
 import { ContributorsHistory } from "@/components/ContributorsHistory";
+import { ProjectInvestors } from "@/components/ProjectInvestors";
+import { SimilarProjects } from "@/components/SimilarProjects";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
 import { UserAvatar } from "@/components/UserAvatar";
 import Image from "next/image";
@@ -140,6 +142,22 @@ export default function ProjectDetailPage() {
     toast.success("Delete transaction submitted!");
   };
 
+  const handleCopyCreator = () => {
+    if (!project) {
+      return;
+    }
+
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard
+        .writeText(project.creator)
+        .then(() => toast.success("Creator address copied"))
+        .catch(() => toast.error("Unable to copy creator address"));
+      return;
+    }
+
+    toast.error("Clipboard not available in this environment");
+  };
+
   // Redirect to home after successful deletion
   useEffect(() => {
     if (isDeleteSuccess) {
@@ -235,6 +253,76 @@ export default function ProjectDetailPage() {
     ? "We couldn't load this project from the launchpad contract."
     : "Fetching project details from Base Sepolia...";
 
+  const statusDisplay =
+    statusMeta?.label ??
+    (project
+      ? project.claimed
+        ? "Funded"
+        : goalReached
+        ? "Goal reached"
+        : isActive
+        ? "Active"
+        : "Ended"
+      : "—");
+
+  const deadlineDisplay = deadlineDate
+    ? deadlineDate.toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : "No deadline";
+
+  const metricCards: { label: string; value: string; helper: string }[] = project
+    ? [
+        {
+          label: "Funds Raised",
+          value: `${raisedEth} ETH`,
+          helper: `of ${goalEth} ETH goal`,
+        },
+        {
+          label: "Time Remaining",
+          value: isActive
+            ? `${daysRemaining} day${daysRemaining === 1 ? "" : "s"}`
+            : "Campaign ended",
+          helper:
+            deadlineDisplay === "No deadline"
+              ? "No deadline configured"
+              : `Deadline ${deadlineDisplay}`,
+        },
+        {
+          label: "Status",
+          value: statusDisplay,
+          helper: project.claimed
+            ? "Creator already claimed funds"
+            : goalReached
+            ? "Goal achieved"
+            : isActive
+            ? "Collecting contributions"
+            : "Goal not reached",
+        },
+      ]
+    : [];
+
+  const attributeChips: { label: string; value: string }[] = project
+    ? [
+        { label: "Project ID", value: `#${project.id.toString()}` },
+        { label: "Goal", value: `${goalEth} ETH` },
+        { label: "Progress", value: `${progressPercent.toFixed(1)}%` },
+        { label: "Deadline", value: deadlineDisplay },
+        {
+          label: "Reputation",
+          value: reputationValue.toString(),
+        },
+        project.cofounders.length
+          ? {
+              label: "Team Size",
+              value: `${project.cofounders.length + 1} builders`,
+            }
+          : { label: "Team", value: "Solo founder" },
+      ]
+    : [];
+
   return (
     <SharedPageLayout title={pageTitle} description={pageDescription}>
       <NetworkGuard>
@@ -263,104 +351,246 @@ export default function ProjectDetailPage() {
           </div>
         ) : (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-              <Link href="/" className="btn-secondary text-sm px-4 py-2">
+            <div className="mb-6">
+              <Link href="/" className="btn-secondary text-sm px-4 py-2 inline-flex items-center gap-2">
                 ← Back to Projects
               </Link>
-              {isReputationLoading ? (
-                <div className="h-9 w-32 rounded-full bg-white/70 animate-pulse"></div>
-              ) : (
-                <ReputationBadge reputation={reputationValue} />
-              )}
             </div>
 
-            <div className="card overflow-hidden p-0 mb-8">
-              <div className="relative h-72 w-full bg-gradient-to-br from-purple-200/60 to-pink-200/60">
-                <Image
-                  src={heroImage}
-                  alt={project.title}
-                  fill
-                  className="object-cover"
-                  unoptimized
+            <div className="space-y-10">
+              {/* Hero Section */}
+              <section className="relative overflow-hidden rounded-[32px] border border-gray-100 bg-white p-6 sm:p-8 lg:p-10 shadow-xl shadow-gray-200/40">
+                <div
+                  className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-purple-100 opacity-60 blur-3xl"
+                  aria-hidden="true"
                 />
-              </div>
-            </div>
+                <div className="relative grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+                  <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-6">
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-900 text-white text-xl font-semibold shadow-lg">
+                            #{project.id.toString()}
+                          </div>
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.2em] text-gray-500">
+                              Project
+                            </p>
+                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                              {project.title}
+                            </h1>
+                          </div>
+                        </div>
+                        {statusMeta && (
+                          <span
+                            className={`rounded-full px-4 py-2 text-xs font-semibold shadow-sm ${statusMeta.className}`}
+                          >
+                            {statusMeta.label}
+                          </span>
+                        )}
+                      </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
-                <div className="card space-y-6">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <UserAvatar address={project.creator} size="md" showReputation={false} />
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                          Project Creator
-                        </p>
-                        <p className="font-mono text-sm text-gray-900 break-all">
-                          {project.creator}
-                        </p>
+                      <div className="flex flex-wrap items-center gap-4">
+                        <UserAvatar address={project.creator} size="lg" showReputation={false} />
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            Creator
+                          </p>
+                          <p className="font-mono text-sm text-gray-900">
+                            {project.creator.slice(0, 6)}...{project.creator.slice(-4)}
+                          </p>
+                        </div>
+                        {isReputationLoading ? (
+                          <div className="ml-auto h-9 w-28 rounded-full bg-gray-100 animate-pulse" />
+                        ) : (
+                          <ReputationBadge reputation={reputationValue} className="ml-auto" />
+                        )}
                       </div>
                     </div>
-                    {statusMeta && (
-                      <span className={`px-4 py-2 rounded-full text-sm font-semibold ${statusMeta.className}`}>
-                        {statusMeta.label}
-                      </span>
-                    )}
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                      {metricCards.map((card) => (
+                        <div
+                          key={card.label}
+                          className="rounded-2xl border border-gray-100 bg-white/80 p-5 shadow-sm shadow-gray-100 backdrop-blur"
+                        >
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            {card.label}
+                          </p>
+                          <p className="mt-2 text-2xl font-bold text-gray-900">
+                            {card.value}
+                          </p>
+                          <p className="mt-3 text-xs text-gray-500">
+                            {card.helper}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                      <Link
+                        href={`https://sepolia.basescan.org/address/${project.creator}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-purple-200 hover:text-purple-700 hover:shadow-md"
+                      >
+                        View creator on BaseScan
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={handleCopyCreator}
+                        className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-purple-200 hover:text-purple-700 hover:shadow-md"
+                      >
+                        Copy creator address
+                      </button>
+                    </div>
+
+                    <div className="rounded-2xl border border-purple-100 bg-gradient-to-r from-purple-50 via-white to-blue-50 p-5 shadow-inner">
+                      <div className="flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            Funding Progress
+                          </p>
+                          <p className="mt-2 text-3xl font-bold text-gray-900">
+                            {progressPercent.toFixed(1)}%
+                          </p>
+                        </div>
+                        <p className="text-sm font-semibold text-gray-600">
+                          {raisedEth} / {goalEth} ETH
+                        </p>
+                      </div>
+                      <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-white/70">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-500 ease-out"
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
+                      <p className="mt-3 text-xs text-gray-600">
+                        {goalReached
+                          ? project.claimed
+                            ? "Funds claimed — campaign completed."
+                            : "Goal reached. Awaiting claim from creator."
+                          : isActive
+                          ? "Help push this project to the finish line."
+                          : "Campaign closed without reaching its goal."}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                        Snapshot
+                      </h3>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {attributeChips.map(({ label, value }) => (
+                          <div
+                            key={label}
+                            className="rounded-2xl border border-gray-100 bg-white/80 p-4 shadow-sm shadow-gray-100"
+                          >
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                              {label}
+                            </p>
+                            <p className="mt-2 text-sm font-semibold text-gray-900">
+                              {value}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-gray-100 bg-white/80 p-5 shadow-sm shadow-gray-100">
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500 mb-3">
+                        Story & Vision
+                      </h3>
+                      {project.description ? (
+                        <p className="text-gray-700 leading-relaxed whitespace-pre-line text-sm">
+                          {project.description}
+                        </p>
+                      ) : (
+                        <p className="text-gray-500 text-sm">
+                          No description provided for this project.
+                        </p>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-600">
-                      <span className="font-semibold text-gray-900">
-                        {raisedEth} / {goalEth} ETH raised
-                      </span>
-                      <span className="font-semibold text-purple-600">
-                        {progressPercent.toFixed(1)}% funded
-                      </span>
-                    </div>
-                    <div className="progress-bar">
-                      <div
-                        className="progress-fill"
-                        style={{ width: `${progressPercent}%` }}
-                      ></div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="rounded-2xl bg-white/70 border border-white/80 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                          Time
-                        </p>
-                        <p className="text-lg font-bold text-gray-900">
-                          {isActive
-                            ? `${daysRemaining} day${daysRemaining === 1 ? "" : "s"} left`
-                            : deadlineDate
-                            ? deadlineDate.toLocaleDateString()
-                            : "Campaign ended"}
-                        </p>
+                  <div className="flex flex-col gap-6">
+
+                    <div className="relative overflow-hidden rounded-[28px] border border-gray-100 bg-gradient-to-br from-indigo-100/60 via-white to-pink-100/60 p-4 shadow-md shadow-gray-200/50">
+                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[24px] bg-white">
+                        <Image
+                          src={heroImage}
+                          alt={project.title}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
                       </div>
-                      <div className="rounded-2xl bg-white/70 border border-white/80 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                          Funding Status
-                        </p>
-                        <p className="text-lg font-bold text-gray-900">
-                          {goalReached ? "Goal reached" : isActive ? "In progress" : "Goal pending"}
-                        </p>
-                      </div>
+                    </div>
+                    <div className="rounded-[28px] border border-gray-100 bg-white/80 p-5 text-sm text-gray-600 shadow-sm shadow-gray-100 backdrop-blur">
+                      <p>
+                        Campaign created by{" "}
+                        <span className="font-mono font-semibold text-gray-900">
+                          {project.creator.slice(0, 6)}...{project.creator.slice(-4)}
+                        </span>{" "}
+                        on Base Sepolia. Follow the project to stay in the loop as new
+                        milestones unlock.
+                      </p>
                     </div>
                   </div>
+                </div>
+              </section>
+
+              {/* Funding and Support Section */}
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1fr]">
+                <div className="space-y-6">
+                  <div className="rounded-[32px] border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-1 shadow-lg shadow-indigo-200/60 backdrop-blur">
+                    <div className="rounded-[28px] bg-white/95 p-1.5">
+                      {isActive && !project.claimed ? (
+                        <FundForm
+                          projectId={projectId}
+                          creatorAddress={project.creator}
+                          onSuccess={() => refetchProject()}
+                        />
+                      ) : (
+                        <div className="card rounded-[24px] border border-gray-100 bg-gray-50/70 p-6 text-sm text-gray-600 shadow-md shadow-gray-200/40">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            Funding Closed
+                          </h3>
+                          <p className="text-gray-600">
+                            {project.claimed
+                              ? "This project has been successfully funded."
+                              : goalReached
+                              ? "Campaign ended. Waiting for creator to claim funds."
+                              : "Campaign ended without reaching its goal."}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <ProjectInvestors projectId={projectId} />
+
+                  <InspireButton
+                    projectId={projectId}
+                    creatorAddress={project.creator}
+                  />
 
                   {canClaim && (
-                    <div className="rounded-2xl border-2 border-green-200 bg-green-50/80 p-5">
-                      <p className="text-green-800 font-semibold mb-3">
+                    <div className="rounded-[28px] border border-green-200 bg-green-50/80 p-5 shadow-sm shadow-green-100">
+                      <p className="text-green-800 font-semibold mb-3 text-sm">
                         🎉 Congratulations! You can claim your funds now.
                       </p>
                       <button
                         onClick={handleClaim}
                         disabled={isClaimPending || isClaimConfirming}
-                        className="btn-primary"
+                        className="btn-primary w-full"
                       >
                         {isClaimPending || isClaimConfirming ? "Claiming..." : "Claim Funds"}
                       </button>
                       {claimHash && (
-                        <div className="mt-3 text-sm">
+                        <div className="mt-3 text-xs">
                           <a
                             href={`https://sepolia.basescan.org/tx/${claimHash}`}
                             target="_blank"
@@ -375,85 +605,43 @@ export default function ProjectDetailPage() {
                   )}
 
                   {canDelete && (
-                    <div className="rounded-2xl border-2 border-red-200 bg-red-50/80 p-5">
-                      <p className="text-red-800 font-semibold mb-3">
+                    <div className="rounded-[28px] border border-red-200 bg-red-50/80 p-5 shadow-sm shadow-red-100">
+                      <p className="text-red-800 font-semibold mb-2 text-sm">
                         ⚠️ Delete this project
                       </p>
-                      <p className="text-sm text-red-700 mb-3">
-                        This action cannot be undone. The project will be permanently removed from the launchpad.
+                      <p className="text-xs text-red-700 mb-3">
+                        This action cannot be undone.
                       </p>
                       <button
                         onClick={() => setShowDeleteConfirm(true)}
-                        className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                        className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 w-full"
                       >
                         Delete Project
                       </button>
                     </div>
                   )}
                 </div>
-
-                <div className="card space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Project Overview
-                  </h3>
-                  {project.description ? (
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                      {project.description}
-                    </p>
-                  ) : (
-                    <p className="text-gray-500">
-                      No description provided for this project.
-                    </p>
-                  )}
-
-                  {project.cofounders && project.cofounders.length > 0 && (
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
-                        Cofounders
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {project.cofounders.map((cofounder) => (
-                          <span key={cofounder} className="badge badge-primary font-mono">
-                            {cofounder.slice(0, 6)}...{cofounder.slice(-4)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Contributors History */}
-                <ContributorsHistory projectId={projectId} />
               </div>
 
-              <div className="space-y-6">
-                {isActive && !project.claimed ? (
-                  <>
-                    <FundForm 
-                      projectId={projectId} 
-                      creatorAddress={project.creator}
-                      onSuccess={() => refetchProject()} 
-                    />
-                    <InspireButton 
-                      projectId={projectId}
-                      creatorAddress={project.creator}
-                    />
-                  </>
-                ) : (
-                  <div className="card space-y-3">
-                    <h3 className="text-xl font-semibold text-gray-900">
-                      Funding Closed
-                    </h3>
-                    <p className="text-gray-600">
-                      {project.claimed
-                        ? "This project has been successfully funded."
-                        : goalReached
-                        ? "Campaign ended. Waiting for creator to claim funds."
-                        : "Campaign ended without reaching its goal."}
-                    </p>
+              {project.cofounders && project.cofounders.length > 0 && (
+                <div className="card rounded-[28px] border border-gray-100 p-6 shadow-md shadow-gray-200/50">
+                  <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500 mb-3">
+                    Team Members
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {project.cofounders.map((cofounder) => (
+                      <span
+                        key={cofounder}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-purple-100 bg-purple-50/70 px-4 py-2 text-xs font-semibold text-purple-700"
+                      >
+                        {cofounder.slice(0, 6)}...{cofounder.slice(-4)}
+                      </span>
+                    ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+
+              <SimilarProjects currentProjectId={projectId} category={project.category} />
             </div>
           </>
         )}

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useWriteContract, useWaitForTransactionReceipt, useReadContract, useAccount } from "wagmi";
 import { CONTRACTS } from "@/lib/contracts";
 import toast from "react-hot-toast";
+import { Award, Sparkles, CheckCircle } from "lucide-react";
 
 interface InspireButtonProps {
   projectId: bigint;
@@ -32,12 +33,12 @@ export function InspireButton({ projectId, creatorAddress }: InspireButtonProps)
 
   const handleInspire = async () => {
     if (isOwnProject) {
-      toast.error("❌ No puedes inspirar tu propio proyecto");
+      toast.error("You cannot inspire your own project");
       return;
     }
 
     if (alreadyInspired) {
-      toast.error("❌ Ya inspiraste este proyecto");
+      toast.error("You already inspired this project");
       return;
     }
 
@@ -49,18 +50,17 @@ export function InspireButton({ projectId, creatorAddress }: InspireButtonProps)
         args: [projectId],
       });
 
-      toast.success("📝 Transacción enviada a MetaMask");
+      toast.success("Transaction sent to MetaMask");
     } catch (err: any) {
       console.error("Inspire error:", err);
-      toast.error(err?.message || "Error al inspirar el proyecto");
+      toast.error(err?.message || "Error inspiring the project");
     }
   };
 
   useEffect(() => {
     if (isSuccess) {
-      toast.success("✨ ¡Inspiraste este proyecto! El creador recibió 3 puntos de reputación", {
+      toast.success("You inspired this project! The creator received 3 reputation points", {
         duration: 5000,
-        icon: "🎖️",
       });
     }
   }, [isSuccess]);
@@ -72,26 +72,27 @@ export function InspireButton({ projectId, creatorAddress }: InspireButtonProps)
   return (
     <div className="card space-y-4">
       <div className="text-center">
-        <div className="text-5xl mb-3">
-          <img 
-            src="https://cdn-icons-png.flaticon.com/512/4151/4151213.png" 
-            alt="Medalla Inspirador"
-            className="w-16 h-16 mx-auto"
-          />
+        <div className="mb-3 flex items-center justify-center">
+          <div className="rounded-full bg-gradient-to-br from-purple-100 to-pink-100 p-4">
+            <Award className="w-10 h-10 text-purple-600" />
+          </div>
         </div>
         <h3 className="text-lg font-bold text-gray-900 mb-2">
-          ¿Te inspira este proyecto?
+          Does this project inspire you?
         </h3>
         <p className="text-sm text-gray-600 mb-4">
-          Otorga una medalla de "Inspirador" al creador y dale <strong>3 puntos de reputación</strong>
+          Award an "Inspiration" badge to the creator and give them <strong>3 reputation points</strong>
         </p>
       </div>
 
       {alreadyInspired ? (
         <div className="rounded-lg bg-green-50 border border-green-200 p-4">
-          <p className="text-sm font-semibold text-green-800 text-center">
-            ✓ Ya inspiraste este proyecto
-          </p>
+          <div className="flex items-center justify-center gap-2">
+            <CheckCircle className="w-4 h-4 text-green-600" />
+            <p className="text-sm font-semibold text-green-800 text-center">
+              You already inspired this project
+            </p>
+          </div>
         </div>
       ) : (
         <button
@@ -105,24 +106,30 @@ export function InspireButton({ projectId, creatorAddress }: InspireButtonProps)
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Procesando...
+              Processing...
             </span>
           ) : (
-            "🎖️ Inspirar Proyecto"
+            <span className="flex items-center justify-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              Inspire Project
+            </span>
           )}
         </button>
       )}
 
       {hash && (
         <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
-          <p className="text-xs text-green-800 mb-2">✓ Transacción enviada</p>
+          <div className="flex items-center justify-center gap-1 mb-2">
+            <CheckCircle className="w-3 h-3 text-green-600" />
+            <p className="text-xs text-green-800">Transaction sent</p>
+          </div>
           <a
             href={`https://sepolia.basescan.org/tx/${hash}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-blue-600 hover:underline"
           >
-            Ver en BaseScan ↗
+            View on BaseScan ↗
           </a>
         </div>
       )}
