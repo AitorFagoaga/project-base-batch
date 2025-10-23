@@ -1,7 +1,7 @@
 /**
  * Contract addresses and ABIs for Base Sepolia deployment
  * Auto-generated from /deployments/base-sepolia.json
- * Last updated: 2025-10-23T20:30:00.000Z
+ * Last updated: 2025-10-23T13:37:47.426Z
  */
 
 export const CONTRACTS = {
@@ -829,6 +829,11 @@ export const CONTRACTS = {
   },
   {
     "type": "error",
+    "name": "AlreadyRefunded",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "ArrayLengthMismatch",
     "inputs": []
   },
@@ -859,6 +864,11 @@ export const CONTRACTS = {
   },
   {
     "type": "error",
+    "name": "GoalReached",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "InvalidDuration",
     "inputs": []
   },
@@ -870,6 +880,11 @@ export const CONTRACTS = {
   {
     "type": "error",
     "name": "InvalidRole",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NoContribution",
     "inputs": []
   },
   {
@@ -1013,6 +1028,23 @@ export const CONTRACTS = {
   {
     "type": "event",
     "anonymous": false,
+    "name": "NFTsDistributed",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "totalNFTsMinted",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
     "name": "ProjectCreated",
     "inputs": [
       {
@@ -1102,6 +1134,28 @@ export const CONTRACTS = {
     ]
   },
   {
+    "type": "event",
+    "anonymous": false,
+    "name": "RefundProcessed",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "backer",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amount",
+        "indexed": false
+      }
+    ]
+  },
+  {
     "type": "function",
     "name": "addCofounder",
     "constant": false,
@@ -1158,6 +1212,19 @@ export const CONTRACTS = {
   },
   {
     "type": "function",
+    "name": "claimRefund",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
     "name": "createProject",
     "constant": false,
     "payable": false,
@@ -1184,7 +1251,7 @@ export const CONTRACTS = {
       },
       {
         "type": "uint256",
-        "name": "durationInDays"
+        "name": "durationInSeconds"
       },
       {
         "type": "string",
@@ -1689,7 +1756,7 @@ export const CONTRACTS = {
 ] as const,
   },
   eventManager: {
-    address: "0x1585B0244848ce91d881399D30AC30fe3862ff75" as `0x${string}`,
+    address: "0x6B620fE06B490Eb65800b3B919E93CB9eD749626" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
