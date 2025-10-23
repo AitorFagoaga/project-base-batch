@@ -49,18 +49,14 @@ export default function EventDetailsPage() {
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isLoading: isConfirming } = useWaitForTransactionReceipt({ hash });
 
-  const toggleActive = (medalId: number, active: boolean) => {
-    writeContract({ address: EVENT_MANAGER.address, abi: EVENT_MANAGER.abi, functionName: "setMedalActive", args: [BigInt(medalId), active] });
-  };
-
   const award = (medalId: number) => {
-    const to = prompt("Dirección del destinatario (0x...):") || "";
+    const to = prompt("Recipient address (0x...):") || "";
     if (!to) return;
     writeContract({ address: EVENT_MANAGER.address, abi: EVENT_MANAGER.abi, functionName: "awardMedal", args: [BigInt(medalId), to as `0x${string}`] });
   };
 
   return (
-    <SharedPageLayout title={ev ? ev.title : "Evento"} description={ev ? ev.description : "Cargando..."}>
+    <SharedPageLayout title={ev ? ev.title : "Event"} description={ev ? ev.description : "Loading..."}>
       {ev ? (
         <div className="space-y-8">
           <div className="rounded-2xl bg-white p-6 shadow ring-1 ring-gray-100">
@@ -80,19 +76,19 @@ export default function EventDetailsPage() {
             <div className="text-gray-600">📍 {ev.location || "—"}</div>
             <div className="text-gray-600">🗓️ {new Date(Number(ev.datetime) * 1000).toLocaleString()} {ev.timeText ? `(${ev.timeText})` : ""}</div>
             <div className="mt-2 text-sm text-gray-500">
-              Estado: {ev.status === 2 ? "✅ Aprobado" : ev.status === 1 ? "⏳ Pendiente" : ev.status === 3 ? "❌ Rechazado" : "—"}
+              Status: {ev.status === 2 ? "✅ Approved" : ev.status === 1 ? "⏳ Pending" : ev.status === 3 ? "❌ Rejected" : "—"}
             </div>
-            {ev.status === 3 && <div className="text-sm text-red-600">Motivo: {ev.rejectReason}</div>}
+            {ev.status === 3 && <div className="text-sm text-red-600">Reason: {ev.rejectReason}</div>}
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold">Medallas del Evento</h3>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <h3 className="text-xl font-semibold">Event Badges</h3>
               <div className="text-sm text-gray-600">
-                {medals.length} medalla{medals.length !== 1 ? 's' : ''} • {medals.reduce((sum, m) => sum + Number(m.points), 0)} puntos totales
+                {medals.length} badge{medals.length !== 1 ? 's' : ''} • {medals.reduce((sum, m) => sum + Number(m.points), 0)} total points
               </div>
             </div>
-            {medals.length === 0 && <p className="text-gray-600">No hay medallas definidas.</p>}
+            {medals.length === 0 && <p className="text-gray-600">No badges defined.</p>}
             {medals.map((m) => {
               const medalId = Number(m.id);
               const name = m.name;
@@ -128,23 +124,23 @@ export default function EventDetailsPage() {
                         )}
                         {!active && (
                           <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
-                            Inactiva
+                            Inactive
                           </span>
                         )}
                         {isFull && (
                           <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">
-                            Agotada
+                            Full
                           </span>
                         )}
                       </div>
                       <p className="text-sm text-gray-600 mb-2">{desc}</p>
                       <div className="flex items-center gap-4 text-xs text-gray-500">
                         <span>
-                          📊 {claimsCount}{maxClaims > 0 ? ` / ${maxClaims}` : ''} reclamadas
+                          📊 {claimsCount}{maxClaims > 0 ? ` / ${maxClaims}` : ''} claimed
                         </span>
                         {maxClaims > 0 && (
                           <span>
-                            {Math.round((claimsCount / maxClaims) * 100)}% completado
+                            {Math.round((claimsCount / maxClaims) * 100)}% complete
                           </span>
                         )}
                       </div>
@@ -154,16 +150,13 @@ export default function EventDetailsPage() {
                       {isCreator && (
                         <>
                           <button className="btn-secondary text-sm" onClick={() => award(medalId)} disabled={isPending || isConfirming}>
-                            Asignar
-                          </button>
-                          <button className="btn-secondary text-sm" onClick={() => toggleActive(medalId, !active)} disabled={isPending || isConfirming}>
-                            {active ? 'Desactivar' : 'Activar'}
+                            Assign
                           </button>
                         </>
                       )}
                       {!isCreator && (
                         <p className="text-sm text-gray-500 italic">
-                          Escanea el QR para reclamar
+                          Scan QR to claim
                         </p>
                       )}
                     </div>
@@ -171,7 +164,7 @@ export default function EventDetailsPage() {
                   
                   {isCreator && (
                     <div className="mt-4 pt-4 border-t border-gray-200">
-                      <p className="text-sm text-gray-600 mb-2">QR para reclamar esta medalla (escaneable por asistentes):</p>
+                      <p className="text-sm text-gray-600 mb-2">QR code to claim this badge (scannable by attendees):</p>
                       <MedalQR eventId={id} medalId={medalId} />
                     </div>
                   )}

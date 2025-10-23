@@ -4,6 +4,7 @@
   "description": "Frontend for Meritocratic Launchpad",
   "private": true,
   "scripts": {
+    "prebuild": "node ../scripts/update-contracts.js",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

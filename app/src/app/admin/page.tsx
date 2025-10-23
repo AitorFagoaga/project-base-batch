@@ -50,8 +50,8 @@ export default function AdminPage() {
 
   return (
     <SharedPageLayout
-      title="Admin Panel - Aprobar Eventos"
-      description="Aprueba o rechaza eventos creados por usuarios"
+      title="Admin Panel - Approve Events"
+      description="Approve or reject events created by users"
     >
       <NetworkGuard>
         {!address && (
@@ -90,20 +90,6 @@ export default function AdminPage() {
 
         {address && isAdmin && (
           <div className="animate-fadeIn space-y-6">
-            <div className="card p-4 bg-indigo-50 border border-indigo-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-indigo-900">🖼️ Gestionar Imágenes de Eventos</h3>
-                  <p className="text-sm text-indigo-700 mt-1">
-                    Agrega o actualiza imágenes para eventos existentes
-                  </p>
-                </div>
-                <Link href="/admin/event-images" className="btn-primary">
-                  Ir a Imágenes
-                </Link>
-              </div>
-            </div>
-            
             <EventApproval />
           </div>
         )}

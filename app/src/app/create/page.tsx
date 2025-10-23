@@ -76,9 +76,6 @@ export default function CreateProjectPage() {
       return;
     }
 
-    console.log("📊 Transaction receipt received:", receipt);
-    console.log("👥 Team members to add:", teamMembers);
-
     // Parse the transaction logs to get the projectId using viem's decodeEventLog
     try {
       // Find the ProjectCreated event log
@@ -104,12 +101,10 @@ export default function CreateProjectPage() {
         });
 
         const projectId = decoded.args.projectId as bigint;
-        console.log("🆔 Extracted project ID:", projectId.toString());
         setNewProjectId(projectId);
 
         // If there are team members to add, prepare to add them
         if (teamMembers.length > 0) {
-          console.log("🚀 Will add team members:", teamMembers);
           setIsAddingCofounders(true);
           toast.success("✅ Project created! Now adding team members...", {
             duration: 3000,
@@ -117,7 +112,6 @@ export default function CreateProjectPage() {
           });
         } else {
           // No team members, just redirect
-          console.log("✅ No team members to add, redirecting...");
           toast.success("🎉 Project created successfully! Redirecting...", {
             duration: 3000,
             icon: "🚀",
@@ -126,7 +120,6 @@ export default function CreateProjectPage() {
           return () => clearTimeout(redirect);
         }
       } else {
-        console.error("❌ ProjectCreated event not found in logs");
         throw new Error("ProjectCreated event not found");
       }
     } catch (err) {
@@ -276,6 +269,7 @@ export default function CreateProjectPage() {
   const handleNext = () => {
     let isValid = false;
 
+    // Only validate the current step (not the next one)
     switch (currentStep) {
       case 1:
         isValid = validateStep1();
@@ -287,7 +281,8 @@ export default function CreateProjectPage() {
         isValid = validateStep3();
         break;
       case 4:
-        isValid = validateStep4();
+        // Step 4 is validated on submit, not on "next"
+        isValid = true;
         break;
     }
 

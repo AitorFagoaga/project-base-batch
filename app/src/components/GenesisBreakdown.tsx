@@ -14,13 +14,13 @@ interface GenesisAward {
   timestamp: bigint;
 }
 
-const CATEGORY_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
+const CATEGORY_CONFIG: Record<string, { icon: string; label: string; color: string; isUrl?: boolean }> = {
   HACKATHON: { icon: "🏆", label: "Hackathon", color: "bg-yellow-100 text-yellow-800" },
   OSS: { icon: "💻", label: "Open Source", color: "bg-green-100 text-green-800" },
   DAO: { icon: "🏛️", label: "DAO", color: "bg-purple-100 text-purple-800" },
   BUILDER: { icon: "🔨", label: "Builder", color: "bg-blue-100 text-blue-800" },
-  INVESTMENT: { icon: "💰", label: "Inversión", color: "bg-emerald-100 text-emerald-800" },
-  CUSTOM: { icon: "⭐", label: "Inspiración", color: "bg-amber-100 text-amber-800" },
+  INVESTMENT: { icon: "💰", label: "Investment", color: "bg-emerald-100 text-emerald-800" },
+  CUSTOM: { icon: "https://cdn-icons-png.flaticon.com/512/4151/4151213.png", label: "Inspiration", color: "bg-amber-100 text-amber-800", isUrl: true },
 };
 
 export function GenesisBreakdown({ address }: GenesisBreakdownProps) {
@@ -120,7 +120,11 @@ export function GenesisBreakdown({ address }: GenesisBreakdownProps) {
                   key={category}
                   className={`p-3 rounded-lg ${config.color} flex items-center gap-2`}
                 >
-                  <span className="text-2xl">{config.icon}</span>
+                  {config.isUrl ? (
+                    <img src={config.icon} alt={config.label} className="w-8 h-8" />
+                  ) : (
+                    <span className="text-2xl">{config.icon}</span>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium">{config.label}</p>
                     <p className="text-lg font-bold">{amount}</p>
@@ -148,7 +152,11 @@ export function GenesisBreakdown({ address }: GenesisBreakdownProps) {
                       key={index}
                       className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
                     >
-                      <span className="text-2xl flex-shrink-0">{config.icon}</span>
+                      {config.isUrl ? (
+                        <img src={config.icon} alt={config.label} className="w-8 h-8 flex-shrink-0" />
+                      ) : (
+                        <span className="text-2xl flex-shrink-0">{config.icon}</span>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-semibold text-gray-900">

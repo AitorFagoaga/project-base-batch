@@ -6,13 +6,17 @@ interface MedalQRProps {
   size?: number;
 }
 
-// Generate secure token: base64(eventId:medalId:randomString)
+// Generate secure token: base64url(eventId:medalId:randomString)
 function generateToken(eventId: number, medalId: number): string {
   const randomString = Math.random().toString(36).substring(2, 15) + 
                        Math.random().toString(36).substring(2, 15) +
                        Date.now().toString(36);
   const payload = `${eventId}:${medalId}:${randomString}`;
-  return btoa(payload);
+  // Use URL-safe base64 encoding (replace +, /, = chars)
+  return btoa(payload)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
 }
 
 export function MedalQR({ eventId, medalId, size = 240 }: MedalQRProps) {
@@ -24,9 +28,9 @@ export function MedalQR({ eventId, medalId, size = 240 }: MedalQRProps) {
   
   return (
     <div className="inline-block p-3 rounded-xl border border-gray-200 bg-white">
-      <img src={src} alt="QR para reclamar medalla" width={size} height={size} />
+      <img src={src} alt="QR to claim badge" width={size} height={size} />
       <p className="mt-2 text-xs text-gray-500 text-center">
-        Escanea para reclamar
+        Scan to claim
       </p>
     </div>
   );

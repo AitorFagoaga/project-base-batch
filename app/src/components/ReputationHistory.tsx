@@ -136,7 +136,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
   }, [publicClient, address]);
 
   // 4) Merge simple timeline
-  const starIcon = "https://cdn-icons-png.flaticon.com/512/4151/4151213.png";
+  const boostIcon = "https://cdn-icons-png.flaticon.com/512/1828/1828884.png";
   const investIcon = "https://cdn-icons-png.flaticon.com/512/3135/3135706.png";
   const timeline = useMemo(() => {
     const items: { type: "genesis" | "boost" | "medal"; title: string; sub?: string; icon?: string; when?: bigint }[] = [];
@@ -152,7 +152,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
     }
     for (const b of boosts) {
       const short = `${b.booster.slice(0, 6)}...${b.booster.slice(-4)}`;
-      items.push({ type: "boost", title: `Boost de ${short}`, sub: `+${b.power.toString()} pts`, icon: starIcon, when: b.blockNumber });
+      items.push({ type: "boost", title: `Boost de ${short}`, sub: `+${b.power.toString()} pts`, icon: boostIcon, when: b.blockNumber });
     }
     for (const m of medalClaims) {
       items.push({ type: "medal", title: m.name || `Medalla #${m.medalId}`, icon: m.iconUrl, when: m.blockNumber });

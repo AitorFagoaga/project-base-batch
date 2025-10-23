@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
+import { useWriteContract, useWaitForTransactionReceipt, useAccount, useReadContract } from "wagmi";
 import { parseEther, formatEther } from "viem";
 import { CONTRACTS } from "@/lib/contracts";
 import toast from "react-hot-toast";
@@ -32,6 +32,15 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
   // Check if user is trying to fund their own project
   const isOwnProject = address?.toLowerCase() === creatorAddress?.toLowerCase();
 
+  // Check if user is a cofounder
+  const { data: isCofounder } = useReadContract({
+    address: CONTRACTS.launchpad.address,
+    abi: CONTRACTS.launchpad.abi,
+    functionName: "isCofounder",
+    args: address ? [projectId, address] : undefined,
+    query: { enabled: !!address },
+  });
+
   // Calculate remaining amount needed
   const remainingAmount = goalAmount && raisedAmount 
     ? goalAmount - raisedAmount 
@@ -47,19 +56,19 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
         <div className="flex items-center gap-3">
           <CheckCircle className="w-8 h-8 text-green-600" />
           <div>
-            <h3 className="text-xl font-bold text-gray-900">🎉 ¡Objetivo Alcanzado!</h3>
-            <p className="text-gray-600">Este proyecto ya alcanzó su meta de financiación.</p>
+            <h3 className="text-xl font-bold text-gray-900">🎉 Goal Reached!</h3>
+            <p className="text-gray-600">This project has reached its funding goal.</p>
           </div>
         </div>
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-green-900">Meta:</span>
+            <span className="text-sm font-medium text-green-900">Goal:</span>
             <span className="text-lg font-bold text-green-700">
               {goalAmount ? formatEther(goalAmount) : '0'} ETH
             </span>
           </div>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-sm font-medium text-green-900">Recaudado:</span>
+            <span className="text-sm font-medium text-green-900">Raised:</span>
             <span className="text-lg font-bold text-green-700">
               {raisedAmount ? formatEther(raisedAmount) : '0'} ETH
             </span>
@@ -73,7 +82,12 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
     e.preventDefault();
 
     if (isOwnProject) {
-      toast.error("You cannot fund your own project");
+      toast.error("You cannot invest in your own project");
+      return;
+    }
+
+    if (isCofounder) {
+      toast.error("Co-founders cannot invest in this project");
       return;
     }
 
@@ -161,7 +175,18 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-red-600" />
             <p className="text-sm font-semibold text-red-800">
-              You cannot fund your own project
+              You cannot invest in your own project
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isCofounder && (
+        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-600" />
+            <p className="text-sm font-semibold text-red-800">
+              Co-founders cannot invest in this project
             </p>
           </div>
         </div>
@@ -255,7 +280,7 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
 
       <button
         type="submit"
-        disabled={isPending || isConfirming || !amount || isOwnProject}
+        disabled={isPending || isConfirming || !amount || isOwnProject || isCofounder}
         className="btn-primary w-full text-lg py-4 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPending || isConfirming ? (
