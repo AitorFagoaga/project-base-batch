@@ -25,6 +25,7 @@ interface EventData {
 export function UserEvents({ userAddress }: UserEventsProps) {
   const [showPending, setShowPending] = useState(true);
   const [showApproved, setShowApproved] = useState(true);
+  const [showRejected, setShowRejected] = useState(true);
 
   // Get total event count
   const { data: eventCount } = useReadContract({
@@ -70,6 +71,16 @@ export function UserEvents({ userAddress }: UserEventsProps) {
           >
             ✅ Aprobados
           </button>
+          <button
+            onClick={() => setShowRejected(!showRejected)}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              showRejected
+                ? "bg-red-100 text-red-800 border-2 border-red-300"
+                : "bg-gray-100 text-gray-600 border-2 border-gray-200"
+            }`}
+          >
+            ❌ Rechazados
+          </button>
         </div>
       </div>
 
@@ -81,6 +92,7 @@ export function UserEvents({ userAddress }: UserEventsProps) {
             userAddress={userAddress}
             showPending={showPending}
             showApproved={showApproved}
+            showRejected={showRejected}
           />
         ))}
       </div>
@@ -93,9 +105,10 @@ interface EventCardProps {
   userAddress: `0x${string}`;
   showPending: boolean;
   showApproved: boolean;
+  showRejected: boolean;
 }
 
-function EventCard({ eventId, userAddress, showPending, showApproved }: EventCardProps) {
+function EventCard({ eventId, userAddress, showPending, showApproved, showRejected }: EventCardProps) {
   const { data } = useReadContract({
     address: EVENT_MANAGER.address,
     abi: EVENT_MANAGER.abi,
@@ -117,7 +130,7 @@ function EventCard({ eventId, userAddress, showPending, showApproved }: EventCar
   // Status: 0=None, 1=Pending, 2=Approved, 3=Rejected
   if (event.status === 1 && !showPending) return null; // Pending
   if (event.status === 2 && !showApproved) return null; // Approved
-  if (event.status === 3) return null; // Don't show rejected
+  if (event.status === 3 && !showRejected) return null; // Rejected
 
   const statusConfig = {
     0: { label: "Sin estado", color: "bg-gray-100 text-gray-800 border-gray-300" },
@@ -152,6 +165,15 @@ function EventCard({ eventId, userAddress, showPending, showApproved }: EventCar
             {config.label}
           </span>
         </div>
+        
+        {/* Show reject reason if rejected */}
+        {event.status === 3 && event.rejectReason && (
+          <div className="mb-3 p-3 bg-red-50 border-l-4 border-red-500 rounded">
+            <p className="text-sm font-semibold text-red-900 mb-1">Razón del rechazo:</p>
+            <p className="text-sm text-red-700">{event.rejectReason}</p>
+          </div>
+        )}
+        
         <p className="text-gray-600 line-clamp-2 mb-3">{event.description}</p>
         <div className="text-sm text-gray-500 space-y-1">
           <div className="flex items-center gap-2">

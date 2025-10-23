@@ -73,7 +73,7 @@ export const CONTRACTS = {
     ] as const,
   },
   reputation: {
-    address: "0x2b9DB0b23866dc574698E031Dfb103f85a50A43e" as `0x${string}`,
+    address: "0x1B1D78C093E2858FB314B53F9a5F8324C2057DB2" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -726,7 +726,7 @@ export const CONTRACTS = {
 ] as const,
   },
   launchpad: {
-    address: "0x83BCaB75414Dd64e995d0b4Fd80CF3077e8C995A" as `0x${string}`,
+    address: "0x8B5d8ccF101Ac7671E4B4c37c32084ea0159b756" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -1386,7 +1386,7 @@ export const CONTRACTS = {
 ] as const,
   },
   userProfile: {
-    address: "0x4B4c91f34b55DC652B1c6Ad65Bd34E106E89AC82" as `0x${string}`,
+    address: "0x4A777F91b922ffc95F741cbA38C36af0fb391cab" as `0x${string}`,
     abi: [
   {
     "type": "event",

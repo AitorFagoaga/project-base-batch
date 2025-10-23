@@ -333,6 +333,7 @@ contract Launchpad is ReentrancyGuard {
         if (project.creator == address(0)) revert ProjectNotFound();
         if (block.timestamp >= project.deadline) revert DeadlinePassed();
         if (msg.sender == project.creator) revert CannotFundOwnProject();
+        if (_isCofounder[projectId][msg.sender]) revert CannotFundOwnProject();
 
         // Track first-time contributor
         if (_contributions[projectId][msg.sender] == 0) {
