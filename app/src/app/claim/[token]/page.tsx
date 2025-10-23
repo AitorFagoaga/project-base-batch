@@ -83,10 +83,16 @@ export default function ClaimMedalPage() {
   useEffect(() => {
     if (!token) return;
     
-    // Decode token (eventId:medalId:randomString)
+    // Decode URL-safe base64 token (eventId:medalId:randomString)
     try {
-      // Decode the token safely
-      const decoded = decodeURIComponent(atob(token));
+      // Convert URL-safe base64 back to standard base64
+      let base64 = token.replace(/-/g, '+').replace(/_/g, '/');
+      // Add padding if needed
+      while (base64.length % 4) {
+        base64 += '=';
+      }
+      
+      const decoded = atob(base64);
       const parts = decoded.split(":");
       
       if (parts.length >= 2) {
@@ -94,7 +100,7 @@ export default function ClaimMedalPage() {
         const medalId = parseInt(parts[1], 10);
         
         if (isNaN(eventId) || isNaN(medalId)) {
-          console.error("Token contiene IDs inválidos");
+          console.error("Token contains invalid IDs");
           return;
         }
         
@@ -102,20 +108,20 @@ export default function ClaimMedalPage() {
         setMedalInfo({
           eventId,
           medalId,
-          eventTitle: `Evento #${eventId}`,
-          medalName: `Medalla #${medalId}`,
+          eventTitle: `Event #${eventId}`,
+          medalName: `Badge #${medalId}`,
         });
       } else {
-        console.error("Token con formato incorrecto");
+        console.error("Invalid token format");
       }
     } catch (e) {
-      console.error("Token inválido", e);
+      console.error("Invalid token", e);
     }
   }, [token]);
 
   useEffect(() => {
     if (isSuccess && connectedAddress) {
-      toast.success("¡Medalla reclamada exitosamente!");
+      toast.success("Badge claimed successfully!");
       setTimeout(() => {
         // Redirect to the user's profile page
         window.location.href = `/profile/${connectedAddress}`;
@@ -125,12 +131,12 @@ export default function ClaimMedalPage() {
 
   const handleClaim = async () => {
     if (!connectedAddress) {
-      toast.error("Por favor conecta tu wallet primero");
+      toast.error("Please connect your wallet first");
       return;
     }
 
     if (!medalInfo) {
-      toast.error("Token inválido");
+      toast.error("Invalid token");
       return;
     }
 
@@ -141,20 +147,20 @@ export default function ClaimMedalPage() {
         functionName: "claimMedal",
         args: [BigInt(medalInfo.medalId)],
       });
-      toast.success("📝 Transacción enviada");
+      toast.success("📝 Transaction sent");
     } catch (err) {
       const error = err as Error;
-      toast.error(error.message || "Error al reclamar medalla");
+      toast.error(error.message || "Error claiming badge");
     }
   };
 
   if (!medalInfo) {
     return (
-      <SharedPageLayout title="Reclamar Medalla" description="Cargando información...">
+      <SharedPageLayout title="Claim Badge" description="Loading information...">
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🔒</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Token inválido</h3>
-          <p className="text-gray-600">El enlace de reclamación no es válido o ha expirado.</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Invalid token</h3>
+          <p className="text-gray-600">The claim link is not valid or has expired.</p>
         </div>
       </SharedPageLayout>
     );
@@ -162,8 +168,8 @@ export default function ClaimMedalPage() {
 
   return (
     <SharedPageLayout 
-      title="Reclamar Medalla" 
-      description={`Reclama tu medalla del evento ${medalInfo.eventTitle}`}
+      title="Claim Badge" 
+      description={`Claim your badge from ${medalInfo.eventTitle}`}
     >
       <div className="max-w-md mx-auto">
         <div className="card p-8 text-center space-y-6">
@@ -183,14 +189,14 @@ export default function ClaimMedalPage() {
               {!connectedAddress ? (
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-sm text-yellow-900">
-                    ⚠️ <strong>Conecta tu wallet</strong> para reclamar esta medalla
+                    ⚠️ <strong>Connect your wallet</strong> to claim this badge
                   </p>
                 </div>
               ) : (
                 <div className="text-left">
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <label className="text-xs text-gray-600 block mb-1">
-                      Reclamando para:
+                      Claiming for:
                     </label>
                     <div className="font-mono text-sm text-gray-900 break-all">
                       {connectedAddress}
@@ -204,17 +210,17 @@ export default function ClaimMedalPage() {
                 disabled={isPending || isConfirming || !connectedAddress}
                 className="btn-primary w-full"
               >
-                {isPending || isConfirming ? "Reclamando..." : "🏅 Reclamar Medalla"}
+                {isPending || isConfirming ? "Claiming..." : "🏅 Claim Badge"}
               </button>
             </>
           ) : (
             <div className="space-y-4">
               <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                 <div className="text-green-800 font-semibold mb-1">
-                  ✅ ¡Medalla reclamada!
+                  ✅ Badge claimed!
                 </div>
                 <p className="text-sm text-green-700">
-                  Redirigiendo a tu perfil...
+                  Redirecting to your profile...
                 </p>
               </div>
             </div>
@@ -223,7 +229,7 @@ export default function ClaimMedalPage() {
 
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-900">
-            💡 <strong>Importante:</strong> Solo podrás reclamar esta medalla una vez con este QR.
+            💡 <strong>Important:</strong> You can only claim this badge once with this QR code.
           </p>
         </div>
       </div>

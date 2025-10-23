@@ -1,0 +1,34 @@
+# Exclude non-essential files from Vercel deployments
+
+# Monorepo/infra not needed to build the Next.js app
+contracts/
+test/
+
+# Root node_modules should not be uploaded
+node_modules/
+
+# Dev-only scripts
+scripts/health-check.js
+
+# Build caches and local artifacts
+.next/
+out/
+dist/
+build/
+cache/
+
+# Editor and VCS
+.git/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Documentation (keep main README only)
+/*.md
+!/README.md
+

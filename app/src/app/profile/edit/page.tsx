@@ -65,7 +65,7 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     if (isSuccess) {
-      toast.success("¡Perfil actualizado correctamente! 🎉");
+      toast.success("Profile updated successfully! 🎉");
       setTimeout(() => {
         router.push(`/profile/${address}`);
       }, 2000);
@@ -74,7 +74,7 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     if (writeError) {
-      toast.error("Error al actualizar el perfil");
+      toast.error("Error updating profile");
       console.error(writeError);
     }
   }, [writeError]);
@@ -83,21 +83,21 @@ export default function EditProfilePage() {
     const newErrors: { name?: string; description?: string; avatarUrl?: string } = {};
 
     if (!name.trim()) {
-      newErrors.name = "El nombre es requerido";
+      newErrors.name = "Name is required";
     } else if (name.length > 50) {
-      newErrors.name = "El nombre no puede tener más de 50 caracteres";
+      newErrors.name = "Name cannot exceed 50 characters";
     }
 
     if (description.length > 500) {
-      newErrors.description = "La descripción no puede tener más de 500 caracteres";
+      newErrors.description = "Description cannot exceed 500 characters";
     }
 
     if (avatarUrl.length > 200) {
-      newErrors.avatarUrl = "La URL no puede tener más de 200 caracteres";
+      newErrors.avatarUrl = "URL cannot exceed 200 characters";
     }
 
     if (avatarUrl && !avatarUrl.startsWith("http")) {
-      newErrors.avatarUrl = "La URL debe comenzar con http:// o https://";
+      newErrors.avatarUrl = "URL must start with http:// or https://";
     }
 
     setErrors(newErrors);
@@ -120,10 +120,10 @@ export default function EditProfilePage() {
         args: [name.trim(), description.trim(), avatarUrl.trim()],
       });
 
-      toast.success("Transacción enviada. Esperando confirmación...");
+      toast.success("Transaction sent. Waiting for confirmation...");
     } catch (error) {
       console.error("Error submitting transaction:", error);
-      toast.error("Error al enviar la transacción");
+      toast.error("Error sending transaction");
     }
   };
 
@@ -137,19 +137,19 @@ export default function EditProfilePage() {
           <div className="card text-center py-16">
             <div className="text-6xl mb-6">🔒</div>
             <h3 className="text-2xl font-bold text-gray-900 mb-3">
-              Conecta tu Wallet
+              Connect Your Wallet
             </h3>
             <p className="text-gray-700 mb-6">
-              Necesitas conectar tu wallet para editar tu perfil
+              You need to connect your wallet to edit your profile
             </p>
             <p className="text-sm text-gray-600">
-              Haz click en &quot;Connect Wallet&quot; en la esquina superior derecha
+              Click &quot;Connect Wallet&quot; in the top right corner
             </p>
           </div>
         ) : isLoading ? (
           <div className="card text-center py-16">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Cargando perfil...</p>
+            <p className="text-gray-600">Loading profile...</p>
           </div>
         ) : (
           <div className="card">
@@ -160,14 +160,14 @@ export default function EditProfilePage() {
                   href={`/profile/${address}`}
                   className="text-indigo-600 hover:text-indigo-700 text-sm font-medium inline-flex items-center gap-1"
                 >
-                  ← Volver al perfil
+                  ← Back to profile
                 </Link>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                ✏️ Editar Perfil
+                ✏️ Edit Profile
               </h2>
               <p className="text-gray-600">
-                Actualiza tu información de perfil. Los cambios se guardarán en la blockchain.
+                Update your profile information. Changes will be saved to the blockchain.
               </p>
             </div>
 
@@ -175,7 +175,7 @@ export default function EditProfilePage() {
               {/* Name Field */}
               <div>
                 <label htmlFor="name" className="input-label">
-                  Nombre <span className="text-red-500">*</span>
+                  Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -183,7 +183,7 @@ export default function EditProfilePage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={`input ${errors.name ? "border-red-500" : ""}`}
-                  placeholder="Tu nombre o alias"
+                  placeholder="Your name or alias"
                   maxLength={50}
                   disabled={isPending || isConfirming}
                 />
@@ -196,14 +196,14 @@ export default function EditProfilePage() {
               {/* Description Field */}
               <div>
                 <label htmlFor="description" className="input-label">
-                  Descripción
+                  Description
                 </label>
                 <textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className={`input min-h-[120px] ${errors.description ? "border-red-500" : ""}`}
-                  placeholder="Cuéntanos sobre ti, tus habilidades, intereses..."
+                  placeholder="Tell us about you, your skills, interests..."
                   maxLength={500}
                   disabled={isPending || isConfirming}
                 />
@@ -224,7 +224,7 @@ export default function EditProfilePage() {
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
                   className={`input ${errors.avatarUrl ? "border-red-500" : ""}`}
-                  placeholder="https://ejemplo.com/tu-avatar.jpg"
+                  placeholder="https://example.com/your-avatar.jpg"
                   maxLength={200}
                   disabled={isPending || isConfirming}
                 />
@@ -236,7 +236,7 @@ export default function EditProfilePage() {
                 {/* Image Preview */}
                 {avatarUrl && avatarUrl.startsWith("http") && (
                   <div className="mt-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Vista previa:</p>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
                     <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-indigo-500">
                       <img
                         src={avatarUrl}
@@ -261,10 +261,10 @@ export default function EditProfilePage() {
                   {isPending || isConfirming ? (
                     <>
                       <span className="inline-block animate-spin mr-2">⏳</span>
-                      {isPending ? "Confirmando..." : "Guardando..."}
+                      {isPending ? "Confirming..." : "Saving..."}
                     </>
                   ) : (
-                    "💾 Guardar Cambios"
+                    "💾 Save Changes"
                   )}
                 </button>
 
@@ -272,7 +272,7 @@ export default function EditProfilePage() {
                   href={`/profile/${address}`}
                   className="flex-1 rounded-lg bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-200 text-center"
                 >
-                  Cancelar
+                  Cancel
                 </Link>
               </div>
 

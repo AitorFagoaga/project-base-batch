@@ -28,12 +28,29 @@ export function InspireButton({ projectId, creatorAddress }: InspireButtonProps)
     },
   });
 
+  // Check if user is a cofounder
+  const { data: isCofounder } = useReadContract({
+    address: CONTRACTS.launchpad.address,
+    abi: CONTRACTS.launchpad.abi,
+    functionName: "isCofounder",
+    args: address && projectId !== undefined ? [projectId, address] : undefined,
+    query: {
+      enabled: !!address && projectId !== undefined,
+    },
+  });
+
   const alreadyInspired = hasInspired === true;
   const isOwnProject = address?.toLowerCase() === creatorAddress?.toLowerCase();
+  const isProjectCofounder = isCofounder === true;
 
   const handleInspire = async () => {
     if (isOwnProject) {
       toast.error("You cannot inspire your own project");
+      return;
+    }
+
+    if (isProjectCofounder) {
+      toast.error("Cofounders cannot inspire their own project");
       return;
     }
 
@@ -52,7 +69,6 @@ export function InspireButton({ projectId, creatorAddress }: InspireButtonProps)
 
       toast.success("Transaction sent to MetaMask");
     } catch (err: any) {
-      console.error("Inspire error:", err);
       toast.error(err?.message || "Error inspiring the project");
     }
   };
@@ -65,8 +81,8 @@ export function InspireButton({ projectId, creatorAddress }: InspireButtonProps)
     }
   }, [isSuccess]);
 
-  if (isOwnProject) {
-    return null; // Don't show button for own projects
+  if (isOwnProject || isProjectCofounder) {
+    return null; // Don't show button for own projects or cofounders
   }
 
   return (

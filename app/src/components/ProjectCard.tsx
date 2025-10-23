@@ -48,12 +48,29 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
     },
   });
 
+  // Check if user is a cofounder
+  const { data: isCofounder } = useReadContract({
+    address: CONTRACTS.launchpad.address,
+    abi: CONTRACTS.launchpad.abi,
+    functionName: "isCofounder",
+    args: address && project.id !== undefined ? [project.id, address] : undefined,
+    query: {
+      enabled: !!address && project.id !== undefined,
+    },
+  });
+
   const alreadyInspired = hasInspired === true;
   const isOwnProject = address?.toLowerCase() === project.creator?.toLowerCase();
+  const isProjectCofounder = isCofounder === true;
 
   const handleInspire = async () => {
     if (isOwnProject) {
       toast.error("You cannot inspire your own project");
+      return;
+    }
+
+    if (isProjectCofounder) {
+      toast.error("Cofounders cannot inspire their own project");
       return;
     }
 
@@ -72,7 +89,6 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
 
       toast.success("Transaction sent");
     } catch (err: any) {
-      console.error("Inspire error:", err);
       toast.error(err?.message || "Error inspiring project");
     }
   };
@@ -86,7 +102,6 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
   }, [isSuccess]);
 
   if (!project || project.goal === undefined || project.fundsRaised === undefined || project.deadline === undefined) {
-    console.error("Invalid project data in ProjectCard:", project);
     return null;
   }
 
@@ -193,7 +208,7 @@ export function ProjectCard({ project, creatorReputation, isLoadingReputation }:
           >
             View Project
           </Link>
-          {!isOwnProject && (
+          {!isOwnProject && !isProjectCofounder && (
             <button
               type="button"
               onClick={handleInspire}

@@ -29,6 +29,7 @@ function useTotalEvents() {
 }
 
 function EventCard({ id, onLoaded }: Readonly<{ id: number; onLoaded?: (isApproved: boolean) => void }>) {
+  const [hasNotified, setHasNotified] = useState(false);
   const { data } = useReadContract({ 
     address: EVENT_MANAGER.address, 
     abi: EVENT_MANAGER.abi, 
@@ -41,12 +42,13 @@ function EventCard({ id, onLoaded }: Readonly<{ id: number; onLoaded?: (isApprov
   // Only show approved events (status === 2)
   const isApproved = !!(event && Number(event.id) !== 0 && event.status === 2);
   
-  // Notify parent about this event's approval status using useEffect
+  // Notify parent about this event's approval status using useEffect - only once
   useEffect(() => {
-    if (onLoaded && event && Number(event.id) !== 0) {
+    if (onLoaded && event && Number(event.id) !== 0 && !hasNotified) {
       onLoaded(isApproved);
+      setHasNotified(true);
     }
-  }, [onLoaded, event, isApproved]);
+  }, [onLoaded, event, isApproved, hasNotified]);
   
   // Don't render if no data or not approved
   if (!data || !isApproved) return null;
@@ -117,27 +119,27 @@ export default function EventsPage() {
   };
   
   const getStatusText = () => {
-    if (isLoading) return 'Cargando eventos...';
-    if (total === 0) return 'No hay eventos creados';
-    if (approvedCount === 0) return 'No hay eventos aprobados';
-    return approvedCount === 1 ? '1 evento aprobado' : `${approvedCount} eventos aprobados`;
+    if (isLoading) return 'Loading events...';
+    if (total === 0) return 'No events created';
+    if (approvedCount === 0) return 'No approved events';
+    return approvedCount === 1 ? '1 approved event' : `${approvedCount} approved events`;
   };
 
   return (
     <SharedPageLayout
-      title="Eventos"
-      description="Crea y descubre eventos con medallas reclamables mediante QR."
+      title="Events"
+      description="Create and discover events with claimable QR badges."
     >
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <p className="text-gray-600">{getStatusText()}</p>
         <div className="flex gap-2">
           {isAdmin ? <Link href="/events/admin" className="btn-secondary">Admin</Link> : null}
-          <Link href="/events/create" className="btn-primary">Crear evento</Link>
+          <Link href="/events/create" className="btn-primary">Create Event</Link>
         </div>
       </div>
 
       {total > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: total }, (_, i) => i + 1).map((id) => (
             <EventCard key={id} id={id} onLoaded={(isApproved) => handleEventLoaded(id, isApproved)} />
           ))}
@@ -145,10 +147,10 @@ export default function EventsPage() {
       ) : !isLoading ? (
         <div className="text-center py-16">
           <div className="text-6xl mb-4">📅</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No hay eventos todavía</h3>
-          <p className="text-gray-600 mb-6">Sé el primero en crear un evento</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No events yet</h3>
+          <p className="text-gray-600 mb-6">Be the first to create an event</p>
           <Link href="/events/create" className="btn-primary inline-block">
-            Crear primer evento
+            Create First Event
           </Link>
         </div>
       ) : null}

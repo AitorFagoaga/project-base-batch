@@ -12,11 +12,11 @@ export default function CreateEventPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
-  const [imageUrl, setImageUrl] = useState(""); // Logo/imagen del evento
+  const [imageUrl, setImageUrl] = useState(""); // Event logo/image
   const [date, setDate] = useState(""); // yyyy-mm-dd
   const [time, setTime] = useState(""); // HH:mm
   const [medals, setMedals] = useState<MedalDraft[]>([
-    { name: "Asistente", description: "Participación en el evento", iconUrl: "", points: 10, maxClaims: 0 },
+    { name: "Attendee", description: "Event participation", iconUrl: "", points: 10, maxClaims: 0 },
   ]);
 
   const { writeContract, data: hash, isPending } = useWriteContract();
@@ -41,15 +41,8 @@ export default function CreateEventPage() {
       } catch (e) {
         console.error("Error parsing event ID from logs:", e);
       }
-
-      console.log("✅ Event Created Successfully:", {
-        transactionHash: hash,
-        eventId,
-        eventManager: EVENT_MANAGER.address,
-        message: "Event is now PENDING (status: 1) and awaiting admin approval"
-      });
       
-      toast.success("✅ Evento creado exitosamente. Espera la aprobación del admin.", { duration: 5000 });
+      toast.success("✅ Event created successfully. Waiting for admin approval.", { duration: 5000 });
       
       // Reset form
       setTitle("");
@@ -58,7 +51,7 @@ export default function CreateEventPage() {
       setImageUrl("");
       setDate("");
       setTime("");
-      setMedals([{ name: "Asistente", description: "Participación en el evento", iconUrl: "", points: 10, maxClaims: 0 }]);
+      setMedals([{ name: "Attendee", description: "Event participation", iconUrl: "", points: 10, maxClaims: 0 }]);
     }
   }, [isSuccess, hash, receipt, imageUrl]);
 
@@ -69,33 +62,19 @@ export default function CreateEventPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return toast.error("Título requerido");
-    if (!date || !time) return toast.error("Fecha y horario requeridos");
-    if (medals.length === 0) return toast.error("Agrega al menos una medalla");
+    if (!title.trim()) return toast.error("Title required");
+    if (!date || !time) return toast.error("Date and time required");
+    if (medals.length === 0) return toast.error("Add at least one badge");
 
     // Fix: Create date in local timezone, not UTC
     const dt = new Date(`${date}T${time}:00`).getTime();
-    if (!dt || Number.isNaN(dt) || dt < 0) return toast.error("Fecha/hora inválidas");
+    if (!dt || Number.isNaN(dt) || dt < 0) return toast.error("Invalid date/time");
 
-    // Validar que la fecha no sea anterior a un año desde hoy
+    // Validate that the date is not more than one year in the past
     const oneYearAgo = Date.now() - (365 * 24 * 60 * 60 * 1000);
     if (dt < oneYearAgo) {
-      return toast.error("La fecha del evento no puede ser anterior a un año desde hoy");
+      return toast.error("Event date cannot be more than one year in the past");
     }
-
-    console.log("Submitting event with data:", {
-      title,
-      description,
-      location,
-      imageUrl,
-      datetime: BigInt(Math.floor(dt / 1000)),
-      timeText: `${time} UTC`,
-      medalNames: medals.map((m) => m.name),
-      medalDescriptions: medals.map((m) => m.description),
-      medalIcons: medals.map((m) => m.iconUrl),
-      medalPoints: medals.map((m) => m.points),
-      medalMaxClaims: medals.map((m) => m.maxClaims),
-    });
 
     try {
       writeContract({
@@ -119,38 +98,38 @@ export default function CreateEventPage() {
       toast.success("📝 Transacción enviada");
     } catch (err) {
       console.error("Error submitting event:", err);
-      toast.error("No se pudo crear el evento");
+      toast.error("Could not create event");
     }
   };
 
   return (
     <SharedPageLayout
-      title="Crear Evento"
-      description="Define título, descripción, lugar, fecha/horario y medallas reclamables."
+      title="Create Event"
+      description="Define title, description, location, date/time and claimable badges."
     >
       <form onSubmit={submit} className="space-y-6 bg-white rounded-2xl p-6 shadow ring-1 ring-gray-100">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="input-label">Título</label>
+            <label className="input-label">Title</label>
             <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} required />
           </div>
           <div>
-            <label className="input-label">Lugar</label>
-            <input className="input" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Dirección o Virtual" />
+            <label className="input-label">Location</label>
+            <input className="input" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Address or Virtual" />
           </div>
           <div>
-            <label className="input-label">Día</label>
+            <label className="input-label">Day</label>
             <input type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} required />
           </div>
           <div>
-            <label className="input-label">Horario</label>
+            <label className="input-label">Time</label>
             <input type="time" className="input" value={time} onChange={(e) => setTime(e.target.value)} required />
           </div>
         </div>
 
         <div>
                     <label htmlFor="imageUrl" className="input-label">
-            Logo/Imagen del Evento (opcional)
+            Event Logo/Image (optional)
           </label>
           <input 
             id="imageUrl" 
@@ -161,53 +140,53 @@ export default function CreateEventPage() {
             onChange={(e) => setImageUrl(e.target.value)} 
           />
           <p className="text-xs text-gray-500 mt-1">
-            💡 Puedes agregar o cambiar la imagen más tarde desde el panel de admin
+            💡 You can add or change the image later from the admin panel
           </p>
           {imageUrl && (
             <div className="mt-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={imageUrl} alt="Vista previa" className="w-32 h-32 object-cover rounded-lg" />
+              <img src={imageUrl} alt="Preview" className="w-32 h-32 object-cover rounded-lg" />
             </div>
           )}
         </div>
 
         <div>
-          <label className="input-label">Descripción</label>
+          <label className="input-label">Description</label>
           <textarea className="input resize-none" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="input-label">Medallas</label>
-            <button type="button" className="btn-secondary" onClick={addMedal}>+ Agregar</button>
+            <label className="input-label">Badges</label>
+            <button type="button" className="btn-secondary" onClick={addMedal}>+ Add</button>
           </div>
           <div className="space-y-4">
             {medals.map((m, i) => (
               <div key={i} className="rounded-xl border border-gray-200 p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm text-gray-600">Nombre</label>
+                    <label className="text-sm text-gray-600">Name</label>
                     <input className="input" value={m.name} onChange={(e) => updateMedal(i, { name: e.target.value })} required />
                   </div>
                   <div>
-                    <label className="text-sm text-gray-600">Puntos</label>
+                    <label className="text-sm text-gray-600">Points</label>
                     <input type="number" className="input" value={m.points} onChange={(e) => updateMedal(i, { points: Number(e.target.value) })} />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="text-sm text-gray-600">Descripción</label>
+                    <label className="text-sm text-gray-600">Description</label>
                     <input className="input" value={m.description} onChange={(e) => updateMedal(i, { description: e.target.value })} />
                   </div>
                   <div>
-                    <label className="text-sm text-gray-600">Icono (URL de imagen)</label>
+                    <label className="text-sm text-gray-600">Icon (Image URL)</label>
                     <input className="input" value={m.iconUrl} onChange={(e) => updateMedal(i, { iconUrl: e.target.value })} placeholder="https://..." />
                   </div>
                   <div>
-                    <label className="text-sm text-gray-600">Máx. claims (0 = ilimitado)</label>
+                    <label className="text-sm text-gray-600">Max claims (0 = unlimited)</label>
                     <input type="number" className="input" value={m.maxClaims} onChange={(e) => updateMedal(i, { maxClaims: Number(e.target.value) })} />
                   </div>
                 </div>
                 <div className="mt-3 text-right">
-                  <button type="button" className="text-sm text-red-600 hover:underline" onClick={() => removeMedal(i)}>Eliminar</button>
+                  <button type="button" className="text-sm text-red-600 hover:underline" onClick={() => removeMedal(i)}>Remove</button>
                 </div>
               </div>
             ))}
@@ -215,18 +194,18 @@ export default function CreateEventPage() {
         </div>
 
         <button type="submit" disabled={isPending || isConfirming} className="btn-primary w-full py-3">
-          {isPending || isConfirming ? "Creando..." : "Enviar solicitud"}
+          {isPending || isConfirming ? "Creating..." : "Submit Request"}
         </button>
         {hash && (
           <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
-            <p className="text-xs text-green-800 mb-2">✓ Transacción enviada</p>
+            <p className="text-xs text-green-800 mb-2">✓ Transaction sent</p>
             <a
               href={`https://sepolia.basescan.org/tx/${hash}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-blue-600 hover:underline"
             >
-              Ver en BaseScan ↗
+              View on BaseScan ↗
             </a>
           </div>
         )}

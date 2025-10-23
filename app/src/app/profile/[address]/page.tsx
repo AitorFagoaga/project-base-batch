@@ -11,7 +11,6 @@ import { UserEvents } from "@/components/UserEvents";
 import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { ReputationHistory } from "@/components/ReputationHistory";
 import { GenesisBreakdown } from "@/components/GenesisBreakdown";
 import { Icon } from "@/components/Icon";
 import { UserNFTGallery } from "@/components/UserNFTGallery";
@@ -141,7 +140,7 @@ export default function ProfilePage({ params }: PageProps) {
                       ) : profile?.exists ? (
                         profile.name
                       ) : (
-                        <span className="text-gray-500">Usuario sin perfil</span>
+                        <span className="text-gray-500">User without profile</span>
                       )}
                     </h1>
                     {/* Address with better styling */}
@@ -152,7 +151,7 @@ export default function ProfilePage({ params }: PageProps) {
                       <button
                         onClick={copyAddress}
                         className="rounded-lg bg-gray-50 hover:bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 transition-all border border-gray-200 hover:border-gray-300 flex items-center gap-1.5"
-                        title="Copiar dirección completa"
+                        title="Copy full address"
                       >
                         <Icon name="copy" size="xs" />
                       </button>
@@ -163,7 +162,7 @@ export default function ProfilePage({ params }: PageProps) {
                         className="rounded-lg bg-indigo-50 hover:bg-indigo-100 px-3 py-2 text-xs font-medium text-indigo-700 transition-all border border-indigo-200 hover:border-indigo-300 flex items-center gap-1.5"
                       >
                         <Icon name="external" size="xs" />
-                        Ver en BaseScan
+                        View on BaseScan
                       </a>
                     </div>
                   </div>
@@ -172,10 +171,10 @@ export default function ProfilePage({ params }: PageProps) {
                     <Link
                       href="/profile/edit"
                       className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:from-indigo-600 hover:to-purple-600 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
-                      title="Editar perfil"
+                      title="Edit profile"
                     >
                       <Icon name="edit" size="sm" />
-                      Editar Perfil
+                      Edit Profile
                     </Link>
                   )}
                 </div>
@@ -195,9 +194,9 @@ export default function ProfilePage({ params }: PageProps) {
                       <Icon name="star" size={64} className="text-white" />
                     </div>
                     <div className="relative z-10">
-                      <div className="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1">Reputación Total</div>
+                      <div className="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1">Total Reputation</div>
                       <div className="text-4xl font-bold">{reputation}</div>
-                      <div className="text-xs opacity-75 mt-1">puntos acumulados</div>
+                      <div className="text-xs opacity-75 mt-1">accumulated points</div>
                     </div>
                   </div>
 
@@ -207,9 +206,9 @@ export default function ProfilePage({ params }: PageProps) {
                       <Icon name="rocket" size={64} className="text-white" />
                     </div>
                     <div className="relative z-10">
-                      <div className="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1">Proyectos</div>
+                      <div className="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1">Projects</div>
                       <div className="text-4xl font-bold">{createdCount ?? 0}</div>
-                      <div className="text-xs opacity-75 mt-1">proyectos creados</div>
+                      <div className="text-xs opacity-75 mt-1">projects created</div>
                     </div>
                   </div>
                 </div>
@@ -224,15 +223,26 @@ export default function ProfilePage({ params }: PageProps) {
                       {showBoostForm ? (
                         <>
                           <Icon name="x" size="sm" />
-                          Cancelar
+                          Cancel
                         </>
                       ) : (
                         <>
                           <Icon name="zap" size="sm" />
-                          Dar Boost
+                          Give Boost
                         </>
                       )}
                     </button>
+                  </div>
+                )}
+
+                {/* Boost Form - Show when button clicked */}
+                {showBoostForm && !isOwnProfile && connectedAddress && (
+                  <div className="card mt-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <Icon name="zap" size="lg" className="text-yellow-500" />
+                      Boost a {profile?.name || address.slice(0, 10)}
+                    </h3>
+                    <BoostForm targetUser={address as `0x${string}`} />
                   </div>
                 )}
               </div>
@@ -240,25 +250,11 @@ export default function ProfilePage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Reputation History */}
-        <ReputationHistory address={address as `0x${string}`} />
-
         {/* Reputation Breakdown */}
         <GenesisBreakdown address={address as `0x${string}`} />
 
         {/* NFT Gallery */}
         <UserNFTGallery address={address as `0x${string}`} isOwnProfile={isOwnProfile} />
-
-        {/* Boost Form - Show when button clicked */}
-        {showBoostForm && !isOwnProfile && connectedAddress && (
-          <div className="card mb-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Icon name="zap" size="lg" className="text-yellow-500" />
-              Boost a {profile?.name || address.slice(0, 10)}
-            </h3>
-            <BoostForm targetUser={address as `0x${string}`} />
-          </div>
-        )}
 
         {/* User's Projects */}
         <div className="mb-10">

@@ -40,17 +40,17 @@ export function UserEvents({ userAddress }: UserEventsProps) {
     return (
       <div className="card text-center py-12">
         <div className="text-6xl mb-4">📅</div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">No hay eventos</h3>
-        <p className="text-gray-600">Este usuario aún no ha creado eventos.</p>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">No Events</h3>
+        <p className="text-gray-600">This user hasn't created any events yet.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Mis Eventos</h2>
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <h2 className="text-2xl font-bold text-gray-900">My Events</h2>
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setShowPending(!showPending)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
@@ -59,7 +59,7 @@ export function UserEvents({ userAddress }: UserEventsProps) {
                 : "bg-gray-100 text-gray-600 border-2 border-gray-200"
             }`}
           >
-            ⏳ Pendientes
+            ⏳ Pending
           </button>
           <button
             onClick={() => setShowApproved(!showApproved)}
@@ -69,7 +69,7 @@ export function UserEvents({ userAddress }: UserEventsProps) {
                 : "bg-gray-100 text-gray-600 border-2 border-gray-200"
             }`}
           >
-            ✅ Aprobados
+            ✅ Approved
           </button>
           <button
             onClick={() => setShowRejected(!showRejected)}
@@ -79,7 +79,7 @@ export function UserEvents({ userAddress }: UserEventsProps) {
                 : "bg-gray-100 text-gray-600 border-2 border-gray-200"
             }`}
           >
-            ❌ Rechazados
+            ❌ Rejected
           </button>
         </div>
       </div>
@@ -133,10 +133,10 @@ function EventCard({ eventId, userAddress, showPending, showApproved, showReject
   if (event.status === 3 && !showRejected) return null; // Rejected
 
   const statusConfig = {
-    0: { label: "Sin estado", color: "bg-gray-100 text-gray-800 border-gray-300" },
-    1: { label: "Pendiente", color: "bg-yellow-100 text-yellow-800 border-yellow-300" },
-    2: { label: "Aprobado", color: "bg-green-100 text-green-800 border-green-300" },
-    3: { label: "Rechazado", color: "bg-red-100 text-red-800 border-red-300" },
+    0: { label: "No status", color: "bg-gray-100 text-gray-800 border-gray-300" },
+    1: { label: "Pending", color: "bg-yellow-100 text-yellow-800 border-yellow-300" },
+    2: { label: "Approved", color: "bg-green-100 text-green-800 border-green-300" },
+    3: { label: "Rejected", color: "bg-red-100 text-red-800 border-red-300" },
   };
 
   const config = statusConfig[event.status as 0 | 1 | 2 | 3];
@@ -169,7 +169,7 @@ function EventCard({ eventId, userAddress, showPending, showApproved, showReject
         {/* Show reject reason if rejected */}
         {event.status === 3 && event.rejectReason && (
           <div className="mb-3 p-3 bg-red-50 border-l-4 border-red-500 rounded">
-            <p className="text-sm font-semibold text-red-900 mb-1">Razón del rechazo:</p>
+            <p className="text-sm font-semibold text-red-900 mb-1">Rejection reason:</p>
             <p className="text-sm text-red-700">{event.rejectReason}</p>
           </div>
         )}

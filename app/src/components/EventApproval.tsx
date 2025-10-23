@@ -53,35 +53,35 @@ export function EventApproval() {
     return (
       <div className="card text-center py-12">
         <div className="text-6xl mb-4">📅</div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">No hay eventos</h3>
-        <p className="text-gray-600">Aún no se han creado eventos para aprobar.</p>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">No Events</h3>
+        <p className="text-gray-600">No events have been created yet to approve.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Aprobar Eventos</h2>
+      <h2 className="text-2xl font-bold text-gray-900">Approve Events</h2>
       
       {/* Status Summary */}
       {(statusCounts.pending > 0 || statusCounts.rejected > 0 || statusCounts.approved > 0) && (
         <div className="card bg-blue-50 border border-blue-200">
-          <div className="flex items-center gap-6 text-sm">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm">
             {statusCounts.pending > 0 && (
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-blue-900">⏳ Pendientes:</span>
+                <span className="font-semibold text-blue-900">⏳ Pending:</span>
                 <span className="text-blue-700">{statusCounts.pending}</span>
               </div>
             )}
             {statusCounts.approved > 0 && (
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-green-900">✅ Aprobados:</span>
+                <span className="font-semibold text-green-900">✅ Approved:</span>
                 <span className="text-green-700">{statusCounts.approved}</span>
               </div>
             )}
             {statusCounts.rejected > 0 && (
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-red-900">❌ Rechazados:</span>
+                <span className="font-semibold text-red-900">❌ Rejected:</span>
                 <span className="text-red-700">{statusCounts.rejected}</span>
               </div>
             )}
@@ -93,13 +93,13 @@ export function EventApproval() {
         <div className="card text-center py-8 bg-yellow-50 border border-yellow-200">
           <div className="text-4xl mb-3">✨</div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            No hay eventos pendientes de aprobación
+            No events pending approval
           </h3>
           <p className="text-gray-600">
-            Todos los eventos ({totalEvents}) ya fueron {statusCounts.rejected === totalEvents ? 'rechazados' : 'procesados'}.
+            All events ({totalEvents}) have been {statusCounts.rejected === totalEvents ? 'rejected' : 'processed'}.
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            Los usuarios deben crear nuevos eventos para que aparezcan aquí.
+            Users must create new events for them to appear here.
           </p>
         </div>
       )}
@@ -227,24 +227,24 @@ function EventApprovalCard({ eventId, onEventLoaded }: EventApprovalCardProps) {
         </div>
       )}
       
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex flex-col sm:flex-row items-start justify-between mb-4 gap-3">
         <div className="flex-1">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">{event.title}</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{event.title}</h3>
           <span className="px-3 py-1 rounded-full text-xs font-bold border-2 bg-yellow-100 text-yellow-800 border-yellow-300">
-            ⏳ Pendiente de aprobación
+            ⏳ Pending approval
           </span>
         </div>
       </div>
 
       <p className="text-gray-600 mb-4">{event.description}</p>
 
-      <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 text-sm">
         <div>
-          <span className="font-semibold text-gray-700">📍 Ubicación:</span>
+          <span className="font-semibold text-gray-700">📍 Location:</span>
           <p className="text-gray-600">{event.location}</p>
         </div>
         <div>
-          <span className="font-semibold text-gray-700">🗓️ Fecha:</span>
+          <span className="font-semibold text-gray-700">🗓️ Date:</span>
           <p className="text-gray-600">{date.toLocaleDateString()} {event.timeText}</p>
         </div>
         <div>
@@ -281,26 +281,26 @@ function EventApprovalCard({ eventId, onEventLoaded }: EventApprovalCardProps) {
             ))}
           </div>
           <div className="mt-3 pt-3 border-t border-gray-200 text-sm text-gray-600">
-            <strong>Total de puntos disponibles:</strong> {medals.reduce((sum, m) => sum + Number(m.points), 0)} pts
+            <strong>Total available points:</strong> {medals.reduce((sum, m) => sum + Number(m.points), 0)} pts
           </div>
         </div>
       )}
 
       {!showRejectForm ? (
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={handleApprove}
             disabled={isPending || isConfirming}
             className="btn-primary flex-1"
           >
-            {isPending || isConfirming ? "Aprobando..." : "✅ Aprobar Evento"}
+            {isPending || isConfirming ? "Approving..." : "✅ Approve Event"}
           </button>
           <button
             onClick={() => setShowRejectForm(true)}
             disabled={isPending || isConfirming}
             className="btn-secondary flex-1"
           >
-            ❌ Rechazar
+            ❌ Reject
           </button>
         </div>
       ) : (
@@ -308,16 +308,16 @@ function EventApprovalCard({ eventId, onEventLoaded }: EventApprovalCardProps) {
           <textarea
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
-            placeholder="Razón del rechazo..."
+            placeholder="Rejection reason..."
             className="input-field w-full min-h-[80px]"
           />
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleReject}
               disabled={isPending || isConfirming || !rejectReason.trim()}
               className="btn-secondary flex-1"
             >
-              {isPending || isConfirming ? "Rechazando..." : "Confirmar Rechazo"}
+              {isPending || isConfirming ? "Rejecting..." : "Confirm Rejection"}
             </button>
             <button
               onClick={() => {
@@ -327,7 +327,7 @@ function EventApprovalCard({ eventId, onEventLoaded }: EventApprovalCardProps) {
               disabled={isPending || isConfirming}
               className="btn-primary flex-1"
             >
-              Cancelar
+              Cancel
             </button>
           </div>
         </div>
