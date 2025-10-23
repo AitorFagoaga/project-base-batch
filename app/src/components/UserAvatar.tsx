@@ -102,7 +102,7 @@ export function UserAvatar({
           className={`absolute ${size === "xl" ? "-bottom-2 -right-2" : "-bottom-1 -right-1"} bg-gradient-to-r from-purple-600 to-pink-600 rounded-full ${
             size === "xl" ? "px-3 py-1.5" : size === "lg" ? "px-2.5 py-1" : "px-2 py-0.5"
           } border-2 border-white shadow-lg flex items-center gap-1`}
-          title={`Reputación: ${reputation} puntos`}
+          title={`Reputation: ${reputation} points`}
         >
           <Icon
             name="star"
@@ -122,7 +122,7 @@ export function UserAvatar({
       <Link
         href={`/profile/${address}`}
         className="inline-block hover:opacity-90 transition-opacity"
-        title={`Ver perfil de ${displayName}`}
+        title={`View ${displayName}'s profile`}
       >
         {content}
       </Link>

@@ -31,7 +31,7 @@ export default function ProfilePage({ params }: PageProps) {
   // Copy address to clipboard
   const copyAddress = () => {
     navigator.clipboard.writeText(address);
-    toast.success("¡Dirección copiada al portapapeles!");
+    toast.success("Address copied to clipboard!");
   };
 
   // Get user profile
@@ -260,7 +260,7 @@ export default function ProfilePage({ params }: PageProps) {
         <div className="mb-10">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
             <Icon name="folder" size="lg" className="text-indigo-600" />
-            Proyectos Creados
+            Created Projects
           </h2>
           {createdCount !== null && <p className="text-sm text-gray-500 mb-4">Total: {createdCount}</p>}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -347,9 +347,13 @@ function UserProjectCard({ projectId, creatorAddress }: { projectId: number; cre
     };
   }
 
+  // Filter out deleted/invalid projects (creator is zero address)
+  if (!project.creator || project.creator === "0x0000000000000000000000000000000000000000") {
+    return null;
+  }
+
   // Validate required fields
-  if (!project.creator || !project.title || project.goal === undefined) {
-    console.error('Missing required project fields:', projectData);
+  if (!project.title || project.goal === undefined) {
     return null;
   }
 

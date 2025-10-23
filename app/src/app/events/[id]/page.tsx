@@ -1,10 +1,11 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { EVENT_MANAGER } from "@/lib/eventManager";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
 import { MedalQR } from "@/components/MedalQR";
+import toast from "react-hot-toast";
 
 type EventTuple = [bigint, `0x${string}`, string, string, string, string, bigint, string, number, string];
 type MedalTuple = [bigint, bigint, string, string, string, number, number, number, boolean];
@@ -38,6 +39,7 @@ export default function EventDetailsPage() {
   const params = useParams();
   const id = Number(params?.id);
   const { address } = useAccount();
+  const publicClient = usePublicClient();
 
   const { data: eventData } = useReadContract({ address: EVENT_MANAGER.address, abi: EVENT_MANAGER.abi, functionName: "getEvent", args: [BigInt(id)] });
   const { data: medalsData } = useReadContract({ address: EVENT_MANAGER.address, abi: EVENT_MANAGER.abi, functionName: "getEventMedals", args: [BigInt(id)] });
@@ -49,10 +51,51 @@ export default function EventDetailsPage() {
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isLoading: isConfirming } = useWaitForTransactionReceipt({ hash });
 
-  const award = (medalId: number) => {
+  const award = async (medalId: number) => {
     const to = prompt("Recipient address (0x...):") || "";
     if (!to) return;
-    writeContract({ address: EVENT_MANAGER.address, abi: EVENT_MANAGER.abi, functionName: "awardMedal", args: [BigInt(medalId), to as `0x${string}`] });
+
+    // Validate address format
+    if (!to.startsWith("0x") || to.length !== 42) {
+      toast.error("Invalid address format. Must be a valid Ethereum address (0x...)");
+      return;
+    }
+
+    const recipientAddress = to.toLowerCase() as `0x${string}`;
+
+    // Check if recipient is the event creator
+    if (ev && recipientAddress === ev.creator.toLowerCase()) {
+      toast.error("❌ Cannot assign badge to event creator");
+      return;
+    }
+
+    // Check if recipient has already claimed this medal using publicClient
+    if (publicClient) {
+      try {
+        const hasClaimed = await publicClient.readContract({
+          address: EVENT_MANAGER.address,
+          abi: EVENT_MANAGER.abi,
+          functionName: "hasClaimed",
+          args: [BigInt(medalId), recipientAddress],
+        });
+
+        if (hasClaimed) {
+          toast.error("❌ This user has already claimed this badge");
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking claim status:", error);
+        // Continue anyway - let the contract handle it
+      }
+    }
+
+    writeContract({ 
+      address: EVENT_MANAGER.address, 
+      abi: EVENT_MANAGER.abi, 
+      functionName: "awardMedal", 
+      args: [BigInt(medalId), recipientAddress] 
+    });
+    toast.success("📝 Transaction sent - assigning badge...");
   };
 
   return (
@@ -147,22 +190,34 @@ export default function EventDetailsPage() {
                     </div>
                     
                     <div className="flex flex-col gap-2">
-                      {isCreator && (
+                      {isCreator && !isFull && (
                         <>
                           <button className="btn-secondary text-sm" onClick={() => award(medalId)} disabled={isPending || isConfirming}>
                             Assign
                           </button>
                         </>
                       )}
-                      {!isCreator && (
+                      {isCreator && isFull && (
+                        <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200">
+                          <p className="text-xs text-red-700 font-medium text-center">
+                            All badges claimed
+                          </p>
+                        </div>
+                      )}
+                      {!isCreator && !isFull && (
                         <p className="text-sm text-gray-500 italic">
                           Scan QR to claim
+                        </p>
+                      )}
+                      {!isCreator && isFull && (
+                        <p className="text-sm text-gray-500 italic">
+                          Fully claimed
                         </p>
                       )}
                     </div>
                   </div>
                   
-                  {isCreator && (
+                  {isCreator && !isFull && (
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <p className="text-sm text-gray-600 mb-2">QR code to claim this badge (scannable by attendees):</p>
                       <MedalQR eventId={id} medalId={medalId} />
@@ -174,7 +229,7 @@ export default function EventDetailsPage() {
           </div>
         </div>
       ) : (
-        <div className="text-gray-600">Cargando...</div>
+        <div className="text-gray-600">Loading...</div>
       )}
     </SharedPageLayout>
   );

@@ -42,8 +42,6 @@ export default function CreateEventPage() {
         console.error("Error parsing event ID from logs:", e);
       }
       
-      toast.success("✅ Event created successfully. Waiting for admin approval.", { duration: 5000 });
-      
       // Reset form
       setTitle("");
       setDescription("");
@@ -68,7 +66,7 @@ export default function CreateEventPage() {
 
     // Fix: Create date in local timezone, not UTC
     const dt = new Date(`${date}T${time}:00`).getTime();
-    if (!dt || Number.isNaN(dt) || dt < 0) return toast.error("Invalid date/time");
+    if (!dt || Number.isNaN(dt)) return toast.error("Invalid date/time");
 
     // Validate that the date is not more than one year in the past
     const oneYearAgo = Date.now() - (365 * 24 * 60 * 60 * 1000);
@@ -95,7 +93,7 @@ export default function CreateEventPage() {
           medals.map((m) => m.maxClaims),
         ],
       });
-      toast.success("📝 Transacción enviada");
+      toast.success("📝 Transaction sent - event submitted for approval");
     } catch (err) {
       console.error("Error submitting event:", err);
       toast.error("Could not create event");

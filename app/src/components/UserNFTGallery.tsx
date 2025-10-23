@@ -67,15 +67,15 @@ export function UserNFTGallery({ address, isOwnProfile }: UserNFTGalleryProps) {
   const { nfts, isLoading, error } = useUserNFTs(address);
 
   const sectionTitle = useMemo(
-    () => (isOwnProfile ? "Tus NFTs de Backer" : "NFTs de Backer"),
+    () => (isOwnProfile ? "Your Backer NFTs" : "Backer NFTs"),
     [isOwnProfile]
   );
 
   const helperText = useMemo(
     () =>
       isOwnProfile
-        ? "Cada vez que inviertes en un proyecto, recibes un NFT conmemorativo con tu monto invertido."
-        : "Explora los NFTs obtenidos por este usuario al respaldar proyectos en la plataforma.",
+        ? "Every time you invest in a project, you receive a commemorative NFT with your investment amount."
+        : "Explore the NFTs obtained by this user when backing projects on the platform.",
     [isOwnProfile]
   );
 
@@ -91,7 +91,7 @@ export function UserNFTGallery({ address, isOwnProfile }: UserNFTGalleryProps) {
             <p className="text-sm text-gray-500 mt-1">{helperText}</p>
           </div>
           <div className="rounded-full bg-purple-100 text-purple-700 text-xs font-semibold px-4 py-1">
-            Cargando...
+            Loading...
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export function UserNFTGallery({ address, isOwnProfile }: UserNFTGalleryProps) {
       <div className="mb-12 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-5 text-rose-700">
         <div className="flex items-center gap-2 text-sm font-semibold mb-1">
           <Icon name="alert" size="sm" />
-          No pudimos cargar los NFTs del perfil
+          We couldn't load the profile NFTs
         </div>
         <p className="text-sm text-rose-600/80">{error}</p>
       </div>
@@ -152,12 +152,12 @@ export function UserNFTGallery({ address, isOwnProfile }: UserNFTGalleryProps) {
             <Icon name="sparkles" size="lg" />
           </div>
           <h3 className="text-lg font-semibold text-gray-800">
-            Aún no hay NFTs en esta colección
+            No NFTs in this collection yet
           </h3>
           <p className="mt-2 text-sm text-gray-500 max-w-xl mx-auto">
             {isOwnProfile
-              ? "Inspira o invierte en proyectos para recibir NFTs que reflejen tu apoyo dentro del ecosistema."
-              : "Cuando este usuario apoye proyectos, sus NFTs aparecerán aquí."}
+              ? "Inspire or invest in projects to receive NFTs that reflect your support within the ecosystem."
+              : "When this user backs projects, their NFTs will appear here."}
           </p>
         </div>
       ) : (
@@ -193,13 +193,13 @@ export function UserNFTGallery({ address, isOwnProfile }: UserNFTGalleryProps) {
 
                 <div className="rounded-2xl bg-gray-50/70 border border-gray-100 px-4 py-3 flex items-center justify-between">
                   <div>
-                    <p className="text-xs uppercase text-gray-400 tracking-wide">Inversión</p>
+                    <p className="text-xs uppercase text-gray-400 tracking-wide">Investment</p>
                     <p className="text-sm font-semibold text-indigo-600">
                       {formatInvestmentLabel(nft.investmentEth)}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs uppercase text-gray-400 tracking-wide">Proyecto</p>
+                    <p className="text-xs uppercase text-gray-400 tracking-wide">Project</p>
                     <p className="text-sm font-semibold text-gray-700 line-clamp-1">
                       {nft.projectTitle}
                     </p>
@@ -212,7 +212,7 @@ export function UserNFTGallery({ address, isOwnProfile }: UserNFTGalleryProps) {
                     className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gray-900 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-indigo-600"
                   >
                     <Icon name="external" size="xs" />
-                    Ver proyecto
+                    View project
                   </Link>
                   {nft.metadataUri && (
                     <a

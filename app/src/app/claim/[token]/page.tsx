@@ -63,22 +63,40 @@ export default function ClaimMedalPage() {
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
-  // Update medal info when contract data loads
+  // Check if user has already claimed this medal
+  const { data: hasClaimed } = useReadContract({
+    address: EVENT_MANAGER.address,
+    abi: EVENT_MANAGER.abi,
+    functionName: "hasClaimed",
+    args: medalInfo && connectedAddress ? [BigInt(medalInfo.medalId), connectedAddress] : undefined,
+    query: { enabled: !!medalInfo && !!connectedAddress },
+  });
+
+  // Update medal info when contract data loads (FIX: use functional update to avoid infinite loop)
   useEffect(() => {
-    if (eventData && medalsData && medalInfo) {
+    if (eventData && medalsData) {
       const event = eventData as EventData;
       const medals = medalsData as MedalData[];
-      const medal = medals.find((m) => Number(m.id) === medalInfo.medalId);
       
-      if (event && medal) {
-        setMedalInfo({
-          ...medalInfo,
-          eventTitle: event.title,
-          medalName: medal.name,
-        });
-      }
+      setMedalInfo((prev) => {
+        if (!prev) return prev;
+        
+        const medal = medals.find((m) => Number(m.id) === prev.medalId);
+        
+        if (event && medal) {
+          // Only update if the titles are different (avoid unnecessary re-renders)
+          if (prev.eventTitle !== event.title || prev.medalName !== medal.name) {
+            return {
+              ...prev,
+              eventTitle: event.title,
+              medalName: medal.name,
+            };
+          }
+        }
+        return prev;
+      });
     }
-  }, [eventData, medalsData, medalInfo]);
+  }, [eventData, medalsData]);
 
   useEffect(() => {
     if (!token) return;
@@ -140,6 +158,21 @@ export default function ClaimMedalPage() {
       return;
     }
 
+    // Check if user already claimed
+    if (hasClaimed) {
+      toast.error("You have already claimed this badge");
+      return;
+    }
+
+    // Check if user is the event creator
+    if (eventData) {
+      const event = eventData as EventData;
+      if (event.creator.toLowerCase() === connectedAddress.toLowerCase()) {
+        toast.error("Event creators cannot claim their own event badges");
+        return;
+      }
+    }
+
     try {
       writeContract({
         address: EVENT_MANAGER.address,
@@ -192,6 +225,18 @@ export default function ClaimMedalPage() {
                     ⚠️ <strong>Connect your wallet</strong> to claim this badge
                   </p>
                 </div>
+              ) : hasClaimed ? (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-900">
+                    ❌ <strong>Already claimed!</strong> You have already claimed this badge.
+                  </p>
+                </div>
+              ) : eventData && (eventData as EventData).creator.toLowerCase() === connectedAddress.toLowerCase() ? (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-900">
+                    ❌ <strong>Cannot claim!</strong> Event creators cannot claim their own event badges.
+                  </p>
+                </div>
               ) : (
                 <div className="text-left">
                   <div className="p-3 bg-gray-50 rounded-lg">
@@ -207,8 +252,14 @@ export default function ClaimMedalPage() {
 
               <button
                 onClick={handleClaim}
-                disabled={isPending || isConfirming || !connectedAddress}
-                className="btn-primary w-full"
+                disabled={
+                  isPending || 
+                  isConfirming || 
+                  !connectedAddress || 
+                  hasClaimed || 
+                  (eventData && (eventData as EventData).creator.toLowerCase() === connectedAddress.toLowerCase())
+                }
+                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPending || isConfirming ? "Claiming..." : "🏅 Claim Badge"}
               </button>

@@ -144,7 +144,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
       const isInvest = (g.category || "").toUpperCase() === "INVESTMENT";
       items.push({
         type: "genesis",
-        title: isInvest ? "Medalla de Inversor" : (g.reason || g.category || "Genesis award"),
+        title: isInvest ? "Investor Badge" : (g.reason || g.category || "Genesis award"),
         sub: `${g.amount.toString()} pts`,
         icon: isInvest ? investIcon : undefined,
         when: g.timestamp,
@@ -152,10 +152,10 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
     }
     for (const b of boosts) {
       const short = `${b.booster.slice(0, 6)}...${b.booster.slice(-4)}`;
-      items.push({ type: "boost", title: `Boost de ${short}`, sub: `+${b.power.toString()} pts`, icon: boostIcon, when: b.blockNumber });
+      items.push({ type: "boost", title: `Boost from ${short}`, sub: `+${b.power.toString()} pts`, icon: boostIcon, when: b.blockNumber });
     }
     for (const m of medalClaims) {
-      items.push({ type: "medal", title: m.name || `Medalla #${m.medalId}`, icon: m.iconUrl, when: m.blockNumber });
+      items.push({ type: "medal", title: m.name || `Badge #${m.medalId}`, icon: m.iconUrl, when: m.blockNumber });
     }
     return items.sort((a, b) => Number((b.when ?? 0n) - (a.when ?? 0n)));
   }, [genesis, boosts, medalClaims]);
@@ -165,8 +165,8 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
   return (
     <div className="card">
       <div className="mb-4">
-        <h3 className="text-xl font-semibold text-gray-900">Historial de Reputación</h3>
-        <p className="text-sm text-gray-600">Cómo fue obtenida la reputación de este usuario</p>
+        <h3 className="text-xl font-semibold text-gray-900">Reputation History</h3>
+        <p className="text-sm text-gray-600">How this user earned their reputation</p>
       </div>
       <div className="space-y-3">
         {timeline.map((it, idx) => (

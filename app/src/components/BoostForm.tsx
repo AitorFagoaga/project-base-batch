@@ -128,7 +128,7 @@ export function BoostForm({ targetUser }: BoostFormProps = {}) {
         />
         {targetUser && (
           <p className="text-xs text-gray-500 mt-1">
-            Boosteando a este usuario
+            Boosting this user
           </p>
         )}
       </div>

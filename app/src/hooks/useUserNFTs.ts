@@ -128,11 +128,11 @@ export function useUserNFTs(userAddress?: `0x${string}`): UseUserNFTsResult {
 
             const title =
               (data.title as string | undefined) ??
-              ((data[2] as string | undefined) ?? `Proyecto #${index}`);
+              ((data[2] as string | undefined) ?? `Project #${index}`);
 
             const category =
               (data.category as string | undefined) ??
-              ((data[5] as string | undefined) ?? "Proyecto");
+              ((data[5] as string | undefined) ?? "Project");
 
             return {
               projectId: index,

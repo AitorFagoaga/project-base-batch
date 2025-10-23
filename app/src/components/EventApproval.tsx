@@ -156,7 +156,7 @@ function EventApprovalCard({ eventId, onEventLoaded }: EventApprovalCardProps) {
 
   useEffect(() => {
     if (isSuccess) {
-      toast.success("Evento actualizado exitosamente");
+      toast.success("Event updated successfully");
       setShowRejectForm(false);
       setRejectReason("");
     }
@@ -192,13 +192,13 @@ function EventApprovalCard({ eventId, onEventLoaded }: EventApprovalCardProps) {
         args: [BigInt(eventId)],
       });
     } catch (err: any) {
-      toast.error(err.message || "Error al aprobar evento");
+      toast.error(err.message || "Error approving event");
     }
   };
 
   const handleReject = async () => {
     if (!rejectReason.trim()) {
-      toast.error("Por favor ingresa una razón para rechazar");
+      toast.error("Please enter a reason for rejection");
       return;
     }
 
@@ -210,7 +210,7 @@ function EventApprovalCard({ eventId, onEventLoaded }: EventApprovalCardProps) {
         args: [BigInt(eventId), rejectReason],
       });
     } catch (err: any) {
-      toast.error(err.message || "Error al rechazar evento");
+      toast.error(err.message || "Error rejecting event");
     }
   };
 
@@ -248,7 +248,7 @@ function EventApprovalCard({ eventId, onEventLoaded }: EventApprovalCardProps) {
           <p className="text-gray-600">{date.toLocaleDateString()} {event.timeText}</p>
         </div>
         <div>
-          <span className="font-semibold text-gray-700">👤 Creador:</span>
+          <span className="font-semibold text-gray-700">👤 Creator:</span>
           <p className="text-gray-600 font-mono text-xs">{event.creator}</p>
         </div>
       </div>
@@ -257,7 +257,7 @@ function EventApprovalCard({ eventId, onEventLoaded }: EventApprovalCardProps) {
       {medals.length > 0 && (
         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
           <h4 className="font-semibold text-gray-900 mb-3">
-            🏅 Medallas del Evento ({medals.length})
+            🏅 Event Badges ({medals.length})
           </h4>
           <div className="space-y-2">
             {medals.map((medal) => (
