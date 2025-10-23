@@ -18,6 +18,11 @@ import { formatEther } from "viem";
 import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 
+type TeamMember = {
+  member: string;
+  role: string;
+};
+
 type NormalizedProject = {
   id: bigint;
   creator: string;
@@ -100,6 +105,21 @@ export default function ProjectDetailPage() {
       enabled: !!project,
     },
   });
+
+  const {
+    data: teamMembersData,
+    isLoading: isTeamLoading,
+  } = useReadContract({
+    address: CONTRACTS.launchpad.address,
+    abi: CONTRACTS.launchpad.abi,
+    functionName: "getTeamMembers",
+    args: [projectId],
+    query: {
+      enabled: !!project,
+    },
+  });
+
+  const teamMembers: TeamMember[] = teamMembersData ? (teamMembersData as TeamMember[]) : [];
 
   const { writeContract: writeClaim, data: claimHash, isPending: isClaimPending } = useWriteContract();
   const { isLoading: isClaimConfirming, isSuccess: isClaimSuccess } = useWaitForTransactionReceipt({
@@ -407,23 +427,33 @@ export default function ProjectDetailPage() {
                         )}
                       </div>
 
-                      {/* Cofounders Section */}
-                      {project.cofounders && project.cofounders.length > 0 && (
-                        <div className="rounded-2xl border border-gray-100 bg-gray-50/50 p-5">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">
-                            Colaboradores ({project.cofounders.length})
+                      {/* Team Section */}
+                      {!isTeamLoading && teamMembers.length > 0 && (
+                        <div className="rounded-2xl border border-purple-100 bg-gradient-to-r from-purple-50/50 to-pink-50/50 p-5">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-purple-600 mb-3">
+                            👥 Founding Team ({teamMembers.length})
                           </p>
-                          <div className="flex flex-wrap gap-3">
-                            {project.cofounders.map((cofounder, idx) => (
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            {teamMembers.map((member, idx) => (
                               <Link
                                 key={idx}
-                                href={`/profile/${cofounder}`}
-                                className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 hover:shadow-md transition-all"
+                                href={`/profile/${member.member}`}
+                                className="flex items-center gap-3 rounded-xl border border-purple-200 bg-white px-4 py-3 hover:shadow-md hover:border-purple-300 transition-all"
                               >
-                                <UserAvatar address={cofounder} size="sm" showReputation={false} />
-                                <span className="font-mono text-xs text-gray-700">
-                                  {cofounder.slice(0, 6)}...{cofounder.slice(-4)}
-                                </span>
+                                <UserAvatar address={member.member} size="sm" showReputation={false} />
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-mono text-xs text-gray-700 truncate">
+                                    {member.member.slice(0, 6)}...{member.member.slice(-4)}
+                                  </p>
+                                  <p className="text-xs text-purple-600 font-medium mt-0.5">
+                                    {member.role}
+                                  </p>
+                                </div>
+                                {member.member.toLowerCase() === project.creator.toLowerCase() && (
+                                  <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-2 py-1 rounded-full">
+                                    Creator
+                                  </span>
+                                )}
                               </Link>
                             ))}
                           </div>
@@ -647,24 +677,6 @@ export default function ProjectDetailPage() {
                   )}
                 </div>
               </div>
-
-              {project.cofounders && project.cofounders.length > 0 && (
-                <div className="card rounded-[28px] border border-gray-100 p-6 shadow-md shadow-gray-200/50">
-                  <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500 mb-3">
-                    Team Members
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {project.cofounders.map((cofounder) => (
-                      <span
-                        key={cofounder}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-purple-100 bg-purple-50/70 px-4 py-2 text-xs font-semibold text-purple-700"
-                      >
-                        {cofounder.slice(0, 6)}...{cofounder.slice(-4)}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               <SimilarProjects currentProjectId={projectId} category={project.category} />
             </div>

@@ -1,8 +1,8 @@
 {
   "network": "base-sepolia",
   "chainId": 84532,
-  "deployedAt": "2025-10-22T23:57:49.070Z",
-  "deployer": "0xaa860E97f1a50ca6Ce786AEf9B835052dfD0ee25",
+  "deployedAt": "2025-10-23T02:05:46.933Z",
+  "deployer": "0x31a42406422E72dC790cF42eD978458B0b00bd06",
   "gasUsed": {
     "reputation": "~2,500,000",
     "userProfile": "~800,000",
@@ -11,7 +11,7 @@
   },
   "contracts": {
     "Reputation": {
-      "address": "0x1B1D78C093E2858FB314B53F9a5F8324C2057DB2",
+      "address": "0x3f0069eBEEc6F1f797048a035BfedC61F5F4f81d",
       "abi": [
         {
           "type": "constructor",
@@ -664,7 +664,7 @@
       ]
     },
     "Launchpad": {
-      "address": "0x8B5d8ccF101Ac7671E4B4c37c32084ea0159b756",
+      "address": "0x4EEc1C2F03A5B97A01949821981F20eFf0e50370",
       "abi": [
         {
           "type": "constructor",
@@ -690,6 +690,11 @@
         {
           "type": "error",
           "name": "AlreadyInspired",
+          "inputs": []
+        },
+        {
+          "type": "error",
+          "name": "ArrayLengthMismatch",
           "inputs": []
         },
         {
@@ -725,6 +730,11 @@
         {
           "type": "error",
           "name": "InvalidGoal",
+          "inputs": []
+        },
+        {
+          "type": "error",
+          "name": "InvalidRole",
           "inputs": []
         },
         {
@@ -776,6 +786,11 @@
               "type": "address",
               "name": "cofounder",
               "indexed": true
+            },
+            {
+              "type": "string",
+              "name": "role",
+              "indexed": false
             }
           ]
         },
@@ -964,6 +979,31 @@
             {
               "type": "address",
               "name": "cofounder"
+            },
+            {
+              "type": "string",
+              "name": "role"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "addCofoundersBatch",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            },
+            {
+              "type": "address[]",
+              "name": "cofounders"
+            },
+            {
+              "type": "string[]",
+              "name": "roles"
             }
           ],
           "outputs": []
@@ -1022,6 +1062,10 @@
             {
               "type": "string",
               "name": "nftBaseURI"
+            },
+            {
+              "type": "string",
+              "name": "creatorRole"
             }
           ],
           "outputs": [
@@ -1213,6 +1257,58 @@
         },
         {
           "type": "function",
+          "name": "getTeamMemberRole",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            },
+            {
+              "type": "address",
+              "name": "member"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "string",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "getTeamMembers",
+          "constant": true,
+          "stateMutability": "view",
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "tuple[]",
+              "name": "",
+              "components": [
+                {
+                  "type": "address",
+                  "name": "member"
+                },
+                {
+                  "type": "string",
+                  "name": "role"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "function",
           "name": "hasInspired",
           "constant": true,
           "stateMutability": "view",
@@ -1324,7 +1420,7 @@
       ]
     },
     "UserProfile": {
-      "address": "0x4A777F91b922ffc95F741cbA38C36af0fb391cab",
+      "address": "0x4d2265B27Fcc858a75B6142ACf58C38158eC71Ef",
       "abi": [
         {
           "type": "event",
@@ -1458,7 +1554,7 @@
       ]
     },
     "EventManager": {
-      "address": "0xf9464B15e5CEedFcA0C0C4C0A3Ea72CfC90607F6",
+      "address": "0xb613cF18d14BcB4dA20BB4003C1dB15B66Ba445E",
       "abi": [
         {
           "type": "constructor",

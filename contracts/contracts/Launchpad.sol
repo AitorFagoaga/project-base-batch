@@ -30,6 +30,11 @@ contract Launchpad is ReentrancyGuard {
         address nftContract; // Address of the project's NFT contract
     }
 
+    struct TeamMember {
+        address member;
+        string role;
+    }
+
     // ═════════════════════════════════════════════════════════════════════════════
     // STATE
     // ═════════════════════════════════════════════════════════════════════════════
@@ -48,7 +53,10 @@ contract Launchpad is ReentrancyGuard {
     
     /// @notice Mapping to check if address is a cofounder of a project
     mapping(uint256 => mapping(address => bool)) private _isCofounder;
-    
+
+    /// @notice Mapping from project ID and address to role
+    mapping(uint256 => mapping(address => string)) private _teamRoles;
+
     /// @notice List of contributors per project
     mapping(uint256 => address[]) private _contributors;
     
@@ -78,7 +86,8 @@ contract Launchpad is ReentrancyGuard {
     
     event CofounderAdded(
         uint256 indexed projectId,
-        address indexed cofounder
+        address indexed cofounder,
+        string role
     );
     
     event ContributionMade(
@@ -134,6 +143,8 @@ contract Launchpad is ReentrancyGuard {
     error CannotFundOwnProject();
     error AlreadyInspired();
     error CannotInspireOwnProject();
+    error InvalidRole();
+    error ArrayLengthMismatch();
 
     // ═════════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR
@@ -226,6 +237,7 @@ contract Launchpad is ReentrancyGuard {
      * @param nftName Name for the backer NFT collection
      * @param nftSymbol Symbol for the backer NFT collection
      * @param nftBaseURI IPFS URI for the NFT metadata
+     * @param creatorRole Role of the project creator
      * @return projectId The ID of the newly created project
      */
     function createProject(
@@ -237,15 +249,18 @@ contract Launchpad is ReentrancyGuard {
         uint256 durationInDays,
         string calldata nftName,
         string calldata nftSymbol,
-        string calldata nftBaseURI
+        string calldata nftBaseURI,
+        string calldata creatorRole
     ) external returns (uint256 projectId) {
         if (goalInWei == 0) revert InvalidGoal();
         if (durationInDays == 0) revert InvalidDuration();
+        if (bytes(creatorRole).length == 0) revert InvalidRole();
 
         require(bytes(title).length <= 100, "Title too long");
         require(bytes(description).length <= 1000, "Description too long");
         require(bytes(imageUrl).length <= 200, "Image URL too long");
         require(bytes(category).length <= 50, "Category too long");
+        require(bytes(creatorRole).length <= 50, "Role too long");
         require(bytes(nftName).length > 0, "NFT name required");
         require(bytes(nftSymbol).length > 0, "NFT symbol required");
         require(bytes(nftBaseURI).length > 0, "NFT base URI required");
@@ -279,6 +294,9 @@ contract Launchpad is ReentrancyGuard {
 
         _projectNFTs[projectId] = address(nftContract);
 
+        // Store creator role
+        _teamRoles[projectId][msg.sender] = creatorRole;
+
         emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, category, goalInWei, deadline);
     }
     
@@ -286,18 +304,62 @@ contract Launchpad is ReentrancyGuard {
      * @notice Add a co-founder to the project
      * @param projectId The ID of the project
      * @param cofounder Address of the co-founder to add
+     * @param role Role of the co-founder
      */
-    function addCofounder(uint256 projectId, address cofounder) external {
+    function addCofounder(uint256 projectId, address cofounder, string calldata role) external {
         Project storage project = _projects[projectId];
         if (project.creator == address(0)) revert ProjectNotFound();
         if (msg.sender != project.creator) revert NotCreator();
         if (_isCofounder[projectId][cofounder]) revert AlreadyCofounder();
         if (cofounder == project.creator) revert AlreadyCofounder();
-        
+        if (bytes(role).length == 0) revert InvalidRole();
+
+        require(bytes(role).length <= 50, "Role too long");
+
         project.cofounders.push(cofounder);
         _isCofounder[projectId][cofounder] = true;
-        
-        emit CofounderAdded(projectId, cofounder);
+        _teamRoles[projectId][cofounder] = role;
+
+        emit CofounderAdded(projectId, cofounder, role);
+    }
+
+    /**
+     * @notice Add multiple co-founders to the project in a single transaction
+     * @param projectId The ID of the project
+     * @param cofounders Array of co-founder addresses
+     * @param roles Array of roles corresponding to each co-founder
+     */
+    function addCofoundersBatch(
+        uint256 projectId,
+        address[] calldata cofounders,
+        string[] calldata roles
+    ) external {
+        Project storage project = _projects[projectId];
+        if (project.creator == address(0)) revert ProjectNotFound();
+        if (msg.sender != project.creator) revert NotCreator();
+        if (cofounders.length != roles.length) revert ArrayLengthMismatch();
+
+        for (uint256 i = 0; i < cofounders.length; i++) {
+            address cofounder = cofounders[i];
+            string calldata role = roles[i];
+
+            // Skip if already a cofounder
+            if (_isCofounder[projectId][cofounder]) continue;
+
+            // Skip if it's the creator
+            if (cofounder == project.creator) continue;
+
+            // Validate role
+            if (bytes(role).length == 0) revert InvalidRole();
+            require(bytes(role).length <= 50, "Role too long");
+
+            // Add cofounder
+            project.cofounders.push(cofounder);
+            _isCofounder[projectId][cofounder] = true;
+            _teamRoles[projectId][cofounder] = role;
+
+            emit CofounderAdded(projectId, cofounder, role);
+        }
     }
     
     /**
@@ -315,6 +377,43 @@ contract Launchpad is ReentrancyGuard {
      */
     function isCofounder(uint256 projectId, address account) external view returns (bool) {
         return _isCofounder[projectId][account];
+    }
+
+    /**
+     * @notice Get the role of a team member (creator or cofounder)
+     * @param projectId The ID of the project
+     * @param member Address of the team member
+     * @return The role string
+     */
+    function getTeamMemberRole(uint256 projectId, address member) external view returns (string memory) {
+        return _teamRoles[projectId][member];
+    }
+
+    /**
+     * @notice Get all team members with their roles
+     * @param projectId The ID of the project
+     * @return Array of TeamMember structs containing addresses and roles
+     */
+    function getTeamMembers(uint256 projectId) external view returns (TeamMember[] memory) {
+        Project storage project = _projects[projectId];
+        uint256 teamSize = 1 + project.cofounders.length; // creator + cofounders
+        TeamMember[] memory team = new TeamMember[](teamSize);
+
+        // Add creator
+        team[0] = TeamMember({
+            member: project.creator,
+            role: _teamRoles[projectId][project.creator]
+        });
+
+        // Add cofounders
+        for (uint256 i = 0; i < project.cofounders.length; i++) {
+            team[i + 1] = TeamMember({
+                member: project.cofounders[i],
+                role: _teamRoles[projectId][project.cofounders[i]]
+            });
+        }
+
+        return team;
     }
 
     // ═════════════════════════════════════════════════════════════════════════════

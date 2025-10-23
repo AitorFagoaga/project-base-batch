@@ -5,54 +5,176 @@ import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagm
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import toast from "react-hot-toast";
-import { parseEther } from "viem";
+import { parseEther, decodeEventLog } from "viem";
 
 import { CONTRACTS } from "@/lib/contracts";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
 import { Icon } from "@/components/Icon";
 import { uploadImageToIPFS, uploadMetadataToIPFS, validateImageFile, ipfsToHttp } from "@/lib/ipfsService";
+import { TeamMemberInput, type TeamMember } from "@/components/TeamMemberInput";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1200&q=80";
+
+type Step = 1 | 2 | 3 | 4;
 
 export default function CreateProjectPage() {
   const router = useRouter();
   const { isConnected, address } = useAccount();
 
+  // Multi-step form state
+  const [currentStep, setCurrentStep] = useState<Step>(1);
+
+  // Step 1: Project Information
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [category, setCategory] = useState("DeFi");
-  const [goalEth, setGoalEth] = useState("");
-  const [durationDays, setDurationDays] = useState("");
 
-  // NFT fields
+  // Step 2: Team
+  const [creatorRole, setCreatorRole] = useState("");
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+
+  // Step 3: NFT Configuration
   const [nftName, setNftName] = useState("");
   const [nftDescription, setNftDescription] = useState("");
   const [nftImage, setNftImage] = useState<File | null>(null);
   const [nftImagePreview, setNftImagePreview] = useState<string>("");
 
+  // Step 4: Goals & Duration
+  const [goalEth, setGoalEth] = useState("");
+  const [durationDays, setDurationDays] = useState("");
+
   // Upload states
   const [isUploadingToIPFS, setIsUploadingToIPFS] = useState(false);
   const [uploadStage, setUploadStage] = useState<string>("");
 
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  // State for adding cofounders after project creation
+  const [newProjectId, setNewProjectId] = useState<bigint | null>(null);
+  const [isAddingCofounders, setIsAddingCofounders] = useState(false);
 
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash });
+
+  // Second transaction for adding cofounders
+  const {
+    writeContract: writeAddCofounders,
+    data: cofounderHash,
+    isPending: isCofounderPending,
+    error: cofounderError
+  } = useWriteContract();
+
+  const {
+    isLoading: isCofounderConfirming,
+    isSuccess: isCofounderSuccess
+  } = useWaitForTransactionReceipt({ hash: cofounderHash });
+
+  // Handle project creation success - extract projectId and add cofounders if needed
   useEffect(() => {
-    if (!isSuccess) {
+    if (!isSuccess || !receipt) {
       return;
     }
 
-    toast.success("🎉 Project created successfully! Redirecting...", {
+    console.log("📊 Transaction receipt received:", receipt);
+    console.log("👥 Team members to add:", teamMembers);
+
+    // Parse the transaction logs to get the projectId using viem's decodeEventLog
+    try {
+      // Find the ProjectCreated event log
+      const projectCreatedLog = receipt.logs.find((log: any) => {
+        try {
+          const decoded = decodeEventLog({
+            abi: CONTRACTS.launchpad.abi,
+            data: log.data,
+            topics: log.topics,
+          });
+          return decoded.eventName === 'ProjectCreated';
+        } catch {
+          return false;
+        }
+      });
+
+      if (projectCreatedLog) {
+        // Decode the event to extract the projectId
+        const decoded = decodeEventLog({
+          abi: CONTRACTS.launchpad.abi,
+          data: projectCreatedLog.data,
+          topics: projectCreatedLog.topics,
+        });
+
+        const projectId = decoded.args.projectId as bigint;
+        console.log("🆔 Extracted project ID:", projectId.toString());
+        setNewProjectId(projectId);
+
+        // If there are team members to add, prepare to add them
+        if (teamMembers.length > 0) {
+          console.log("🚀 Will add team members:", teamMembers);
+          setIsAddingCofounders(true);
+          toast.success("✅ Project created! Now adding team members...", {
+            duration: 3000,
+            icon: "👥",
+          });
+        } else {
+          // No team members, just redirect
+          console.log("✅ No team members to add, redirecting...");
+          toast.success("🎉 Project created successfully! Redirecting...", {
+            duration: 3000,
+            icon: "🚀",
+          });
+          const redirect = setTimeout(() => router.push("/"), 2000);
+          return () => clearTimeout(redirect);
+        }
+      } else {
+        console.error("❌ ProjectCreated event not found in logs");
+        throw new Error("ProjectCreated event not found");
+      }
+    } catch (err) {
+      console.error("❌ Error parsing project ID:", err);
+      // Fallback: just redirect
+      toast.success("🎉 Project created successfully! Redirecting...", {
+        duration: 3000,
+        icon: "🚀",
+      });
+      const redirect = setTimeout(() => router.push("/"), 2000);
+      return () => clearTimeout(redirect);
+    }
+  }, [isSuccess, receipt, teamMembers, router]);
+
+  // Add cofounders when project is created and we have team members
+  useEffect(() => {
+    if (!isAddingCofounders || !newProjectId || teamMembers.length === 0) {
+      return;
+    }
+
+    // Prepare the batch call
+    const addresses = teamMembers.map(m => m.address as `0x${string}`);
+    const roles = teamMembers.map(m => m.role);
+
+    writeAddCofounders({
+      address: CONTRACTS.launchpad.address,
+      abi: CONTRACTS.launchpad.abi,
+      functionName: "addCofoundersBatch",
+      args: [newProjectId, addresses, roles],
+    });
+
+    setIsAddingCofounders(false); // Only call once
+  }, [isAddingCofounders, newProjectId, teamMembers, writeAddCofounders]);
+
+  // Handle cofounder addition success
+  useEffect(() => {
+    if (!isCofounderSuccess) {
+      return;
+    }
+
+    toast.success("🎉 Team members added! Redirecting...", {
       duration: 3000,
-      icon: "🚀",
+      icon: "✅",
     });
 
     const redirect = setTimeout(() => router.push("/"), 2000);
     return () => clearTimeout(redirect);
-  }, [isSuccess, router]);
+  }, [isCofounderSuccess, router]);
 
   const previewImage = imageUrl.trim() || FALLBACK_IMAGE;
   const goalLabel = goalEth ? `${goalEth} ETH` : "Set your goal";
@@ -68,8 +190,116 @@ export default function CreateProjectPage() {
     ? `${address.slice(0, 6)}...${address.slice(-4)}`
     : "0xYourWallet";
 
+  // Combined loading state for form disabling
+  const isFormDisabled = isPending || isConfirming || isUploadingToIPFS || isCofounderPending || isCofounderConfirming;
+
   const handleQuickAmount = (amount: string) => {
     setGoalEth(amount);
+  };
+
+  // Step validation functions
+  const validateStep1 = (): boolean => {
+    if (!title.trim()) {
+      toast.error("Please enter a project title");
+      return false;
+    }
+    if (title.length > 100) {
+      toast.error("Title must be 100 characters or less");
+      return false;
+    }
+    if (description.length > 1000) {
+      toast.error("Description must be 1000 characters or less");
+      return false;
+    }
+    if (imageUrl.trim()) {
+      const urlPattern = /^(https?:\/\/|ipfs:\/\/)[\w\-._~:/?#[\]@!$&'()*+,;=]+$/i;
+      if (!urlPattern.test(imageUrl.trim())) {
+        toast.error("Please enter a valid image URL");
+        return false;
+      }
+    }
+    if (imageUrl.length > 200) {
+      toast.error("Image URL must be 200 characters or less");
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep2 = (): boolean => {
+    if (!creatorRole.trim()) {
+      toast.error("Please specify your role in the project");
+      return false;
+    }
+    if (creatorRole.length > 50) {
+      toast.error("Role must be 50 characters or less");
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep3 = (): boolean => {
+    if (!nftName.trim()) {
+      toast.error("Please enter an NFT collection name");
+      return false;
+    }
+    if (!nftDescription.trim()) {
+      toast.error("Please enter an NFT description");
+      return false;
+    }
+    if (!nftImage) {
+      toast.error("Please upload an NFT image");
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep4 = (): boolean => {
+    const goal = Number(goalEth);
+    const duration = Number(durationDays);
+
+    if (!goalEth || Number.isNaN(goal) || goal <= 0) {
+      toast.error("Please enter a valid funding goal");
+      return false;
+    }
+    if (goal < 0.001) {
+      toast.error("Minimum goal is 0.001 ETH");
+      return false;
+    }
+    if (!durationDays || !Number.isInteger(duration) || duration <= 0 || duration > 365) {
+      toast.error("Duration must be between 1 and 365 days");
+      return false;
+    }
+    return true;
+  };
+
+  // Navigation functions
+  const handleNext = () => {
+    let isValid = false;
+
+    switch (currentStep) {
+      case 1:
+        isValid = validateStep1();
+        break;
+      case 2:
+        isValid = validateStep2();
+        break;
+      case 3:
+        isValid = validateStep3();
+        break;
+      case 4:
+        isValid = validateStep4();
+        break;
+    }
+
+    if (isValid && currentStep < 4) {
+      setCurrentStep((currentStep + 1) as Step);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep((currentStep - 1) as Step);
+    }
   };
 
   const handleNftImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,57 +325,14 @@ export default function CreateProjectPage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!title || !goalEth || !durationDays) {
+    // Final validation
+    if (!validateStep1() || !validateStep2() || !validateStep3() || !validateStep4()) {
       toast.error("Please complete all required fields");
-      return;
-    }
-
-    if (!nftName || !nftDescription || !nftImage) {
-      toast.error("Please complete all NFT fields (name, description, and image)");
       return;
     }
 
     const goal = Number(goalEth);
     const duration = Number(durationDays);
-
-    if (Number.isNaN(goal) || goal <= 0) {
-      toast.error("Goal must be greater than 0");
-      return;
-    }
-
-    if (goal < 0.001) {
-      toast.error("Minimum goal is 0.001 ETH");
-      return;
-    }
-
-    // Validate image URL if provided
-    if (imageUrl.trim()) {
-      const urlPattern = /^(https?:\/\/|ipfs:\/\/)[\w\-._~:/?#[\]@!$&'()*+,;=]+$/i;
-      if (!urlPattern.test(imageUrl.trim())) {
-        toast.error("Please enter a valid image URL (must start with http://, https://, or ipfs://)");
-        return;
-      }
-    }
-
-    if (!Number.isInteger(duration) || duration <= 0 || duration > 365) {
-      toast.error("Duration must be between 1 and 365 days");
-      return;
-    }
-
-    if (title.length > 100) {
-      toast.error("Title must be 100 characters or less");
-      return;
-    }
-
-    if (description.length > 1000) {
-      toast.error("Description must be 1000 characters or less");
-      return;
-    }
-
-    if (imageUrl.length > 200) {
-      toast.error("Image URL must be 200 characters or less");
-      return;
-    }
 
     try {
       // Stage 1: Upload NFT image to IPFS
@@ -206,6 +393,7 @@ export default function CreateProjectPage() {
           nftName,
           nftName.substring(0, 10).toUpperCase().replace(/\s/g, ""), // NFT symbol (max 10 chars)
           metadataUri,
+          creatorRole,
         ],
       });
 
@@ -256,6 +444,38 @@ export default function CreateProjectPage() {
         ) : (
           <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr),minmax(260px,1fr)]">
             <form onSubmit={handleSubmit} className="card space-y-8" noValidate>
+              {/* Progress Indicator */}
+              <div className="flex items-center justify-between">
+                {[1, 2, 3, 4].map((step) => (
+                  <div key={step} className="flex items-center flex-1">
+                    <div className="flex flex-col items-center flex-1">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all ${
+                        step === currentStep
+                          ? "bg-indigo-600 text-white ring-4 ring-indigo-100"
+                          : step < currentStep
+                          ? "bg-green-500 text-white"
+                          : "bg-gray-200 text-gray-500"
+                      }`}>
+                        {step < currentStep ? "✓" : step}
+                      </div>
+                      <span className={`mt-2 text-xs font-medium ${
+                        step === currentStep ? "text-indigo-600" : "text-gray-500"
+                      }`}>
+                        {step === 1 && "Info"}
+                        {step === 2 && "Team"}
+                        {step === 3 && "NFT"}
+                        {step === 4 && "Goals"}
+                      </span>
+                    </div>
+                    {step < 4 && (
+                      <div className={`h-1 flex-1 mx-2 rounded-full transition-all ${
+                        step < currentStep ? "bg-green-500" : "bg-gray-200"
+                      }`} />
+                    )}
+                  </div>
+                ))}
+              </div>
+
               <div className="rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50/80 to-purple-50/80 p-5">
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-blue-600">
                   All-or-nothing funding
@@ -266,15 +486,17 @@ export default function CreateProjectPage() {
                 </p>
               </div>
 
-              <section className="space-y-5">
-                <header className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Project Information
-                  </h3>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Step 1 of 2
-                  </span>
-                </header>
+              {/* Step 1: Project Information */}
+              {currentStep === 1 && (
+                <section className="space-y-5">
+                  <header className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Project Information
+                    </h3>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      Step 1 of 4
+                    </span>
+                  </header>
 
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
@@ -289,7 +511,7 @@ export default function CreateProjectPage() {
                       onChange={(event) => setTitle(event.target.value)}
                       placeholder="Build a decentralized social network"
                       className="input-field text-base"
-                      disabled={isPending || isConfirming}
+                      disabled={isFormDisabled}
                       maxLength={100}
                       required
                     />
@@ -311,7 +533,7 @@ export default function CreateProjectPage() {
                       value={category}
                       onChange={(event) => setCategory(event.target.value)}
                       className="input-field text-base"
-                      disabled={isPending || isConfirming}
+                      disabled={isFormDisabled}
                       required
                     >
                       <option value="DeFi">DeFi</option>
@@ -341,7 +563,7 @@ export default function CreateProjectPage() {
                     onChange={(event) => setImageUrl(event.target.value)}
                     placeholder="https://... or ipfs://..."
                     className="input-field text-base"
-                    disabled={isPending || isConfirming}
+                    disabled={isFormDisabled}
                     maxLength={200}
                   />
                   <p className="mt-2 text-xs text-gray-500">
@@ -360,7 +582,7 @@ export default function CreateProjectPage() {
                     onChange={(event) => setDescription(event.target.value)}
                     placeholder="Describe what you'll build, why it matters, and how you'll use the funds."
                     className="input-field text-base min-h-[140px] resize-y"
-                    disabled={isPending || isConfirming}
+                    disabled={isFormDisabled}
                     maxLength={1000}
                     rows={5}
                   />
@@ -371,17 +593,75 @@ export default function CreateProjectPage() {
                     </span>
                   </div>
                 </div>
-              </section>
+                </section>
+              )}
 
-              <section className="space-y-5">
-                <header className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Backer NFT Configuration
-                  </h3>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Step 2 of 3
-                  </span>
-                </header>
+              {/* Step 2: Team */}
+              {currentStep === 2 && (
+                <section className="space-y-5">
+                  <header className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Founding Team
+                    </h3>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      Step 2 of 4
+                    </span>
+                  </header>
+
+                  <div className="rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50/80 to-pink-50/80 p-5">
+                    <h4 className="text-sm font-semibold uppercase tracking-wide text-purple-600 mb-2">
+                      👥 Build Trust with Your Team
+                    </h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      Show investors who's building this project. Sharing your team and their roles builds credibility and trust.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label htmlFor="creator-role" className="input-label text-base flex items-center gap-2">
+                      <Icon name="user" size="sm" />
+                      Your Role *
+                    </label>
+                    <input
+                      id="creator-role"
+                      type="text"
+                      value={creatorRole}
+                      onChange={(e) => setCreatorRole(e.target.value)}
+                      placeholder="e.g., Founder & CEO, Lead Developer, Project Manager"
+                      className="input-field text-base"
+                      disabled={isFormDisabled}
+                      maxLength={50}
+                      required
+                    />
+                    <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+                      <span>What's your role in this project?</span>
+                      <span className={creatorRole.length > 45 ? "font-semibold text-orange-600" : ""}>
+                        {creatorRole.length}/50
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-5">
+                    <TeamMemberInput
+                      teamMembers={teamMembers}
+                      onChange={setTeamMembers}
+                      disabled={isFormDisabled}
+                    />
+                  </div>
+                </section>
+              )}
+
+              {/* Step 3: NFT Configuration */}
+              {currentStep === 3 && (
+                <section className="space-y-5">
+                  <header className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Backer NFT Configuration
+                    </h3>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      Step 3 of 4
+                    </span>
+                  </header>
 
                 <div className="rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 p-5">
                   <h4 className="text-sm font-semibold uppercase tracking-wide text-indigo-600 mb-2">
@@ -406,7 +686,7 @@ export default function CreateProjectPage() {
                       onChange={(event) => setNftName(event.target.value)}
                       placeholder="MyProject Backer NFT"
                       className="input-field text-base"
-                      disabled={isPending || isConfirming || isUploadingToIPFS}
+                      disabled={isFormDisabled}
                       maxLength={50}
                       required
                     />
@@ -427,7 +707,7 @@ export default function CreateProjectPage() {
                       onChange={(event) => setNftDescription(event.target.value)}
                       placeholder="Official backer NFT for MyProject"
                       className="input-field text-base"
-                      disabled={isPending || isConfirming || isUploadingToIPFS}
+                      disabled={isFormDisabled}
                       maxLength={200}
                       required
                     />
@@ -448,7 +728,7 @@ export default function CreateProjectPage() {
                     accept="image/jpeg,image/png,image/gif,image/webp"
                     onChange={handleNftImageChange}
                     className="input-field text-base"
-                    disabled={isPending || isConfirming || isUploadingToIPFS}
+                    disabled={isFormDisabled}
                     required
                   />
                   <p className="mt-2 text-xs text-gray-500">
@@ -465,17 +745,20 @@ export default function CreateProjectPage() {
                     </div>
                   )}
                 </div>
-              </section>
+                </section>
+              )}
 
-              <section className="space-y-5">
-                <header className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Goals and Duration
-                  </h3>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Step 3 of 3
-                  </span>
-                </header>
+              {/* Step 4: Goals and Duration */}
+              {currentStep === 4 && (
+                <section className="space-y-5">
+                  <header className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Goals and Duration
+                    </h3>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      Step 4 of 4
+                    </span>
+                  </header>
 
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
@@ -493,7 +776,7 @@ export default function CreateProjectPage() {
                         onChange={(event) => setGoalEth(event.target.value)}
                         placeholder="1.00"
                         className="input-field text-base pr-16"
-                        disabled={isPending || isConfirming}
+                        disabled={isFormDisabled}
                         required
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-500">
@@ -511,7 +794,7 @@ export default function CreateProjectPage() {
                               ? "border-blue-500 bg-blue-500 text-white"
                               : "border-blue-200 bg-white/70 text-blue-700 hover:border-blue-400 hover:bg-blue-50"
                           }`}
-                          disabled={isPending || isConfirming}
+                          disabled={isFormDisabled}
                         >
                           {amount} ETH
                         </button>
@@ -535,7 +818,7 @@ export default function CreateProjectPage() {
                       onChange={(event) => setDurationDays(event.target.value)}
                       placeholder="30"
                       className="input-field text-base"
-                      disabled={isPending || isConfirming}
+                      disabled={isFormDisabled}
                       required
                     />
                     <p className="mt-2 text-xs text-gray-500">
@@ -543,41 +826,71 @@ export default function CreateProjectPage() {
                     </p>
                   </div>
                 </div>
-              </section>
+                </section>
+              )}
 
-              {error && (
+              {/* Error Display */}
+              {(error || cofounderError) && (
                 <div className="rounded-2xl border border-red-200 bg-red-50/80 p-4 animate-fadeIn">
                   <p className="text-sm font-semibold text-red-800">
-                    Transaction Error
+                    {cofounderError ? "Error Adding Team Members" : "Transaction Error"}
                   </p>
                   <p className="text-sm text-red-700 mt-1">
-                    {error.message.includes("User rejected") || error.message.includes("User denied")
+                    {(error || cofounderError)?.message.includes("User rejected") || (error || cofounderError)?.message.includes("User denied")
                       ? "You canceled the transaction in your wallet. Try again when ready."
-                      : error.message.includes("insufficient funds")
+                      : (error || cofounderError)?.message.includes("insufficient funds")
                       ? "You don't have enough ETH to complete this transaction."
-                      : error.message.substring(0, 160)}
+                      : (error || cofounderError)?.message.substring(0, 160)}
                   </p>
                 </div>
               )}
 
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-gray-600">
-                  Review the data before submitting the transaction. You can edit the campaign from the dashboard if needed.
-                </p>
-                <button
-                  type="submit"
-                  disabled={isPending || isConfirming || isUploadingToIPFS}
-                  className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
-                >
-                  {isPending || isConfirming || isUploadingToIPFS ? (
-                    "Processing..."
-                  ) : (
-                    <>
-                      <Icon name="rocket" size="sm" />
-                      Create Project
-                    </>
-                  )}
-                </button>
+              {/* Navigation Buttons */}
+              <div className="flex items-center justify-between gap-4 pt-4 border-t border-gray-200">
+                {currentStep > 1 ? (
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    disabled={isFormDisabled}
+                    className="btn-secondary flex items-center gap-2"
+                  >
+                    <Icon name="chevronLeft" size="sm" />
+                    Back
+                  </button>
+                ) : (
+                  <div />
+                )}
+
+                {currentStep < 4 ? (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    disabled={isFormDisabled}
+                    className="btn-primary flex items-center gap-2 ml-auto"
+                  >
+                    Next
+                    <Icon name="chevronRight" size="sm" />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isFormDisabled}
+                    className="btn-primary flex items-center gap-2 ml-auto"
+                  >
+                    {isUploadingToIPFS ? (
+                      "Uploading to IPFS..."
+                    ) : isCofounderPending || isCofounderConfirming ? (
+                      "Adding team members..."
+                    ) : isPending || isConfirming ? (
+                      "Creating project..."
+                    ) : (
+                      <>
+                        <Icon name="rocket" size="sm" />
+                        Create Project
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </form>
 
