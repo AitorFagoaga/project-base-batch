@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { ReputationHistory } from "@/components/ReputationHistory";
+import { GenesisBreakdown } from "@/components/GenesisBreakdown";
 import { Icon } from "@/components/Icon";
 import { UserNFTGallery } from "@/components/UserNFTGallery";
 
@@ -241,6 +242,9 @@ export default function ProfilePage({ params }: PageProps) {
 
         {/* Reputation History */}
         <ReputationHistory address={address as `0x${string}`} />
+
+        {/* Reputation Breakdown */}
+        <GenesisBreakdown address={address as `0x${string}`} />
 
         {/* NFT Gallery */}
         <UserNFTGallery address={address as `0x${string}`} isOwnProfile={isOwnProfile} />

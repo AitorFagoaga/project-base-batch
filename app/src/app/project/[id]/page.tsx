@@ -406,6 +406,29 @@ export default function ProjectDetailPage() {
                           <ReputationBadge reputation={reputationValue} className="ml-auto" />
                         )}
                       </div>
+
+                      {/* Cofounders Section */}
+                      {project.cofounders && project.cofounders.length > 0 && (
+                        <div className="rounded-2xl border border-gray-100 bg-gray-50/50 p-5">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">
+                            Colaboradores ({project.cofounders.length})
+                          </p>
+                          <div className="flex flex-wrap gap-3">
+                            {project.cofounders.map((cofounder, idx) => (
+                              <Link
+                                key={idx}
+                                href={`/profile/${cofounder}`}
+                                className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 hover:shadow-md transition-all"
+                              >
+                                <UserAvatar address={cofounder} size="sm" showReputation={false} />
+                                <span className="font-mono text-xs text-gray-700">
+                                  {cofounder.slice(0, 6)}...{cofounder.slice(-4)}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
