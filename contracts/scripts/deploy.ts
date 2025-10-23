@@ -1,6 +1,10 @@
 import { ethers } from "hardhat";
 import * as fs from "fs";
 import * as path from "path";
+import * as dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config({ path: path.join(__dirname, "../../.env") });
 
 /**
  * Deploy script for Reputation and Launchpad contracts (v2.0 with NFT support)
@@ -217,10 +221,17 @@ async function main() {
 
   // Grant ADMIN_ROLE to additional admins
   console.log("\n👥 Granting ADMIN_ROLE to additional admins...");
+  
+  // Get admin addresses from environment variables
   const additionalAdmins = [
-    "0xaa860E97f1a50ca6Ce786AEf9B835052dfD0ee25",
-    "0x31a42406422E72dC790cF42eD978458B0b00bd06"
-  ];
+    process.env.ADMIN_ADDRESS_1,
+    process.env.ADMIN_ADDRESS_2
+  ].filter(addr => addr && addr !== "0x0000000000000000000000000000000000000000");
+
+  if (additionalAdmins.length === 0) {
+    console.log("⚠️  No additional admin addresses configured in .env file");
+    console.log("   Set ADMIN_ADDRESS_1 and ADMIN_ADDRESS_2 to grant admin roles");
+  }
 
   for (const admin of additionalAdmins) {
     try {

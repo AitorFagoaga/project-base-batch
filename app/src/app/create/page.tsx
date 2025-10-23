@@ -247,21 +247,33 @@ export default function CreateProjectPage() {
   };
 
   const validateStep4 = (): boolean => {
+    // Only validate if user is trying to submit or move forward
+    // Don't show errors just for landing on step 4
+    if (!goalEth && !durationDays) {
+      return false; // Not valid but don't show error
+    }
+
     const goal = Number(goalEth);
     const duration = Number(durationDays);
 
-    if (!goalEth || Number.isNaN(goal) || goal <= 0) {
+    if (goalEth && (Number.isNaN(goal) || goal <= 0)) {
       toast.error("Please enter a valid funding goal");
       return false;
     }
-    if (goal < 0.001) {
+    if (goalEth && goal < 0.001) {
       toast.error("Minimum goal is 0.001 ETH");
       return false;
     }
-    if (!durationDays || !Number.isInteger(duration) || duration <= 0 || duration > 365) {
-      toast.error("Duration must be between 1 and 365 days");
+    if (durationDays && (Number.isNaN(duration) || duration <= 0 || duration > 365)) {
+      toast.error("Duration must be greater than 0 and less than 365 days. You can use decimals (e.g., 0.5 for 12 hours)");
       return false;
     }
+    
+    // Both fields must be filled for final validation
+    if (!goalEth || !durationDays) {
+      return false;
+    }
+    
     return true;
   };
 
@@ -320,9 +332,32 @@ export default function CreateProjectPage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    // Final validation
-    if (!validateStep1() || !validateStep2() || !validateStep3() || !validateStep4()) {
-      toast.error("Please complete all required fields");
+    // Final validation with explicit error messages
+    if (!validateStep1()) {
+      toast.error("Please complete Step 1: Project Information");
+      setCurrentStep(1);
+      return;
+    }
+    if (!validateStep2()) {
+      toast.error("Please complete Step 2: Team Configuration");
+      setCurrentStep(2);
+      return;
+    }
+    if (!validateStep3()) {
+      toast.error("Please complete Step 3: NFT Configuration");
+      setCurrentStep(3);
+      return;
+    }
+    if (!validateStep4()) {
+      if (!goalEth) {
+        toast.error("Please enter a funding goal");
+        return;
+      }
+      if (!durationDays) {
+        toast.error("Please enter campaign duration");
+        return;
+      }
+      toast.error("Please complete Step 4: Goals & Duration");
       return;
     }
 
@@ -807,17 +842,18 @@ export default function CreateProjectPage() {
                     <input
                       id="duration"
                       type="number"
-                      min="1"
+                      min="0.01"
                       max="365"
+                      step="0.01"
                       value={durationDays}
                       onChange={(event) => setDurationDays(event.target.value)}
-                      placeholder="30"
+                      placeholder="30 (or 0.5 for 12 hours)"
                       className="input-field text-base"
                       disabled={isFormDisabled}
                       required
                     />
                     <p className="mt-2 text-xs text-gray-500">
-                      Maximum allowed is 365 days. We recommend between 21 and 45 days.
+                      Maximum 365 days. You can use decimals (e.g., 0.5 = 12 hours, 0.04 = 1 hour). Recommended: 21-45 days.
                     </p>
                   </div>
                 </div>

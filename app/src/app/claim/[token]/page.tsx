@@ -72,6 +72,13 @@ export default function ClaimMedalPage() {
     query: { enabled: !!medalInfo && !!connectedAddress },
   });
 
+  // Check if medal is full
+  const isMedalFull = medalsData && medalInfo ? (() => {
+    const medals = medalsData as MedalData[];
+    const medal = medals.find((m) => Number(m.id) === medalInfo.medalId);
+    return medal ? medal.claimsCount >= medal.maxClaims : false;
+  })() : false;
+
   // Update medal info when contract data loads (FIX: use functional update to avoid infinite loop)
   useEffect(() => {
     if (eventData && medalsData) {
@@ -173,6 +180,19 @@ export default function ClaimMedalPage() {
       }
     }
 
+    // Check if medal has available claims
+    if (medalsData) {
+      const medals = medalsData as MedalData[];
+      const medal = medals.find((m) => Number(m.id) === medalInfo.medalId);
+      
+      if (medal) {
+        if (medal.claimsCount >= medal.maxClaims) {
+          toast.error("❌ This badge has reached its maximum claims and is no longer available");
+          return;
+        }
+      }
+    }
+
     try {
       writeContract({
         address: EVENT_MANAGER.address,
@@ -225,6 +245,12 @@ export default function ClaimMedalPage() {
                     ⚠️ <strong>Connect your wallet</strong> to claim this badge
                   </p>
                 </div>
+              ) : isMedalFull ? (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-900">
+                    ❌ <strong>Badge unavailable!</strong> This badge has reached its maximum claims and is no longer available.
+                  </p>
+                </div>
               ) : hasClaimed ? (
                 <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-sm text-red-900">
@@ -255,7 +281,8 @@ export default function ClaimMedalPage() {
                 disabled={
                   isPending || 
                   isConfirming || 
-                  !connectedAddress || 
+                  !connectedAddress ||
+                  isMedalFull ||
                   hasClaimed || 
                   (eventData && (eventData as EventData).creator.toLowerCase() === connectedAddress.toLowerCase())
                 }

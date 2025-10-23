@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 import { GenesisBreakdown } from "@/components/GenesisBreakdown";
 import { Icon } from "@/components/Icon";
 import { UserNFTGallery } from "@/components/UserNFTGallery";
+import { UserMedalsGallery } from "@/components/UserMedalsGallery";
 
 interface PageProps {
   params: { address: string };
@@ -252,6 +253,9 @@ export default function ProfilePage({ params }: PageProps) {
 
         {/* Reputation Breakdown */}
         <GenesisBreakdown address={address as `0x${string}`} />
+
+        {/* Medals Gallery */}
+        <UserMedalsGallery address={address as `0x${string}`} isOwnProfile={isOwnProfile} />
 
         {/* NFT Gallery */}
         <UserNFTGallery address={address as `0x${string}`} isOwnProfile={isOwnProfile} />

@@ -8,7 +8,7 @@ import "./ProjectNFT.sol";
 /**
  * @title Launchpad
  * @notice Simple crowdfunding platform with reputation-based credibility
- * @dev MVP: No refunds, all-or-nothing funding, single claim post-deadline
+ * @dev All-or-nothing funding with refunds if goal not reached. NFTs minted only on success.
  */
 contract Launchpad is ReentrancyGuard {
     // ═════════════════════════════════════════════════════════════════════════════
@@ -123,6 +123,17 @@ contract Launchpad is ReentrancyGuard {
         uint256 investmentAmount
     );
 
+    event RefundProcessed(
+        uint256 indexed projectId,
+        address indexed backer,
+        uint256 amount
+    );
+
+    event NFTsDistributed(
+        uint256 indexed projectId,
+        uint256 totalNFTsMinted
+    );
+
     // ═════════════════════════════════════════════════════════════════════════════
     // ERRORS
     // ═════════════════════════════════════════════════════════════════════════════
@@ -145,6 +156,9 @@ contract Launchpad is ReentrancyGuard {
     error CannotInspireOwnProject();
     error InvalidRole();
     error ArrayLengthMismatch();
+    error NoContribution();
+    error AlreadyRefunded();
+    error GoalReached();
 
     // ═════════════════════════════════════════════════════════════════════════════
     // CONSTRUCTOR
@@ -254,28 +268,11 @@ contract Launchpad is ReentrancyGuard {
     ) external returns (uint256 projectId) {
         if (goalInWei == 0) revert InvalidGoal();
         if (durationInDays == 0) revert InvalidDuration();
-        if (bytes(creatorRole).length == 0) revert InvalidRole();
-
-        require(bytes(title).length <= 100, "Title too long");
-        require(bytes(description).length <= 1000, "Description too long");
-        require(bytes(imageUrl).length <= 200, "Image URL too long");
-        require(bytes(category).length <= 50, "Category too long");
-        require(bytes(creatorRole).length <= 50, "Role too long");
-        require(bytes(nftName).length > 0, "NFT name required");
-        require(bytes(nftSymbol).length > 0, "NFT symbol required");
-        require(bytes(nftBaseURI).length > 0, "NFT base URI required");
 
         uint256 deadline = block.timestamp + (durationInDays * 1 days);
-
         projectId = _projectIdCounter++;
 
-        // Deploy new NFT contract for this project
-        ProjectNFT nftContract = new ProjectNFT(
-            nftName,
-            nftSymbol,
-            nftBaseURI,
-            address(this)  // Launchpad is the only minter
-        );
+        ProjectNFT nftContract = new ProjectNFT(nftName, nftSymbol, nftBaseURI, address(this));
 
         _projects[projectId] = Project({
             id: projectId,
@@ -293,8 +290,6 @@ contract Launchpad is ReentrancyGuard {
         });
 
         _projectNFTs[projectId] = address(nftContract);
-
-        // Store creator role
         _teamRoles[projectId][msg.sender] = creatorRole;
 
         emit ProjectCreated(projectId, msg.sender, title, description, imageUrl, category, goalInWei, deadline);
@@ -424,6 +419,7 @@ contract Launchpad is ReentrancyGuard {
      * @notice Fund a project with ETH
      * @param projectId The ID of the project to fund
      * @param isAnonymous Whether to keep the contribution anonymous
+     * @dev NFTs are NOT minted immediately - they're minted when project succeeds
      */
     function fundProject(uint256 projectId, bool isAnonymous) external payable {
         if (msg.value == 0) revert ZeroContribution();
@@ -445,27 +441,8 @@ contract Launchpad is ReentrancyGuard {
 
         emit ContributionMade(projectId, msg.sender, msg.value, isAnonymous);
 
-        // Mint NFT to backer
-        ProjectNFT nftContract = ProjectNFT(_projectNFTs[projectId]);
-        uint256 tokenId = nftContract.mintToBacker(msg.sender, msg.value);
-
-        emit NFTMinted(projectId, msg.sender, address(nftContract), tokenId, msg.value);
-
-        // Award reputation based on amount: 1 point per 0.001 ETH (1e15 wei)
-        uint256 points = msg.value / 1e15;
-        if (points > 0) {
-            // Tag as INVESTMENT for UI history; keep reason compact
-            try reputation.awardGenesisWithCategory(
-                msg.sender,
-                points,
-                "INVESTMENT",
-                "Investment"
-            ) {
-                // ok
-            } catch {
-                // ignore failures to avoid breaking funding flow
-            }
-        }
+        // NOTE: NFTs will be minted only if project reaches its goal
+        // When creator calls claimFunds(), NFTs are distributed to all backers
     }
 
     // ═════════════════════════════════════════════════════════════════════════════
@@ -476,6 +453,7 @@ contract Launchpad is ReentrancyGuard {
      * @notice Claim all funds from a successful project (post-deadline)
      * @param projectId The ID of the project
      * @dev Only callable by project creator after deadline if goal is reached
+     * @dev This also mints NFTs to all backers and awards reputation
      */
     function claimFunds(uint256 projectId) external nonReentrant {
         Project storage project = _projects[projectId];
@@ -489,10 +467,76 @@ contract Launchpad is ReentrancyGuard {
         project.claimed = true;
         uint256 amount = project.fundsRaised;
 
+        // Distribute NFTs and reputation to all backers
+        _distributeNFTsAndReputation(projectId);
+
         emit FundsClaimed(projectId, msg.sender, amount);
 
         // Transfer funds to creator
         (bool success, ) = payable(msg.sender).call{value: amount}("");
+        if (!success) revert TransferFailed();
+    }
+
+    /**
+     * @notice Internal function to distribute NFTs and reputation to backers
+     * @param projectId The ID of the project
+     */
+    function _distributeNFTsAndReputation(uint256 projectId) internal {
+        address[] memory contributors = _contributors[projectId];
+        uint256 nftsMinted = 0;
+
+        for (uint256 i = 0; i < contributors.length; i++) {
+            if (_contributions[projectId][contributors[i]] > 0) {
+                // Mint NFT with investment amount
+                uint256 tokenId = ProjectNFT(_projectNFTs[projectId]).mintToBacker(
+                    contributors[i], 
+                    _contributions[projectId][contributors[i]]
+                );
+                emit NFTMinted(projectId, contributors[i], _projectNFTs[projectId], tokenId, _contributions[projectId][contributors[i]]);
+                nftsMinted++;
+
+                // Award reputation: 1 point per 0.001 ETH (1e15 wei)
+                uint256 points = _contributions[projectId][contributors[i]] / 1e15;
+                if (points > 0) {
+                    try reputation.awardGenesisWithCategory(
+                        contributors[i],
+                        points,
+                        "INVESTMENT",
+                        "Successful project backing"
+                    ) {} catch {}
+                }
+            }
+        }
+
+        emit NFTsDistributed(projectId, nftsMinted);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════════
+    // REFUND
+    // ═════════════════════════════════════════════════════════════════════════════
+
+    /**
+     * @notice Claim refund if project didn't reach its goal after deadline
+     * @param projectId The ID of the project
+     * @dev Only callable after deadline if goal was NOT reached
+     */
+    function claimRefund(uint256 projectId) external nonReentrant {
+        Project storage project = _projects[projectId];
+
+        if (project.creator == address(0)) revert ProjectNotFound();
+        if (block.timestamp < project.deadline) revert DeadlineNotReached();
+        if (project.fundsRaised >= project.goal) revert GoalReached();
+        
+        uint256 contribution = _contributions[projectId][msg.sender];
+        if (contribution == 0) revert NoContribution();
+
+        // Mark as refunded
+        _contributions[projectId][msg.sender] = 0;
+
+        emit RefundProcessed(projectId, msg.sender, contribution);
+
+        // Transfer refund to backer
+        (bool success, ) = payable(msg.sender).call{value: contribution}("");
         if (!success) revert TransferFailed();
     }
 

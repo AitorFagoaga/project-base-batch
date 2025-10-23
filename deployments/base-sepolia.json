@@ -1,8 +1,8 @@
 {
   "network": "base-sepolia",
   "chainId": 84532,
-  "deployedAt": "2025-10-23T02:05:46.933Z",
-  "deployer": "0x31a42406422E72dC790cF42eD978458B0b00bd06",
+  "deployedAt": "2025-10-23T05:19:02.461Z",
+  "deployer": "0xaa860E97f1a50ca6Ce786AEf9B835052dfD0ee25",
   "gasUsed": {
     "reputation": "~2,500,000",
     "userProfile": "~800,000",
@@ -11,7 +11,7 @@
   },
   "contracts": {
     "Reputation": {
-      "address": "0x3f0069eBEEc6F1f797048a035BfedC61F5F4f81d",
+      "address": "0x2b29e5Bc7C0bd5bFF95328662F516BBcb1d620Cc",
       "abi": [
         {
           "type": "constructor",
@@ -664,7 +664,7 @@
       ]
     },
     "Launchpad": {
-      "address": "0x4EEc1C2F03A5B97A01949821981F20eFf0e50370",
+      "address": "0xFd42B4CC12a4c8d1C232C655D5cE25d7c311e52e",
       "abi": [
         {
           "type": "constructor",
@@ -690,6 +690,11 @@
         {
           "type": "error",
           "name": "AlreadyInspired",
+          "inputs": []
+        },
+        {
+          "type": "error",
+          "name": "AlreadyRefunded",
           "inputs": []
         },
         {
@@ -724,6 +729,11 @@
         },
         {
           "type": "error",
+          "name": "GoalReached",
+          "inputs": []
+        },
+        {
+          "type": "error",
           "name": "InvalidDuration",
           "inputs": []
         },
@@ -735,6 +745,11 @@
         {
           "type": "error",
           "name": "InvalidRole",
+          "inputs": []
+        },
+        {
+          "type": "error",
+          "name": "NoContribution",
           "inputs": []
         },
         {
@@ -878,6 +893,23 @@
         {
           "type": "event",
           "anonymous": false,
+          "name": "NFTsDistributed",
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId",
+              "indexed": true
+            },
+            {
+              "type": "uint256",
+              "name": "totalNFTsMinted",
+              "indexed": false
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "anonymous": false,
           "name": "ProjectCreated",
           "inputs": [
             {
@@ -967,6 +999,28 @@
           ]
         },
         {
+          "type": "event",
+          "anonymous": false,
+          "name": "RefundProcessed",
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId",
+              "indexed": true
+            },
+            {
+              "type": "address",
+              "name": "backer",
+              "indexed": true
+            },
+            {
+              "type": "uint256",
+              "name": "amount",
+              "indexed": false
+            }
+          ]
+        },
+        {
           "type": "function",
           "name": "addCofounder",
           "constant": false,
@@ -1011,6 +1065,19 @@
         {
           "type": "function",
           "name": "claimFunds",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
+          "name": "claimRefund",
           "constant": false,
           "payable": false,
           "inputs": [
@@ -1420,7 +1487,7 @@
       ]
     },
     "UserProfile": {
-      "address": "0x4d2265B27Fcc858a75B6142ACf58C38158eC71Ef",
+      "address": "0xd95eb2222C2BB16aDd2CAB55b5CAfaeC24B80875",
       "abi": [
         {
           "type": "event",
@@ -1554,7 +1621,7 @@
       ]
     },
     "EventManager": {
-      "address": "0xb613cF18d14BcB4dA20BB4003C1dB15B66Ba445E",
+      "address": "0x3d404414E5C3EcaBf09047E1ec93B7566078eb70",
       "abi": [
         {
           "type": "constructor",
