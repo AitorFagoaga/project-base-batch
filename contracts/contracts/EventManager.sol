@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 interface IReputation {
-    function awardGenesisWithCategory(address to, uint256 amount, string memory category) external;
+    function awardGenesisWithCategory(address to, uint256 amount, string memory category, string memory reason) external;
 }
 
 /**
@@ -208,7 +208,7 @@ contract EventManager is AccessControl {
         // Award reputation points
         if (m.points > 0 && address(reputation) != address(0)) {
             string memory category = string(abi.encodePacked(m.name, " - ", ev.title));
-            reputation.awardGenesisWithCategory(to, m.points, category);
+            reputation.awardGenesisWithCategory(to, m.points, category, "Manual award by event creator");
         }
         
         emit MedalAwarded(m.eventId, medalId, to, msg.sender);
@@ -232,9 +232,9 @@ contract EventManager is AccessControl {
         // Award reputation points
         if (m.points > 0 && address(reputation) != address(0)) {
             string memory category = string(abi.encodePacked(m.name, " - ", ev.title));
-            reputation.awardGenesisWithCategory(msg.sender, m.points, category);
+            reputation.awardGenesisWithCategory(msg.sender, m.points, category, "Medal claimed");
         }
-        
+
         emit MedalClaimed(m.eventId, medalId, msg.sender);
     }
 

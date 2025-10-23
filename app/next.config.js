@@ -10,6 +10,7 @@ const nextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      // IPFS Gateways
       {
         protocol: "https",
         hostname: "ipfs.io",
@@ -18,6 +19,19 @@ const nextConfig = {
         protocol: "https",
         hostname: "gateway.pinata.cloud",
       },
+      {
+        protocol: "https",
+        hostname: "cloudflare-ipfs.com",
+      },
+      {
+        protocol: "https",
+        hostname: "dweb.link",
+      },
+      {
+        protocol: "https",
+        hostname: "**.ipfs.dweb.link",
+      },
+      // Other image sources
       {
         protocol: "https",
         hostname: "img.freepik.com",
@@ -30,10 +44,7 @@ const nextConfig = {
         protocol: "https",
         hostname: "**.cloudinary.com",
       },
-      {
-        protocol: "https",
-        hostname: "**.ipfs.dweb.link",
-      },
+      // Fallback for any HTTPS image
       {
         protocol: "https",
         hostname: "**",

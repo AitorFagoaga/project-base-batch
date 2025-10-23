@@ -1,8 +1,8 @@
 {
   "network": "base-sepolia",
   "chainId": 84532,
-  "deployedAt": "2025-10-22T04:59:30.262Z",
-  "deployer": "0xaa860E97f1a50ca6Ce786AEf9B835052dfD0ee25",
+  "deployedAt": "2025-10-22T22:53:42.678Z",
+  "deployer": "0x31a42406422E72dC790cF42eD978458B0b00bd06",
   "gasUsed": {
     "reputation": "~2,500,000",
     "userProfile": "~800,000",
@@ -11,7 +11,7 @@
   },
   "contracts": {
     "Reputation": {
-      "address": "0x2b9DB0b23866dc574698E031Dfb103f85a50A43e",
+      "address": "0x596584ed008e39f831c542D7BdEEA4463B325878",
       "abi": [
         {
           "type": "constructor",
@@ -664,7 +664,7 @@
       ]
     },
     "Launchpad": {
-      "address": "0x83BCaB75414Dd64e995d0b4Fd80CF3077e8C995A",
+      "address": "0x8f33F8F9b788dB29200a350Cea3FFDEAA1bb0870",
       "abi": [
         {
           "type": "constructor",
@@ -1324,7 +1324,7 @@
       ]
     },
     "UserProfile": {
-      "address": "0x4B4c91f34b55DC652B1c6Ad65Bd34E106E89AC82",
+      "address": "0x617b876C8FFb51B794A3A7c2f1b64756486d2919",
       "abi": [
         {
           "type": "event",
@@ -1458,7 +1458,7 @@
       ]
     },
     "EventManager": {
-      "address": "0xE03a16AC522eb5c81CC05ab544B4841356a5331B",
+      "address": "0xAb09885339ACe6394421b8BAcc348E361c9Cc665",
       "abi": [
         {
           "type": "constructor",

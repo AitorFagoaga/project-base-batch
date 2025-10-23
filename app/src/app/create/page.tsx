@@ -11,7 +11,7 @@ import { CONTRACTS } from "@/lib/contracts";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { SharedPageLayout } from "@/components/SharedPageLayout";
 import { Icon } from "@/components/Icon";
-import { uploadImageToIPFS, uploadMetadataToIPFS, validateImageFile } from "@/lib/ipfsService";
+import { uploadImageToIPFS, uploadMetadataToIPFS, validateImageFile, ipfsToHttp } from "@/lib/ipfsService";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1200&q=80";
@@ -158,10 +158,29 @@ export default function CreateProjectPage() {
       // Stage 2: Create and upload NFT metadata to IPFS
       setUploadStage("Creating your NFT's metadata...");
 
+      // Convert IPFS URI to HTTP URL for better wallet compatibility (MetaMask, etc.)
+      const imageHttpUrl = ipfsToHttp(imageUri);
+
+      // Create OpenSea-compatible metadata for better wallet display
       const metadata = {
         name: nftName,
         description: nftDescription,
-        image: imageUri,
+        image: imageHttpUrl, // Use HTTP URL instead of ipfs:// for wallet compatibility
+        external_url: `${window.location.origin}/project/${title.toLowerCase().replace(/\s+/g, '-')}`,
+        attributes: [
+          {
+            trait_type: "Project",
+            value: title
+          },
+          {
+            trait_type: "Category",
+            value: category
+          },
+          {
+            trait_type: "Proof of Backing",
+            value: "Yes"
+          }
+        ]
       };
 
       const metadataUri = await uploadMetadataToIPFS(metadata);
