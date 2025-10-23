@@ -108,7 +108,7 @@ export default function EditProfilePage() {
     e.preventDefault();
 
     if (!validate()) {
-      toast.error("Por favor corrige los errores en el formulario");
+      toast.error("Please correct the errors in the form");
       return;
     }
 
@@ -216,7 +216,7 @@ export default function EditProfilePage() {
               {/* Avatar URL Field */}
               <div>
                 <label htmlFor="avatarUrl" className="input-label">
-                  URL de Avatar
+                  Avatar URL
                 </label>
                 <input
                   type="url"
@@ -280,7 +280,7 @@ export default function EditProfilePage() {
               {hash && (
                 <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-800 mb-2 font-medium">
-                    Transacción enviada:
+                    Transaction sent:
                   </p>
                   <a
                     href={`https://sepolia.basescan.org/tx/${hash}`}
@@ -296,8 +296,8 @@ export default function EditProfilePage() {
               {/* Info Message */}
               <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <p className="text-sm text-yellow-800">
-                  ℹ️ <strong>Nota:</strong> Los cambios requieren una transacción en la blockchain.
-                  Asegúrate de tener suficiente ETH en Base Sepolia para pagar el gas.
+                  ℹ️ <strong>Note:</strong> Changes require a blockchain transaction.
+                  Make sure you have enough ETH on Base Sepolia to pay for gas.
                 </p>
               </div>
             </form>

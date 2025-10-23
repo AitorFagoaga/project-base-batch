@@ -32,15 +32,15 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
   const [retryCount, setRetryCount] = useState(0);
 
   const sectionTitle = useMemo(
-    () => (isOwnProfile ? "Tus Medallas" : "Medallas Obtenidas"),
+    () => (isOwnProfile ? "Your Medals" : "Medals Earned"),
     [isOwnProfile]
   );
 
   const helperText = useMemo(
     () =>
       isOwnProfile
-        ? "Medallas que has ganado al participar en eventos y actividades de la comunidad."
-        : "Explora las medallas obtenidas por este usuario en eventos y actividades.",
+        ? "Medals you've earned by participating in community events and activities."
+        : "Explore the medals earned by this user in events and activities.",
     [isOwnProfile]
   );
 
@@ -58,7 +58,7 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
       if (!EVENT_MANAGER.address || EVENT_MANAGER.address === ("" as `0x${string}`)) {
         console.error("❌ UserMedalsGallery: EVENT_MANAGER.address is not configured");
         if (!ignore) {
-          setError("El contrato de medallas no está configurado");
+          setError("Medals contract is not configured");
           setIsLoading(false);
         }
         return;
@@ -146,7 +146,7 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
 
         if (!ignore) {
           if (isRpcError) {
-            setError("El servicio de blockchain está temporalmente no disponible. Por favor, intenta de nuevo en unos momentos.");
+            setError("Blockchain service is temporarily unavailable. Please try again in a few moments.");
           } else {
             setError(`Error: ${errorMessage}`);
           }
@@ -176,7 +176,7 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
             <p className="text-sm text-gray-500 mt-1">{helperText}</p>
           </div>
           <div className="rounded-full bg-yellow-100 text-yellow-700 text-xs font-semibold px-4 py-1">
-            Cargando...
+            Loading...
           </div>
         </div>
 
@@ -208,7 +208,7 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
           <div className="flex-1">
             <div className="flex items-center gap-2 text-sm font-semibold mb-2 text-rose-700">
               <Icon name="alert" size="sm" />
-              No pudimos cargar las medallas
+              Unable to load medals
             </div>
             <p className="text-sm text-rose-600/80 mb-4">{error}</p>
             <button
@@ -216,7 +216,7 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
               className="inline-flex items-center gap-2 rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2 text-sm font-semibold text-white transition-colors"
             >
               <Icon name="loader" size="sm" />
-              Reintentar
+              Retry
             </button>
           </div>
         </div>
@@ -237,7 +237,7 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
 
         <div className="flex items-center gap-2">
           <div className="rounded-full bg-yellow-50 px-4 py-1.5 text-xs font-semibold text-yellow-600 border border-yellow-200">
-            {medals.length} Medalla{medals.length === 1 ? "" : "s"}
+            {medals.length} Medal{medals.length === 1 ? "" : "s"}
           </div>
         </div>
       </div>
@@ -248,12 +248,12 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
             <Icon name="award" size="lg" />
           </div>
           <h3 className="text-lg font-semibold text-gray-800">
-            Aún no hay medallas
+            No medals yet
           </h3>
           <p className="mt-2 text-sm text-gray-500 max-w-xl mx-auto">
             {isOwnProfile
-              ? "Participa en eventos y actividades de la comunidad para ganar medallas."
-              : "Cuando este usuario gane medallas, aparecerán aquí."}
+              ? "Participate in community events and activities to earn medals."
+              : "When this user earns medals, they will appear here."}
           </p>
         </div>
       ) : (
@@ -284,14 +284,14 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">{medal.name}</h3>
                   <p className="mt-1 text-sm text-gray-500 line-clamp-2">
-                    {medal.description || "Medalla obtenida por participación en evento"}
+                    {medal.description || "Medal earned by event participation"}
                   </p>
                 </div>
 
                 <div className="rounded-2xl bg-yellow-50/70 border border-yellow-100 px-4 py-3">
-                  <p className="text-xs uppercase text-gray-400 tracking-wide mb-1">Reputación ganada</p>
+                  <p className="text-xs uppercase text-gray-400 tracking-wide mb-1">Reputation earned</p>
                   <p className="text-sm font-semibold text-yellow-600">
-                    +{medal.points} puntos
+                    +{medal.points} points
                   </p>
                 </div>
 
@@ -301,7 +301,7 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
                     className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gray-900 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-yellow-600"
                   >
                     <Icon name="calendar" size="xs" />
-                    Ver evento
+                    View event
                   </Link>
                 </div>
               </div>
