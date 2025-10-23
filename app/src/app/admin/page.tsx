@@ -73,7 +73,7 @@ export default function AdminPage() {
               Access Denied
             </h3>
             <p className="text-gray-700 text-lg">
-              You don't have permission to access this page.
+              You don&apos;t have permission to access this page.
             </p>
           </div>
         )}

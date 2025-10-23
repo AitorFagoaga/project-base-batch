@@ -201,22 +201,23 @@ function ProjectList({ count, selectedCategory, searchQuery, sortBy }: { count: 
   // For funding-based sorting, we need to fetch all projects first
   // This is a simplified approach - for production, consider pagination
   const needsFundingSort = sortBy === "highest-funding" || sortBy === "lowest-funding";
-  
-  if (needsFundingSort) {
-    return <ProjectListWithFundingSort count={count} selectedCategory={selectedCategory} searchQuery={searchQuery} sortBy={sortBy} />;
-  }
 
   // Generate project IDs and sort based on sortBy option (ID-based sorting)
+  // IMPORTANT: useMemo must be called before any conditional returns (React Hooks rules)
   const projectIds = useMemo(() => {
     let ids = Array.from({ length: count }, (_, i) => i);
-    
+
     if (sortBy === "latest") {
       ids = ids.reverse(); // Newest first (highest ID)
     }
     // "oldest" keeps natural order
-    
+
     return ids;
   }, [count, sortBy]);
+
+  if (needsFundingSort) {
+    return <ProjectListWithFundingSort count={count} selectedCategory={selectedCategory} searchQuery={searchQuery} sortBy={sortBy} />;
+  }
 
   return (
     <>

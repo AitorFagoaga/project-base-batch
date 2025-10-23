@@ -230,7 +230,7 @@ export default function ProjectDetailPage() {
   const now = Math.floor(Date.now() / 1000);
   let isActive = false;
   let goalReached = false;
-  let canClaim = false;
+  const canClaim = false;
   let progressPercent = 0;
   let daysRemaining = 0;
   let deadlineDate: Date | null = null;

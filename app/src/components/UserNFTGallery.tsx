@@ -121,7 +121,7 @@ export function UserNFTGallery({ address, isOwnProfile }: UserNFTGalleryProps) {
       <div className="mb-12 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-5 text-rose-700">
         <div className="flex items-center gap-2 text-sm font-semibold mb-1">
           <Icon name="alert" size="sm" />
-          We couldn't load the profile NFTs
+          We couldn&apos;t load the profile NFTs
         </div>
         <p className="text-sm text-rose-600/80">{error}</p>
       </div>
