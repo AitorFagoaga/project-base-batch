@@ -19,6 +19,11 @@ interface NFTMetadata {
   name: string;
   description: string;
   image: string;
+  external_url?: string;
+  attributes?: Array<{
+    trait_type: string;
+    value: string | number;
+  }>;
 }
 
 /**
@@ -116,18 +121,50 @@ export async function uploadMetadataToIPFS(metadata: NFTMetadata): Promise<strin
 }
 
 /**
+ * IPFS Gateway configuration
+ * Fallback gateways in order of preference for reliability
+ */
+const IPFS_GATEWAYS = [
+  "gateway.pinata.cloud",  // Primary: Pinata (fast, reliable)
+  "ipfs.io",               // Fallback 1: Official IPFS gateway
+  "cloudflare-ipfs.com",   // Fallback 2: Cloudflare (fast CDN)
+  "dweb.link"              // Fallback 3: Protocol Labs gateway
+];
+
+/**
  * Convert an IPFS URI to an HTTP gateway URL for display
  * @param ipfsUri IPFS URI (e.g., ipfs://Qm...)
  * @returns HTTP URL (e.g., https://gateway.pinata.cloud/ipfs/Qm...)
  */
 export function ipfsToHttp(ipfsUri: string): string {
+  if (!ipfsUri) {
+    return "";
+  }
+
   if (!ipfsUri.startsWith("ipfs://")) {
     return ipfsUri; // Already an HTTP URL or different format
   }
 
-  const gateway = process.env.NEXT_PUBLIC_PINATA_GATEWAY || "gateway.pinata.cloud";
   const hash = ipfsUri.replace("ipfs://", "");
+
+  // Use the primary gateway (Pinata)
+  const gateway = IPFS_GATEWAYS[0];
   return `https://${gateway}/ipfs/${hash}`;
+}
+
+/**
+ * Get alternative IPFS gateway URLs for the same content
+ * Useful for implementing fallback image loading
+ * @param ipfsUri IPFS URI (e.g., ipfs://Qm...)
+ * @returns Array of HTTP URLs using different gateways
+ */
+export function getAlternativeIpfsUrls(ipfsUri: string): string[] {
+  if (!ipfsUri || !ipfsUri.startsWith("ipfs://")) {
+    return [];
+  }
+
+  const hash = ipfsUri.replace("ipfs://", "");
+  return IPFS_GATEWAYS.map(gateway => `https://${gateway}/ipfs/${hash}`);
 }
 
 /**

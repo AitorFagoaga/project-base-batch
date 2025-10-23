@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { Icon } from "@/components/Icon";
 import { useUserNFTs } from "@/hooks/useUserNFTs";
@@ -14,6 +14,37 @@ interface UserNFTGalleryProps {
 
 const FALLBACK_CARD_IMAGE =
   "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80&fm=jpg&fit=crop";
+
+interface NFTImageProps {
+  src: string;
+  alt: string;
+  fallback?: string;
+}
+
+function NFTImage({ src, alt, fallback = FALLBACK_CARD_IMAGE }: NFTImageProps) {
+  const [imageSrc, setImageSrc] = useState(src);
+  const [hasError, setHasError] = useState(false);
+
+  const handleError = () => {
+    if (!hasError) {
+      console.warn(`Failed to load NFT image: ${imageSrc}`);
+      setHasError(true);
+      setImageSrc(fallback);
+    }
+  };
+
+  return (
+    <Image
+      src={imageSrc || fallback}
+      alt={alt}
+      fill
+      className="object-cover transition-transform duration-500 group-hover:scale-105"
+      sizes="(min-width: 1280px) 340px, (min-width: 768px) 300px, 100vw"
+      onError={handleError}
+      unoptimized={imageSrc.includes("ipfs") || imageSrc.includes("pinata")}
+    />
+  );
+}
 
 function formatInvestmentLabel(value: string): string {
   const numeric = Number.parseFloat(value);
@@ -137,12 +168,10 @@ export function UserNFTGallery({ address, isOwnProfile }: UserNFTGalleryProps) {
               className="group overflow-hidden rounded-3xl border border-gray-100 bg-white/90 shadow-[0_18px_40px_-24px_rgba(99,102,241,0.4)] transition-all hover:-translate-y-1 hover:shadow-[0_30px_60px_-28px_rgba(99,102,241,0.55)]"
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
-                <Image
+                <NFTImage
                   src={nft.imageUrl || FALLBACK_CARD_IMAGE}
                   alt={nft.metadataName}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(min-width: 1280px) 340px, (min-width: 768px) 300px, 100vw"
+                  fallback={FALLBACK_CARD_IMAGE}
                 />
                 <div className="absolute inset-4 flex items-start justify-between">
                   <span className="rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-indigo-600 shadow">
