@@ -1,4 +1,9 @@
 import { ethers } from "hardhat";
+import * as dotenv from "dotenv";
+import * as path from "path";
+
+// Load environment variables
+dotenv.config({ path: path.join(__dirname, "../../.env") });
 
 /**
  * Script to grant ADMIN_ROLE to additional admins in EventManager
@@ -9,17 +14,25 @@ async function main() {
 
   console.log("👥 Granting admin roles with account:", deployer.address);
   
-  // EventManager address from deployment
-  const eventManagerAddress = "0x4d34f049Ec2AE4542e6e1E5B96A98eF92761F030"; // Updated to latest deployment
+  // EventManager address from environment variable
+  const eventManagerAddress = process.env.EVENT_MANAGER_ADDRESS;
+  
+  if (!eventManagerAddress || eventManagerAddress === "") {
+    throw new Error("❌ EVENT_MANAGER_ADDRESS not set in .env file");
+  }
   
   const EventManager = await ethers.getContractFactory("EventManager");
   const eventManager = EventManager.attach(eventManagerAddress);
 
-  // Additional admins to grant ADMIN_ROLE
+  // Additional admins from environment variables
   const additionalAdmins = [
-    "0xaa860E97f1a50ca6Ce786AEf9B835052dfD0ee25",
-    "0x31a42406422E72dC790cF42eD978458B0b00bd06"
-  ];
+    process.env.ADMIN_ADDRESS_1,
+    process.env.ADMIN_ADDRESS_2
+  ].filter(addr => addr && addr !== "0x0000000000000000000000000000000000000000");
+
+  if (additionalAdmins.length === 0) {
+    throw new Error("❌ No admin addresses configured. Set ADMIN_ADDRESS_1 and/or ADMIN_ADDRESS_2 in .env file");
+  }
 
   console.log("\n📋 Admins to be granted:");
   additionalAdmins.forEach((admin, i) => {

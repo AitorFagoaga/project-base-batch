@@ -16,12 +16,14 @@ Meritocratic Launchpad revolutionizes crowdfunding by integrating **on-chain rep
 ### 🎯 Key Features
 
 #### 💎 **Two-Layer Reputation Protocol**
+
 - **Genesis (Top-Down)**: Owner awards reputation for verified achievements (hackathons, OSS contributions, DAO participation)
 - **P2P Boosts (Bottom-Up)**: Community members boost each other with sublinear power `√(reputation) + baseline`
 - **Cooldown System**: 24-hour cooldown between boosts prevents spam
 - **No Self-Boosting**: Users cannot boost themselves
 
 #### 🏆 **All-or-Nothing Crowdfunding**
+
 - Creators launch projects with `title`, `goal (ETH)`, and `deadline`
 - Backers fund projects with ETH contributions
 - **Goal-based release**: Funds released only if goal reached by deadline
@@ -29,6 +31,7 @@ Meritocratic Launchpad revolutionizes crowdfunding by integrating **on-chain rep
 - Creator reputation visible on all projects
 
 #### ✨ **Modern UI/UX**
+
 - 🎨 **Glass Morphism Design**: Beautiful gradient backgrounds with glassmorphic cards
 - 📝 **Readable Forms**: High contrast inputs with clear labels and placeholders
 - ⚡ **Quick Duration Buttons**: 7, 30, 60, 90 days presets
@@ -38,6 +41,7 @@ Meritocratic Launchpad revolutionizes crowdfunding by integrating **on-chain rep
 - 📱 **Fully Responsive**: Optimized for desktop, tablet, and mobile
 
 #### 🚀 **Performance Optimizations**
+
 - ⚡ **90% Faster Loading**: Optimized from 31s to 2-3s initial load
 - 📦 **Batch RPC Calls**: Multicall batching reduces network requests by 80%
 - 🔇 **Zero Warnings**: Webpack configured to suppress MetaMask SDK noise
@@ -48,12 +52,14 @@ Meritocratic Launchpad revolutionizes crowdfunding by integrating **on-chain rep
 ## 🏗️ Architecture
 
 ### Smart Contracts (Solidity 0.8.20)
+
 - **Reputation.sol**: Two-layer reputation system with Genesis and Boost mechanics
 - **Launchpad.sol**: All-or-nothing crowdfunding with reputation integration
 - **OpenZeppelin**: Ownable, ReentrancyGuard for security
 - **Gas Optimized**: Custom errors, efficient storage patterns
 
 ### Frontend (Next.js 14)
+
 - **Framework**: Next.js 14 App Router, TypeScript, Tailwind CSS
 - **Web3**: wagmi v2, viem, RainbowKit for wallet connections
 - **UI Components**: Reusable glass-morphism cards, forms, badges
@@ -61,6 +67,7 @@ Meritocratic Launchpad revolutionizes crowdfunding by integrating **on-chain rep
 - **Notifications**: react-hot-toast for user feedback
 
 ### Deployment
+
 - **Blockchain**: Base Sepolia (ChainID 84532)
 - **Frontend**: Vercel with automatic Git deployments
 - **CI/CD**: GitHub Actions (planned)
@@ -71,10 +78,10 @@ Meritocratic Launchpad revolutionizes crowdfunding by integrating **on-chain rep
 
 ### Base Sepolia Testnet
 
-| Contract | Address | Explorer |
-|----------|---------|----------|
+| Contract       | Address                                      | Explorer                                                                                            |
+| -------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | **Reputation** | `0x66f8E781f0b714717c7B53dEa1acF7247b4B913b` | [View on BaseScan](https://sepolia.basescan.org/address/0x66f8E781f0b714717c7B53dEa1acF7247b4B913b) |
-| **Launchpad** | `0xad6715C528F092D31010407C1D9Eb961A1aB545C` | [View on BaseScan](https://sepolia.basescan.org/address/0xad6715C528F092D31010407C1D9Eb961A1aB545C) |
+| **Launchpad**  | `0xad6715C528F092D31010407C1D9Eb961A1aB545C` | [View on BaseScan](https://sepolia.basescan.org/address/0xad6715C528F092D31010407C1D9Eb961A1aB545C) |
 
 **Deployer**: `0xaa860E97f1a50ca6Ce786AEf9B835052dfD0ee25`
 
@@ -85,7 +92,8 @@ Meritocratic Launchpad revolutionizes crowdfunding by integrating **on-chain rep
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 - MetaMask or compatible wallet
 - Base Sepolia ETH ([Get from faucet](https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet))
@@ -105,6 +113,8 @@ cp .env.example .env
 # Edit .env with your private key and RPC URL
 ```
 
+> 📖 **Para configuración de producción completa, ver [PRODUCTION_SETUP.md](./PRODUCTION_SETUP.md)**
+
 ### Run Locally
 
 ```bash
@@ -122,6 +132,7 @@ Open [http://localhost:3000](http://localhost:3000)
 See [VERCEL-DEPLOYMENT.md](./VERCEL-DEPLOYMENT.md) for complete deployment guide.
 
 **Quick Deploy**:
+
 ```bash
 cd app
 vercel --prod
@@ -177,6 +188,7 @@ npx hardhat test test/reputation.test.ts
 ```
 
 **Test Coverage**:
+
 - ✅ Genesis awards (single & batch)
 - ✅ P2P boosts with cooldown
 - ✅ Boost power calculation
@@ -256,12 +268,14 @@ project-base-batch/
 ## 🛠️ Tech Stack
 
 ### Blockchain
+
 - **Solidity 0.8.20**: Smart contract language
 - **Hardhat**: Development environment
 - **OpenZeppelin**: Audited contract libraries
 - **Base Sepolia**: Layer 2 testnet
 
 ### Frontend
+
 - **Next.js 14**: React framework with App Router
 - **TypeScript**: Type safety
 - **Tailwind CSS**: Utility-first styling
@@ -272,6 +286,7 @@ project-base-batch/
 - **react-hot-toast**: Notifications
 
 ### Development Tools
+
 - **ESLint**: Code linting
 - **Prettier**: Code formatting
 - **Hardhat**: Smart contract development
@@ -281,19 +296,20 @@ project-base-batch/
 
 ## 📊 Performance Metrics
 
-| Metric | Before Optimization | After Optimization | Improvement |
-|--------|--------------------|--------------------|-------------|
-| **Initial Load Time** | 31 seconds | 2-3 seconds | **90% ⬇️** |
-| **RPC Calls per Project** | 2 individual | Batched multicall | **80% ⬇️** |
-| **Lighthouse Score** | 65 | 95+ | **+46%** |
-| **Bundle Size** | 450 KB | 320 KB | **29% ⬇️** |
-| **Time to Interactive** | 8.5s | 1.2s | **86% ⬇️** |
+| Metric                    | Before Optimization | After Optimization | Improvement |
+| ------------------------- | ------------------- | ------------------ | ----------- |
+| **Initial Load Time**     | 31 seconds          | 2-3 seconds        | **90% ⬇️**  |
+| **RPC Calls per Project** | 2 individual        | Batched multicall  | **80% ⬇️**  |
+| **Lighthouse Score**      | 65                  | 95+                | **+46%**    |
+| **Bundle Size**           | 450 KB              | 320 KB             | **29% ⬇️**  |
+| **Time to Interactive**   | 8.5s                | 1.2s               | **86% ⬇️**  |
 
 ---
 
 ## 🎨 UI/UX Improvements
 
 ### Visual Design
+
 - ✅ **Glass Morphism**: Modern translucent cards with backdrop blur
 - ✅ **Gradient Backgrounds**: Purple-pink-blue animated gradients
 - ✅ **High Contrast Forms**: White inputs on dark backgrounds
@@ -301,6 +317,7 @@ project-base-batch/
 - ✅ **Custom Scrollbar**: Purple-themed scrollbar
 
 ### User Experience
+
 - ✅ **Quick Duration Buttons**: One-click duration selection
 - ✅ **Character Counters**: Real-time feedback on input length
 - ✅ **Loading Skeletons**: Placeholder content while loading
@@ -310,6 +327,7 @@ project-base-batch/
 - ✅ **Error States**: Clear error messages with retry options
 
 ### Accessibility
+
 - ✅ **Keyboard Navigation**: Full keyboard support
 - ✅ **Focus Indicators**: Visible focus rings
 - ✅ **ARIA Labels**: Screen reader friendly
@@ -356,6 +374,7 @@ function getContribution(uint256 projectId, address backer) returns (uint256)
 ## 🔒 Security
 
 ### Smart Contracts
+
 - ✅ **ReentrancyGuard**: Prevents reentrancy attacks on fund claims
 - ✅ **Custom Errors**: Gas-efficient error handling
 - ✅ **Access Control**: Owner-only functions for Genesis awards
@@ -363,12 +382,14 @@ function getContribution(uint256 projectId, address backer) returns (uint256)
 - ✅ **SafeMath**: Solidity 0.8+ built-in overflow protection
 
 ### Frontend
+
 - ✅ **Network Guard**: Forces Base Sepolia connection
 - ✅ **Transaction Validation**: Pre-flight checks before sending
 - ✅ **Error Handling**: Try-catch blocks on all contract interactions
 - ✅ **Environment Variables**: Sensitive data in .env (not committed)
 
 ### Best Practices
+
 - ✅ **No Private Keys in Code**: Always use .env
 - ✅ **HTTPS Only**: Vercel enforces HTTPS
 - ✅ **Content Security Policy**: Next.js security headers
@@ -387,6 +408,7 @@ Contributions are welcome! Please follow these steps:
 5. **Open** a Pull Request
 
 ### Development Guidelines
+
 - Write tests for new features
 - Follow existing code style (ESLint + Prettier)
 - Update documentation for API changes
@@ -431,6 +453,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
 ## 🎯 Roadmap
 
 ### v1.0 (Current - MVP)
+
 - [x] Two-layer reputation protocol
 - [x] All-or-nothing crowdfunding
 - [x] Modern UI with glass morphism
@@ -438,6 +461,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
 - [x] Full test coverage
 
 ### v2.0 (Next)
+
 - [ ] **Refund mechanism** for failed projects
 - [ ] **Milestone-based funding** (partial releases)
 - [ ] **NFT badges** for reputation tiers
@@ -447,6 +471,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
 - [ ] **DAO governance** for Genesis awards
 
 ### v3.0 (Future)
+
 - [ ] **Cross-chain reputation** (Base Mainnet, Arbitrum, Optimism)
 - [ ] **Reputation marketplace** (trade, rent reputation)
 - [ ] **AI-powered project verification**
@@ -493,8 +518,8 @@ If you find this project useful, please consider giving it a ⭐ on GitHub!
 
 **Built with ❤️ for Base Builder Track**
 
-*Empowering meritocracy through on-chain reputation*
+_Empowering meritocracy through on-chain reputation_
 
 ---
 
-*Last updated: October 18, 2025*
+_Last updated: October 18, 2025_
