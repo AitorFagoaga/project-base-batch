@@ -1,7 +1,8 @@
 /**
  * Contract addresses and ABIs for Base Sepolia deployment
  * Auto-generated from /deployments/base-sepolia.json
- * Last updated: 2025-10-23T15:03:20.069Z
+ * Last updated: 2025-01-23T21:30:00.000Z
+ * 6th Deployment - Added creator-only access control for successful project finalization
  */
 
 export const CONTRACTS = {
@@ -146,7 +147,7 @@ export const CONTRACTS = {
 ] as const,
   },
   reputation: {
-    address: "0x51F366D2A47C688eC1B4FFf5a42D12DD25fb2CA8" as `0x${string}`,
+    address: "0x2B760E6f18F5CcD6505162C781c085F3f8F28114" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -799,7 +800,7 @@ export const CONTRACTS = {
 ] as const,
   },
   launchpad: {
-    address: "0x28c8353cD762B024A6de15136B2046564cD11b19" as `0x${string}`,
+    address: "0x8d634EFd94Cb818e3325B46fC627c5753AC89215" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -1648,7 +1649,7 @@ export const CONTRACTS = {
 ] as const,
   },
   userProfile: {
-    address: "0x45BBF1a3c2eeFD1F6e07b485635Acb1fD9A32A87" as `0x${string}`,
+    address: "0xDd8fe947852c63Adb9CB34B901F01276513323bC" as `0x${string}`,
     abi: [
   {
     "type": "event",
@@ -1782,7 +1783,7 @@ export const CONTRACTS = {
 ] as const,
   },
   eventManager: {
-    address: "0xCA00C10930e3049365fc14d92daC87B82356E3B9" as `0x${string}`,
+    address: "0xeDd810A3071Bc0657233EeeAe4aD741b4C1c3bBd" as `0x${string}`,
     abi: [
   {
     "type": "constructor",

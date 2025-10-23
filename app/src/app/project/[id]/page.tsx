@@ -276,8 +276,14 @@ export default function ProjectDetailPage() {
     goalReached = project.fundsRaised >= project.goal;
   }
 
-  // Can finalize if project ended (regardless of goal reached or not) and not claimed yet
-  const canFinalize = project && !isActive && !project.claimed;
+  // Can finalize if:
+  // - Project has ended and not claimed yet
+  // - If goal reached: ONLY creator can finalize
+  // - If goal NOT reached: anyone can finalize (to help process refunds)
+  const canFinalize = project && !isActive && !project.claimed && (
+    !goalReached || // If goal NOT reached, anyone can finalize
+    (address?.toLowerCase() === project.creator.toLowerCase()) // If goal reached, only creator
+  );
   
   // Only allow deletion if project is still active and hasn't reached goal
   const canDelete =

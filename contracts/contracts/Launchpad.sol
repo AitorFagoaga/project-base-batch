@@ -453,9 +453,8 @@ contract Launchpad is ReentrancyGuard {
     /**
      * @notice Finalize a project after deadline - either claim funds or process refunds
      * @param projectId The ID of the project
-     * @dev Can be called by anyone after deadline
-     * @dev If goal reached: transfers funds to creator and distributes NFTs/reputation
-     * @dev If goal NOT reached: automatically refunds all contributors
+     * @dev If goal reached: ONLY creator can finalize to claim funds and distribute NFTs/reputation
+     * @dev If goal NOT reached: anyone can finalize to automatically refund all contributors
      */
     function finalizeProject(uint256 projectId) external nonReentrant {
         Project storage project = _projects[projectId];
@@ -463,6 +462,11 @@ contract Launchpad is ReentrancyGuard {
         if (project.creator == address(0)) revert ProjectNotFound();
         if (block.timestamp < project.deadline) revert DeadlineNotReached();
         if (project.claimed) revert AlreadyClaimed();
+
+        // If goal reached, only creator can finalize
+        if (project.fundsRaised >= project.goal) {
+            if (msg.sender != project.creator) revert NotCreator();
+        }
 
         project.claimed = true;
 
@@ -479,7 +483,7 @@ contract Launchpad is ReentrancyGuard {
             (bool success, ) = payable(project.creator).call{value: amount}("");
             if (!success) revert TransferFailed();
         } 
-        // Goal NOT reached: refund all contributors
+        // Goal NOT reached: refund all contributors (anyone can call this)
         else {
             address[] memory contributors = _contributors[projectId];
             
