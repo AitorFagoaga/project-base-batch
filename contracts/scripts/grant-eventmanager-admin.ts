@@ -10,8 +10,8 @@ async function main() {
   console.log("Granting admin role with account:", deployer.address);
 
   // Contract addresses from deployment
-  const REPUTATION_ADDRESS = "0x4bFEd65431969Ef98D6A2e294bB5b5da149D1C6F";
-  const EVENT_MANAGER_ADDRESS = "0x8bC5f21Db609fd976a68CF2A266dA2891C535cF6";
+  const REPUTATION_ADDRESS = "0x3f0069eBEEc6F1f797048a035BfedC61F5F4f81d";
+  const EVENT_MANAGER_ADDRESS = "0xb613cF18d14BcB4dA20BB4003C1dB15B66Ba445E";
 
   // Get Reputation contract
   const Reputation = await ethers.getContractFactory("Reputation");
