@@ -55,7 +55,7 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
       }
 
       // Check if EVENT_MANAGER address is configured
-      if (!EVENT_MANAGER.address || EVENT_MANAGER.address === "") {
+      if (!EVENT_MANAGER.address || EVENT_MANAGER.address === ("" as `0x${string}`)) {
         console.error("❌ UserMedalsGallery: EVENT_MANAGER.address is not configured");
         if (!ignore) {
           setError("El contrato de medallas no está configurado");
@@ -73,7 +73,7 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
 
         const latest = await publicClient.getBlockNumber();
         // Reduced from 500000 to 10000 to avoid RPC timeouts/503 errors
-        const from = latest > 10000n ? latest - 10000n : 0n;
+        const from = latest > BigInt(10000) ? latest - BigInt(10000) : BigInt(0);
 
         console.log(`📦 Scanning blocks ${from} to ${latest}`);
 
@@ -94,8 +94,8 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
         const medalDetails: MedalData[] = [];
 
         for (const log of logs) {
-          const medalId = Number(log.args?.medalId || 0n);
-          const eventId = Number(log.args?.eventId || 0n);
+          const medalId = Number(log.args?.medalId || BigInt(0));
+          const eventId = Number(log.args?.eventId || BigInt(0));
 
           console.log(`🏅 Fetching details for medal ${medalId} from event ${eventId}`);
 
@@ -121,7 +121,7 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
               description,
               iconUrl,
               points,
-              blockNumber: log.blockNumber ?? 0n,
+              blockNumber: log.blockNumber ?? BigInt(0),
             });
           } catch (err) {
             console.error(`❌ Error fetching medal ${medalId}:`, err);

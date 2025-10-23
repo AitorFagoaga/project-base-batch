@@ -100,7 +100,7 @@ export default function CreateProjectPage() {
           topics: projectCreatedLog.topics,
         });
 
-        const projectId = decoded.args.projectId as bigint;
+        const projectId = (decoded.args as any)?.projectId as bigint;
         setNewProjectId(projectId);
 
         // If there are team members to add, prepare to add them
@@ -333,6 +333,11 @@ export default function CreateProjectPage() {
       // Stage 1: Upload NFT image to IPFS
       setIsUploadingToIPFS(true);
       setUploadStage("Uploading NFT image to IPFS network...");
+
+      if (!nftImage) {
+        toast.error("Please upload an NFT image");
+        return;
+      }
 
       const imageUri = await uploadImageToIPFS(nftImage);
       toast.success("✅ Image uploaded to IPFS");
@@ -608,7 +613,7 @@ export default function CreateProjectPage() {
                       👥 Build Trust with Your Team
                     </h4>
                     <p className="text-gray-700 text-sm leading-relaxed">
-                      Show investors who's building this project. Sharing your team and their roles builds credibility and trust.
+                      Show investors who&apos;s building this project. Sharing your team and their roles builds credibility and trust.
                     </p>
                   </div>
 
@@ -629,7 +634,7 @@ export default function CreateProjectPage() {
                       required
                     />
                     <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-                      <span>What's your role in this project?</span>
+                      <span>What&apos;s your role in this project?</span>
                       <span className={creatorRole.length > 45 ? "font-semibold text-orange-600" : ""}>
                         {creatorRole.length}/50
                       </span>

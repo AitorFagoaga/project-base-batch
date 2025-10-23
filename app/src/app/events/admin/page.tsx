@@ -61,7 +61,7 @@ export default function AdminEventsPage() {
       ) : (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Pendientes</h3>
-          {Array.from({ length: Number(total || 0n) }, (_, i) => i + 1).map((id) => (
+          {Array.from({ length: Number(total || BigInt(0)) }, (_, i) => i + 1).map((id) => (
             <PendingRow key={id} id={id} />
           ))}
         </div>

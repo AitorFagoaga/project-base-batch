@@ -53,9 +53,9 @@ export function GenesisBreakdown({ address }: GenesisBreakdownProps) {
     args: [address],
   });
 
-  const total = Number(totalRep || 0n);
-  const genesis = Number(genesisRep || 0n);
-  const boost = Number(boostRep || 0n);
+  const total = Number(totalRep || BigInt(0));
+  const genesis = Number(genesisRep || BigInt(0));
+  const boost = Number(boostRep || BigInt(0));
 
   const genesisPercentage = total > 0 ? Math.round((genesis / total) * 100) : 0;
   const boostPercentage = total > 0 ? Math.round((boost / total) * 100) : 0;

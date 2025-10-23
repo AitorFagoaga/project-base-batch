@@ -47,36 +47,7 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
     : undefined;
 
   // Check if goal is reached
-  const isGoalReached = remainingAmount !== undefined && remainingAmount <= 0n;
-
-  // Don't render form if goal is reached
-  if (isGoalReached) {
-    return (
-      <div className="card space-y-4">
-        <div className="flex items-center gap-3">
-          <CheckCircle className="w-8 h-8 text-green-600" />
-          <div>
-            <h3 className="text-xl font-bold text-gray-900">🎉 Goal Reached!</h3>
-            <p className="text-gray-600">This project has reached its funding goal.</p>
-          </div>
-        </div>
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-green-900">Goal:</span>
-            <span className="text-lg font-bold text-green-700">
-              {goalAmount ? formatEther(goalAmount) : '0'} ETH
-            </span>
-          </div>
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-sm font-medium text-green-900">Raised:</span>
-            <span className="text-lg font-bold text-green-700">
-              {raisedAmount ? formatEther(raisedAmount) : '0'} ETH
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const isGoalReached = remainingAmount !== undefined && remainingAmount <= BigInt(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,7 +121,36 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
       onSuccess?.();
       setAmount("");
     }
-  }, [isSuccess]);
+  }, [isSuccess, onSuccess]);
+
+  // Don't render form if goal is reached
+  if (isGoalReached) {
+    return (
+      <div className="card space-y-4">
+        <div className="flex items-center gap-3">
+          <CheckCircle className="w-8 h-8 text-green-600" />
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">🎉 Goal Reached!</h3>
+            <p className="text-gray-600">This project has reached its funding goal.</p>
+          </div>
+        </div>
+        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-green-900">Goal:</span>
+            <span className="text-lg font-bold text-green-700">
+              {goalAmount ? formatEther(goalAmount) : '0'} ETH
+            </span>
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-sm font-medium text-green-900">Raised:</span>
+            <span className="text-lg font-bold text-green-700">
+              {raisedAmount ? formatEther(raisedAmount) : '0'} ETH
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="card space-y-5">
@@ -162,7 +162,7 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
         <p className="text-gray-600 text-sm">Contribute ETH to help reach the goal</p>
       </div>
 
-      {remainingAmount !== undefined && remainingAmount > 0n && (
+      {remainingAmount !== undefined && remainingAmount > BigInt(0) && (
         <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
           <p className="text-sm text-blue-800">
             <span className="font-semibold">Remaining:</span> {formatEther(remainingAmount)} ETH to reach goal
@@ -181,7 +181,7 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
         </div>
       )}
 
-      {isCofounder && (
+      {(isCofounder as boolean) && (
         <div className="rounded-lg bg-red-50 border border-red-200 p-4">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-red-600" />
@@ -280,7 +280,7 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
 
       <button
         type="submit"
-        disabled={isPending || isConfirming || !amount || isOwnProject || isCofounder}
+        disabled={isPending || isConfirming || !amount || isOwnProject || (isCofounder as boolean)}
         className="btn-primary w-full text-lg py-4 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPending || isConfirming ? (

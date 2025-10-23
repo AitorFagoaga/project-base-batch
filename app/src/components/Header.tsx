@@ -44,7 +44,7 @@ export function Header() {
     } 
   });
 
-  const isReputationOwner = address && reputationOwner && address.toLowerCase() === reputationOwner.toLowerCase();
+  const isReputationOwner = address && reputationOwner && typeof reputationOwner === 'string' && address.toLowerCase() === reputationOwner.toLowerCase();
   const isHardcodedAdmin = address && ADMIN_ADDRESSES.includes(address.toLowerCase());
   const isAdmin = isReputationOwner || isEventAdmin === true || isHardcodedAdmin;
 
