@@ -50,7 +50,6 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
     async function loadMedals() {
       // Wait for publicClient to be available
       if (!publicClient) {
-        console.log("⏳ UserMedalsGallery: Waiting for publicClient...");
         return;
       }
 
@@ -64,9 +63,6 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
         return;
       }
 
-      console.log("🔍 UserMedalsGallery: Loading medals for", address);
-      console.log("📍 EVENT_MANAGER address:", EVENT_MANAGER.address);
-
       try {
         setIsLoading(true);
         setError(null);
@@ -74,8 +70,6 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
         const latest = await publicClient.getBlockNumber();
         // Reduced from 500000 to 10000 to avoid RPC timeouts/503 errors
         const from = latest > BigInt(10000) ? latest - BigInt(10000) : BigInt(0);
-
-        console.log(`📦 Scanning blocks ${from} to ${latest}`);
 
         const event = parseAbiItem(
           "event MedalClaimed(uint256 indexed eventId, uint256 indexed medalId, address indexed claimer)"
@@ -89,15 +83,11 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
           toBlock: latest,
         });
 
-        console.log(`✅ Found ${logs.length} medal claim events`);
-
         const medalDetails: MedalData[] = [];
 
         for (const log of logs) {
           const medalId = Number(log.args?.medalId || BigInt(0));
           const eventId = Number(log.args?.eventId || BigInt(0));
-
-          console.log(`🏅 Fetching details for medal ${medalId} from event ${eventId}`);
 
           try {
             const medalData = (await publicClient.readContract({
@@ -111,8 +101,6 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
             const description = String(medalData?.description ?? medalData?.[3] ?? "");
             const iconUrl = String(medalData?.iconUrl ?? medalData?.[4] ?? "");
             const points = Number(medalData?.points ?? medalData?.[5] ?? 0);
-
-            console.log(`  ✓ Medal: "${name}" (${points} pts)`);
 
             medalDetails.push({
               medalId,
@@ -132,7 +120,6 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
           // Sort by block number (most recent first)
           const sorted = medalDetails.sort((a, b) => Number(b.blockNumber - a.blockNumber));
           setMedals(sorted);
-          console.log(`✅ Loaded ${sorted.length} medals successfully`);
         }
       } catch (err) {
         console.error("❌ Error loading medals:", err);

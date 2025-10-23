@@ -1,7 +1,7 @@
 /**
  * Contract addresses and ABIs for Base Sepolia deployment
  * Auto-generated from /deployments/base-sepolia.json
- * Last updated: 2025-10-23T14:13:45.143Z
+ * Last updated: 2025-10-23T15:03:20.069Z
  */
 
 export const CONTRACTS = {
@@ -146,7 +146,7 @@ export const CONTRACTS = {
 ] as const,
   },
   reputation: {
-    address: "0x7d9FCc30507A0d0aA182cD7BFA99538594048B6A" as `0x${string}`,
+    address: "0x51F366D2A47C688eC1B4FFf5a42D12DD25fb2CA8" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -799,7 +799,7 @@ export const CONTRACTS = {
 ] as const,
   },
   launchpad: {
-    address: "0xe43a441e8643B65433eee20CD9Da27Aae1931E4B" as `0x${string}`,
+    address: "0x28c8353cD762B024A6de15136B2046564cD11b19" as `0x${string}`,
     abi: [
   {
     "type": "constructor",
@@ -1292,6 +1292,19 @@ export const CONTRACTS = {
   },
   {
     "type": "function",
+    "name": "finalizeProject",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
     "name": "fundProject",
     "constant": false,
     "stateMutability": "payable",
@@ -1593,6 +1606,19 @@ export const CONTRACTS = {
   },
   {
     "type": "function",
+    "name": "processRefunds",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "projectId"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
     "name": "projectCount",
     "constant": true,
     "stateMutability": "view",
@@ -1622,7 +1648,7 @@ export const CONTRACTS = {
 ] as const,
   },
   userProfile: {
-    address: "0x506F68a1572D49D5791020cf56Cb3Ddd05d2555e" as `0x${string}`,
+    address: "0x45BBF1a3c2eeFD1F6e07b485635Acb1fD9A32A87" as `0x${string}`,
     abi: [
   {
     "type": "event",
@@ -1756,7 +1782,7 @@ export const CONTRACTS = {
 ] as const,
   },
   eventManager: {
-    address: "0x6B620fE06B490Eb65800b3B919E93CB9eD749626" as `0x${string}`,
+    address: "0xCA00C10930e3049365fc14d92daC87B82356E3B9" as `0x${string}`,
     abi: [
   {
     "type": "constructor",

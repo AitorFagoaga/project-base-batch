@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useWriteContract, useWaitForTransactionReceipt, useAccount, useReadContract } from "wagmi";
 import { parseEther, formatEther } from "viem";
 import { CONTRACTS } from "@/lib/contracts";
@@ -22,6 +22,7 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
   const [amount, setAmount] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const { address } = useAccount();
+  const successHandledRef = useRef(false);
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
 
@@ -114,12 +115,18 @@ export function FundForm({ projectId, creatorAddress, goalAmount, raisedAmount, 
   };
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && !successHandledRef.current) {
+      successHandledRef.current = true;
       toast.success("Contribution successful! Thank you for supporting this project", {
         duration: 5000,
       });
       onSuccess?.();
       setAmount("");
+      
+      // Reset the ref after a delay to allow for new transactions
+      setTimeout(() => {
+        successHandledRef.current = false;
+      }, 1000);
     }
   }, [isSuccess, onSuccess]);
 

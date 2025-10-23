@@ -1,7 +1,7 @@
 {
   "network": "base-sepolia",
   "chainId": 84532,
-  "deployedAt": "2025-10-23T06:42:21.004Z",
+  "deployedAt": "2025-10-23T14:46:44.007Z",
   "deployer": "0xaa860E97f1a50ca6Ce786AEf9B835052dfD0ee25",
   "gasUsed": {
     "reputation": "~2,500,000",
@@ -11,7 +11,7 @@
   },
   "contracts": {
     "Reputation": {
-      "address": "0x7d9FCc30507A0d0aA182cD7BFA99538594048B6A",
+      "address": "0x51F366D2A47C688eC1B4FFf5a42D12DD25fb2CA8",
       "abi": [
         {
           "type": "constructor",
@@ -664,7 +664,7 @@
       ]
     },
     "Launchpad": {
-      "address": "0xe43a441e8643B65433eee20CD9Da27Aae1931E4B",
+      "address": "0x28c8353cD762B024A6de15136B2046564cD11b19",
       "abi": [
         {
           "type": "constructor",
@@ -1157,6 +1157,19 @@
         },
         {
           "type": "function",
+          "name": "finalizeProject",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
           "name": "fundProject",
           "constant": false,
           "stateMutability": "payable",
@@ -1458,6 +1471,19 @@
         },
         {
           "type": "function",
+          "name": "processRefunds",
+          "constant": false,
+          "payable": false,
+          "inputs": [
+            {
+              "type": "uint256",
+              "name": "projectId"
+            }
+          ],
+          "outputs": []
+        },
+        {
+          "type": "function",
           "name": "projectCount",
           "constant": true,
           "stateMutability": "view",
@@ -1487,7 +1513,7 @@
       ]
     },
     "UserProfile": {
-      "address": "0x506F68a1572D49D5791020cf56Cb3Ddd05d2555e",
+      "address": "0x45BBF1a3c2eeFD1F6e07b485635Acb1fD9A32A87",
       "abi": [
         {
           "type": "event",
@@ -1621,7 +1647,7 @@
       ]
     },
     "EventManager": {
-      "address": "0x6B620fE06B490Eb65800b3B919E93CB9eD749626",
+      "address": "0xCA00C10930e3049365fc14d92daC87B82356E3B9",
       "abi": [
         {
           "type": "constructor",

@@ -143,16 +143,8 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
   const timeline = useMemo(() => {
     const items: { type: "genesis" | "boost" | "medal"; title: string; sub?: string; icon?: string; when?: bigint; tag?: string }[] = [];
     for (const g of genesis) {
-      console.log(g.category)
       const isInvest = (g.category || "").toUpperCase() === "INVESTMENT";
       const isMedalAward = (g.reason || "").toLowerCase().includes("medal");
-      
-      console.log("🏅 Processing genesis award:", {
-        category: g.category,
-        reason: g.reason,
-        isInvest,
-        isMedalAward
-      });
       
       items.push({
         type: isMedalAward ? "medal" : "genesis",

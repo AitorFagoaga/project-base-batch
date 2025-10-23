@@ -125,8 +125,8 @@ export default function ProjectDetailPage() {
   const teamMembers: TeamMember[] = teamMembersData ? (teamMembersData as TeamMember[]) : [];
 
   // Use finalizeProject for both claiming funds and processing refunds
-  const { writeContract: writeFinalize, data: finalizeHash, isPending: isFinalizePending } = useWriteContract();
-  const { isLoading: isFinalizeConfirming, isSuccess: isFinalizeSuccess } = useWaitForTransactionReceipt({
+  const { writeContract: writeFinalize, data: finalizeHash, isPending: isFinalizePending, error: finalizeError } = useWriteContract();
+  const { isLoading: isFinalizeConfirming, isSuccess: isFinalizeSuccess, isError: isFinalizeError, error: finalizeReceiptError } = useWaitForTransactionReceipt({
     hash: finalizeHash,
   });
 
@@ -164,9 +164,9 @@ export default function ProjectDetailPage() {
       });
 
       if (goalReached) {
-        toast.success("Claiming funds and distributing rewards...");
+        toast.loading("Transaction submitted! Claiming funds and distributing rewards...", { duration: 3000 });
       } else {
-        toast.success("Processing refunds for all contributors...");
+        toast.loading("Transaction submitted! Processing refunds for all contributors...", { duration: 3000 });
       }
     } catch (error) {
       console.error("Error finalizing project:", error);
@@ -214,15 +214,32 @@ export default function ProjectDetailPage() {
     }
   }, [isDeleteSuccess, router]);
 
+  // Handle finalization errors
+  useEffect(() => {
+    if (isFinalizeError && finalizeReceiptError) {
+      console.error("Transaction failed:", finalizeReceiptError);
+      toast.error("Transaction failed! Check console for details.");
+    }
+    if (finalizeError) {
+      console.error("Transaction submission error:", finalizeError);
+      toast.error("Failed to submit transaction. Please try again.");
+    }
+  }, [isFinalizeError, finalizeReceiptError, finalizeError]);
+
   // Refetch after successful finalization
   useEffect(() => {
     if (isFinalizeSuccess) {
       if (goalReached) {
-        toast.success("Funds claimed successfully!");
+        toast.success("✅ Funds claimed and NFTs distributed successfully!");
       } else {
-        toast.success("Refunds processed successfully!");
+        toast.success("✅ All refunds processed successfully!");
       }
-      refetchProject();
+      
+      // Refetch project data to update UI
+      setTimeout(() => {
+        refetchProject();
+        refetchContribution();
+      }, 2000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFinalizeSuccess]);
