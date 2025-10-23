@@ -41,7 +41,7 @@ export function UserEvents({ userAddress }: UserEventsProps) {
       <div className="card text-center py-12">
         <div className="text-6xl mb-4">📅</div>
         <h3 className="text-xl font-semibold text-gray-900 mb-2">No Events</h3>
-        <p className="text-gray-600">This user hasn't created any events yet.</p>
+        <p className="text-gray-600">This user hasn&apos;t created any events yet.</p>
       </div>
     );
   }

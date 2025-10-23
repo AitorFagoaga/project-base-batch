@@ -101,7 +101,7 @@ export function InspireButton({ projectId, creatorAddress }: InspireButtonProps)
           Does this project inspire you?
         </h3>
         <p className="text-sm text-gray-600 mb-4">
-          Award an "Inspiration" badge to the creator and give them <strong>3 reputation points</strong>
+          Award an &quot;Inspiration&quot; badge to the creator and give them <strong>3 reputation points</strong>
         </p>
       </div>
 

@@ -1,7 +1,7 @@
 /**
  * Contract addresses and ABIs for Base Sepolia deployment
  * Auto-generated from /deployments/base-sepolia.json
- * Last updated: 2025-10-23T02:06:00.087Z
+ * Last updated: 2025-10-23T05:23:20.979Z
  */
 
 export const CONTRACTS = {

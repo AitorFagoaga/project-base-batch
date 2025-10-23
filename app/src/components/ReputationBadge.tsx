@@ -19,7 +19,7 @@ export function ReputationBadge({
   showGenesis = false,
 }: ReputationBadgeProps) {
   const rep = Number(reputation);
-  const genesis = Number(genesisReputation || 0n);
+  const genesis = Number(genesisReputation || BigInt(0));
   const hasGenesis = genesis > 0;
 
   // Determine tier and styling

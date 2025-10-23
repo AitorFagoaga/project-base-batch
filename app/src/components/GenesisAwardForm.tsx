@@ -318,7 +318,7 @@ export function GenesisAwardForm() {
         <div className="mt-6 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl">
           <p className="text-sm text-yellow-900 font-medium flex items-start gap-2">
             <span className="text-xl flex-shrink-0">⚠️</span>
-            <span><strong>Important:</strong> Genesis reputation cannot be revoked. Only award points for verified achievements that you've personally validated.</span>
+            <span><strong>Important:</strong> Genesis reputation cannot be revoked. Only award points for verified achievements that you&apos;ve personally validated.</span>
           </p>
         </div>
       </div>
