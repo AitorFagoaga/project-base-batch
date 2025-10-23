@@ -72,11 +72,12 @@ export default function ClaimMedalPage() {
     query: { enabled: !!medalInfo && !!connectedAddress },
   });
 
-  // Check if medal is full
+  // Check if medal is full (only if maxClaims > 0, otherwise infinite claims)
   const isMedalFull = medalsData && medalInfo ? (() => {
     const medals = medalsData as MedalData[];
     const medal = medals.find((m) => Number(m.id) === medalInfo.medalId);
-    return medal ? medal.claimsCount >= medal.maxClaims : false;
+    // Only full if maxClaims > 0 AND claimsCount >= maxClaims
+    return medal && medal.maxClaims > 0 ? medal.claimsCount >= medal.maxClaims : false;
   })() : false;
 
   // Update medal info when contract data loads (FIX: use functional update to avoid infinite loop)
@@ -180,12 +181,12 @@ export default function ClaimMedalPage() {
       }
     }
 
-    // Check if medal has available claims
+    // Check if medal has available claims (only if maxClaims > 0)
     if (medalsData) {
       const medals = medalsData as MedalData[];
       const medal = medals.find((m) => Number(m.id) === medalInfo.medalId);
       
-      if (medal) {
+      if (medal && medal.maxClaims > 0) {
         if (medal.claimsCount >= medal.maxClaims) {
           toast.error("❌ This badge has reached its maximum claims and is no longer available");
           return;

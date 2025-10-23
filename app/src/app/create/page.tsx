@@ -100,7 +100,7 @@ export default function CreateProjectPage() {
           topics: projectCreatedLog.topics,
         });
 
-        const projectId = decoded.args.projectId as bigint;
+        const projectId = (decoded.args as any)?.projectId as bigint;
         setNewProjectId(projectId);
 
         // If there are team members to add, prepare to add them
@@ -264,8 +264,8 @@ export default function CreateProjectPage() {
       toast.error("Minimum goal is 0.001 ETH");
       return false;
     }
-    if (durationDays && (Number.isNaN(duration) || duration <= 0 || duration > 365)) {
-      toast.error("Duration must be greater than 0 and less than 365 days. You can use decimals (e.g., 0.5 for 12 hours)");
+    if (durationDays && (Number.isNaN(duration) || duration < 0.001 || duration > 365)) {
+      toast.error("Duration must be between 0.001 and 365 days (e.g., 0.001 = ~1.4 minutes, 0.5 = 12 hours)");
       return false;
     }
     
@@ -349,6 +349,11 @@ export default function CreateProjectPage() {
       return;
     }
     if (!validateStep4()) {
+      // Only show specific errors if user has started filling the fields
+      if (!goalEth && !durationDays) {
+        toast.error("Please complete Step 4: Goals & Duration");
+        return;
+      }
       if (!goalEth) {
         toast.error("Please enter a funding goal");
         return;
@@ -368,6 +373,11 @@ export default function CreateProjectPage() {
       // Stage 1: Upload NFT image to IPFS
       setIsUploadingToIPFS(true);
       setUploadStage("Uploading NFT image to IPFS network...");
+
+      if (!nftImage) {
+        toast.error("Please upload an NFT image");
+        return;
+      }
 
       const imageUri = await uploadImageToIPFS(nftImage);
       toast.success("✅ Image uploaded to IPFS");
@@ -408,6 +418,10 @@ export default function CreateProjectPage() {
 
       // Stage 3: Send transaction to blockchain
       const goalInWei = parseEther(goalEth);
+      
+      // Convert decimal days to seconds for the contract
+      // e.g., 0.5 days = 43200 seconds, 1 day = 86400 seconds
+      const durationInSeconds = Math.floor(duration * 24 * 60 * 60);
 
       writeContract({
         address: CONTRACTS.launchpad.address,
@@ -419,7 +433,7 @@ export default function CreateProjectPage() {
           imageUrl,
           category,
           goalInWei,
-          BigInt(duration),
+          BigInt(durationInSeconds),
           nftName,
           nftName.substring(0, 10).toUpperCase().replace(/\s/g, ""), // NFT symbol (max 10 chars)
           metadataUri,
@@ -643,7 +657,7 @@ export default function CreateProjectPage() {
                       👥 Build Trust with Your Team
                     </h4>
                     <p className="text-gray-700 text-sm leading-relaxed">
-                      Show investors who's building this project. Sharing your team and their roles builds credibility and trust.
+                      Show investors who&apos;s building this project. Sharing your team and their roles builds credibility and trust.
                     </p>
                   </div>
 
@@ -664,7 +678,7 @@ export default function CreateProjectPage() {
                       required
                     />
                     <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-                      <span>What's your role in this project?</span>
+                      <span>What&apos;s your role in this project?</span>
                       <span className={creatorRole.length > 45 ? "font-semibold text-orange-600" : ""}>
                         {creatorRole.length}/50
                       </span>
@@ -752,15 +766,17 @@ export default function CreateProjectPage() {
                     <Icon name="image" size="sm" />
                     NFT Image *
                   </label>
-                  <input
-                    id="nftImage"
-                    type="file"
-                    accept="image/jpeg,image/png,image/gif,image/webp"
-                    onChange={handleNftImageChange}
-                    className="input-field text-base"
-                    disabled={isFormDisabled}
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      id="nftImage"
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      onChange={handleNftImageChange}
+                      className="input-field text-base file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 file:cursor-pointer"
+                      disabled={isFormDisabled}
+                      required
+                    />
+                  </div>
                   <p className="mt-2 text-xs text-gray-500">
                     Upload the image for your backer NFT (JPEG, PNG, GIF, or WebP, max 10MB). All backers will receive this same image.
                   </p>
@@ -842,18 +858,18 @@ export default function CreateProjectPage() {
                     <input
                       id="duration"
                       type="number"
-                      min="0.01"
+                      min="0.001"
                       max="365"
-                      step="0.01"
+                      step="0.001"
                       value={durationDays}
                       onChange={(event) => setDurationDays(event.target.value)}
-                      placeholder="30 (or 0.5 for 12 hours)"
+                      placeholder="30 (or 0.5 for 12 hours, 0.001 for testing)"
                       className="input-field text-base"
                       disabled={isFormDisabled}
                       required
                     />
                     <p className="mt-2 text-xs text-gray-500">
-                      Maximum 365 days. You can use decimals (e.g., 0.5 = 12 hours, 0.04 = 1 hour). Recommended: 21-45 days.
+                      Between 0.001 - 365 days with decimals (0.001 ≈ 1.4 min, 0.5 = 12 hrs, 0.04 ≈ 1 hr). Recommended: 21-45 days.
                     </p>
                   </div>
                 </div>

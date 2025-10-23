@@ -29,6 +29,7 @@ type NormalizedProject = {
   title: string;
   description: string;
   imageUrl: string;
+  category: string;
   goal: bigint;
   deadline: bigint;
   fundsRaised: bigint;
@@ -63,32 +64,34 @@ export default function ProjectDetailPage() {
 
   if (projectData) {
     if (Array.isArray(projectData)) {
-      const data = projectData as [bigint, string, string, string, string, bigint, bigint, bigint, boolean, readonly string[]];
+      const data = projectData as [bigint, string, string, string, string, string, bigint, bigint, bigint, boolean, readonly string[]];
       project = {
         id: data[0],
         creator: data[1],
         title: data[2],
         description: data[3] || "",
         imageUrl: data[4] || "",
-        goal: data[5],
-        deadline: data[6],
-        fundsRaised: data[7],
-        claimed: data[8] || false,
-        cofounders: data[9] || [],
+        category: data[5] || "",
+        goal: data[6],
+        deadline: data[7],
+        fundsRaised: data[8],
+        claimed: data[9] || false,
+        cofounders: data[10] || [],
       };
     } else {
       const data = projectData as ProjectContractResponse;
       project = {
-        id: data.id ?? data[0],
-        creator: data.creator ?? data[1],
-        title: data.title ?? data[2],
-        description: data.description ?? data[3] ?? "",
-        imageUrl: data.imageUrl ?? data[4] ?? "",
-        goal: data.goal ?? data[5],
-        deadline: data.deadline ?? data[6],
-        fundsRaised: data.fundsRaised ?? data[7] ?? BigInt(0),
-        claimed: data.claimed ?? data[8] ?? false,
-        cofounders: data.cofounders ?? data[9] ?? [],
+        id: (data.id ?? data[0]) as bigint,
+        creator: (data.creator ?? data[1]) as string,
+        title: (data.title ?? data[2]) as string,
+        description: (data.description ?? data[3] ?? "") as string,
+        imageUrl: (data.imageUrl ?? data[4] ?? "") as string,
+        category: (data.category ?? data[5] ?? "") as string,
+        goal: (data.goal ?? data[6]) as bigint,
+        deadline: (data.deadline ?? data[7]) as bigint,
+        fundsRaised: (data.fundsRaised ?? data[8] ?? BigInt(0)) as bigint,
+        claimed: (data.claimed ?? data[9] ?? false) as boolean,
+        cofounders: (data.cofounders ?? data[10] ?? []) as readonly string[],
       };
     }
   }
@@ -121,9 +124,10 @@ export default function ProjectDetailPage() {
 
   const teamMembers: TeamMember[] = teamMembersData ? (teamMembersData as TeamMember[]) : [];
 
-  const { writeContract: writeClaim, data: claimHash, isPending: isClaimPending } = useWriteContract();
-  const { isLoading: isClaimConfirming, isSuccess: isClaimSuccess } = useWaitForTransactionReceipt({
-    hash: claimHash,
+  // Use finalizeProject for both claiming funds and processing refunds
+  const { writeContract: writeFinalize, data: finalizeHash, isPending: isFinalizePending } = useWriteContract();
+  const { isLoading: isFinalizeConfirming, isSuccess: isFinalizeSuccess } = useWaitForTransactionReceipt({
+    hash: finalizeHash,
   });
 
   const { writeContract: writeDelete, data: deleteHash, isPending: isDeletePending } = useWriteContract();
@@ -131,19 +135,43 @@ export default function ProjectDetailPage() {
     hash: deleteHash,
   });
 
-  const handleClaim = () => {
+  // Get user's contribution amount
+  const {
+    data: userContribution,
+    refetch: refetchContribution,
+  } = useReadContract({
+    address: CONTRACTS.launchpad.address,
+    abi: CONTRACTS.launchpad.abi,
+    functionName: "getContribution",
+    args: project && address ? [projectId, address as `0x${string}`] : undefined,
+    query: {
+      enabled: !!project && !!address,
+    },
+  });
+
+  const handleFinalize = () => {
     if (!project) {
+      toast.error("Project not found");
       return;
     }
 
-    writeClaim({
-      address: CONTRACTS.launchpad.address,
-      abi: CONTRACTS.launchpad.abi,
-      functionName: "claimFunds",
-      args: [projectId],
-    });
+    try {
+      writeFinalize({
+        address: CONTRACTS.launchpad.address,
+        abi: CONTRACTS.launchpad.abi,
+        functionName: "finalizeProject",
+        args: [projectId],
+      });
 
-    toast.success("Claim transaction submitted!");
+      if (goalReached) {
+        toast.success("Claiming funds and distributing rewards...");
+      } else {
+        toast.success("Processing refunds for all contributors...");
+      }
+    } catch (error) {
+      console.error("Error finalizing project:", error);
+      toast.error("Failed to finalize project");
+    }
   };
 
   const handleDelete = () => {
@@ -186,6 +214,19 @@ export default function ProjectDetailPage() {
     }
   }, [isDeleteSuccess, router]);
 
+  // Refetch after successful finalization
+  useEffect(() => {
+    if (isFinalizeSuccess) {
+      if (goalReached) {
+        toast.success("Funds claimed successfully!");
+      } else {
+        toast.success("Refunds processed successfully!");
+      }
+      refetchProject();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFinalizeSuccess]);
+
   const now = Math.floor(Date.now() / 1000);
   let isActive = false;
   let goalReached = false;
@@ -216,17 +257,39 @@ export default function ProjectDetailPage() {
     }
 
     goalReached = project.fundsRaised >= project.goal;
-    canClaim =
-      !isActive &&
-      goalReached &&
-      !project.claimed &&
-      address?.toLowerCase() === project.creator.toLowerCase();
   }
 
+  // Can finalize if project ended (regardless of goal reached or not) and not claimed yet
+  const canFinalize = project && !isActive && !project.claimed;
+  
+  // Only allow deletion if project is still active and hasn't reached goal
   const canDelete =
     project &&
+    isActive &&
     !goalReached &&
     address?.toLowerCase() === project.creator.toLowerCase();
+
+  let contributionAmount = BigInt(0);
+  if (userContribution) {
+    try {
+      if (typeof userContribution === "bigint") {
+        contributionAmount = userContribution;
+      } else if (typeof userContribution === "number") {
+        contributionAmount = BigInt(userContribution);
+      } else if (typeof userContribution === "string") {
+        contributionAmount = BigInt(userContribution);
+      }
+    } catch (error) {
+      console.error("Error converting contribution:", error);
+      contributionAmount = BigInt(0);
+    }
+  }
+
+  // Debug: Log refund-related values after all calculations
+  useEffect(() => {
+    // Removed debug logs
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project, address, userContribution]);
 
   let reputationValue = BigInt(0);
   if (reputation) {
@@ -632,25 +695,49 @@ export default function ProjectDetailPage() {
                     creatorAddress={project.creator}
                   />
 
-                  {canClaim && (
-                    <div className="rounded-[28px] border border-green-200 bg-green-50/80 p-5 shadow-sm shadow-green-100">
-                      <p className="text-green-800 font-semibold mb-3 text-sm">
-                        🎉 Congratulations! You can claim your funds now.
-                      </p>
+                  {canFinalize && (
+                    <div className={`rounded-[28px] border p-5 shadow-sm ${
+                      goalReached 
+                        ? 'border-green-200 bg-green-50/80 shadow-green-100' 
+                        : 'border-amber-200 bg-amber-50/80 shadow-amber-100'
+                    }`}>
+                      {goalReached ? (
+                        <>
+                          <p className="text-green-800 font-semibold mb-2 text-sm">
+                            🎉 Goal Reached!
+                          </p>
+                          <p className="text-xs text-green-700 mb-3">
+                            Finalize to claim funds and distribute NFTs & reputation to all backers.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-amber-800 font-semibold mb-2 text-sm">
+                            💰 Campaign Ended
+                          </p>
+                          <p className="text-xs text-amber-700 mb-3">
+                            Goal not reached. Finalize to automatically refund all contributors.
+                          </p>
+                        </>
+                      )}
                       <button
-                        onClick={handleClaim}
-                        disabled={isClaimPending || isClaimConfirming}
-                        className="btn-primary w-full"
+                        onClick={handleFinalize}
+                        disabled={isFinalizePending || isFinalizeConfirming}
+                        className={`rounded-full px-4 py-2 text-sm font-semibold text-white transition w-full disabled:opacity-50 disabled:cursor-not-allowed ${
+                          goalReached 
+                            ? 'bg-green-600 hover:bg-green-700' 
+                            : 'bg-amber-600 hover:bg-amber-700'
+                        }`}
                       >
-                        {isClaimPending || isClaimConfirming ? "Claiming..." : "Claim Funds"}
+                        {isFinalizePending || isFinalizeConfirming ? "Processing..." : "Finalize Project"}
                       </button>
-                      {claimHash && (
+                      {finalizeHash && (
                         <div className="mt-3 text-xs">
                           <a
-                            href={`https://sepolia.basescan.org/tx/${claimHash}`}
+                            href={`https://sepolia.basescan.org/tx/${finalizeHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
+                            className={goalReached ? "text-green-700 hover:underline" : "text-amber-700 hover:underline"}
                           >
                             View transaction on BaseScan ↗
                           </a>

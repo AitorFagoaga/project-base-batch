@@ -247,7 +247,7 @@ contract Launchpad is ReentrancyGuard {
      * @param imageUrl Project image URL (IPFS or hosted)
      * @param category Project category
      * @param goalInWei Funding goal in wei
-     * @param durationInDays Duration of the campaign in days
+     * @param durationInSeconds Duration of the campaign in seconds (supports decimal days from frontend)
      * @param nftName Name for the backer NFT collection
      * @param nftSymbol Symbol for the backer NFT collection
      * @param nftBaseURI IPFS URI for the NFT metadata
@@ -260,16 +260,17 @@ contract Launchpad is ReentrancyGuard {
         string calldata imageUrl,
         string calldata category,
         uint256 goalInWei,
-        uint256 durationInDays,
+        uint256 durationInSeconds,
         string calldata nftName,
         string calldata nftSymbol,
         string calldata nftBaseURI,
         string calldata creatorRole
     ) external returns (uint256 projectId) {
         if (goalInWei == 0) revert InvalidGoal();
-        if (durationInDays == 0) revert InvalidDuration();
+        if (durationInSeconds == 0) revert InvalidDuration();
+        if (durationInSeconds > 365 days) revert InvalidDuration(); // Max 365 days
 
-        uint256 deadline = block.timestamp + (durationInDays * 1 days);
+        uint256 deadline = block.timestamp + durationInSeconds;
         projectId = _projectIdCounter++;
 
         ProjectNFT nftContract = new ProjectNFT(nftName, nftSymbol, nftBaseURI, address(this));
@@ -450,10 +451,63 @@ contract Launchpad is ReentrancyGuard {
     // ═════════════════════════════════════════════════════════════════════════════
     
     /**
+     * @notice Finalize a project after deadline - either claim funds or process refunds
+     * @param projectId The ID of the project
+     * @dev Can be called by anyone after deadline
+     * @dev If goal reached: transfers funds to creator and distributes NFTs/reputation
+     * @dev If goal NOT reached: automatically refunds all contributors
+     */
+    function finalizeProject(uint256 projectId) external nonReentrant {
+        Project storage project = _projects[projectId];
+
+        if (project.creator == address(0)) revert ProjectNotFound();
+        if (block.timestamp < project.deadline) revert DeadlineNotReached();
+        if (project.claimed) revert AlreadyClaimed();
+
+        project.claimed = true;
+
+        // Goal reached: transfer to creator and distribute NFTs
+        if (project.fundsRaised >= project.goal) {
+            uint256 amount = project.fundsRaised;
+
+            // Distribute NFTs and reputation to all backers
+            _distributeNFTsAndReputation(projectId);
+
+            emit FundsClaimed(projectId, project.creator, amount);
+
+            // Transfer funds to creator
+            (bool success, ) = payable(project.creator).call{value: amount}("");
+            if (!success) revert TransferFailed();
+        } 
+        // Goal NOT reached: refund all contributors
+        else {
+            address[] memory contributors = _contributors[projectId];
+            
+            for (uint256 i = 0; i < contributors.length; i++) {
+                address contributor = contributors[i];
+                uint256 contribution = _contributions[projectId][contributor];
+                
+                if (contribution > 0) {
+                    _contributions[projectId][contributor] = 0;
+                    
+                    emit RefundProcessed(projectId, contributor, contribution);
+                    
+                    (bool success, ) = payable(contributor).call{value: contribution}("");
+                    if (!success) {
+                        // Restore contribution so they can claim manually
+                        _contributions[projectId][contributor] = contribution;
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
      * @notice Claim all funds from a successful project (post-deadline)
      * @param projectId The ID of the project
      * @dev Only callable by project creator after deadline if goal is reached
      * @dev This also mints NFTs to all backers and awards reputation
+     * @dev DEPRECATED: Use finalizeProject() instead
      */
     function claimFunds(uint256 projectId) external nonReentrant {
         Project storage project = _projects[projectId];
@@ -516,9 +570,47 @@ contract Launchpad is ReentrancyGuard {
     // ═════════════════════════════════════════════════════════════════════════════
 
     /**
+     * @notice Process all refunds for a failed project
+     * @param projectId The ID of the project
+     * @dev Only callable after deadline if goal was NOT reached
+     * @dev Automatically refunds all contributors
+     */
+    function processRefunds(uint256 projectId) external nonReentrant {
+        Project storage project = _projects[projectId];
+
+        if (project.creator == address(0)) revert ProjectNotFound();
+        if (block.timestamp < project.deadline) revert DeadlineNotReached();
+        if (project.fundsRaised >= project.goal) revert GoalReached();
+        if (project.claimed) revert AlreadyClaimed(); // Prevent double processing
+
+        project.claimed = true; // Mark as processed
+
+        address[] memory contributors = _contributors[projectId];
+        
+        for (uint256 i = 0; i < contributors.length; i++) {
+            address contributor = contributors[i];
+            uint256 contribution = _contributions[projectId][contributor];
+            
+            if (contribution > 0) {
+                _contributions[projectId][contributor] = 0;
+                
+                emit RefundProcessed(projectId, contributor, contribution);
+                
+                (bool success, ) = payable(contributor).call{value: contribution}("");
+                // Continue even if one transfer fails (shouldn't happen but safety first)
+                if (!success) {
+                    // Restore contribution so they can claim manually
+                    _contributions[projectId][contributor] = contribution;
+                }
+            }
+        }
+    }
+
+    /**
      * @notice Claim refund if project didn't reach its goal after deadline
      * @param projectId The ID of the project
      * @dev Only callable after deadline if goal was NOT reached
+     * @dev Fallback for individual refund claims if batch processing wasn't done
      */
     function claimRefund(uint256 projectId) external nonReentrant {
         Project storage project = _projects[projectId];

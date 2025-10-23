@@ -46,7 +46,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
       try {
         const latest = await publicClient.getBlockNumber();
         // Reduced from 500000 to 10000 blocks to avoid RPC overload
-        const from = latest > 10000n ? latest - 10000n : 0n;
+        const from = latest > BigInt(10000) ? latest - BigInt(10000) : BigInt(0);
         const event = parseAbiItem(
           "event BoostGiven(address indexed booster, address indexed recipient, uint256 power)"
         );
@@ -62,7 +62,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
             logs.map((l) => ({
               booster: (l.args?.booster ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
               power: BigInt(l.args?.power ?? 0),
-              blockNumber: l.blockNumber ?? 0n,
+              blockNumber: l.blockNumber ?? BigInt(0),
             }))
           );
         }
@@ -91,7 +91,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
       if (!publicClient || !EVENT_MANAGER.address) return;
       try {
         const latest = await publicClient.getBlockNumber();
-        const from = latest > 500000n ? latest - 500000n : 0n;
+        const from = latest > BigInt(500000) ? latest - BigInt(500000) : BigInt(0);
         const event = parseAbiItem(
           "event MedalClaimed(uint256 indexed eventId, uint256 indexed medalId, address indexed claimer)"
         );
@@ -112,8 +112,8 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
           blockNumber: bigint;
         }[] = [];
         for (const l of logs) {
-          const medalId = Number(l.args?.medalId || 0n);
-          const eventId = Number(l.args?.eventId || 0n);
+          const medalId = Number(l.args?.medalId || BigInt(0));
+          const eventId = Number(l.args?.eventId || BigInt(0));
           try {
             const m = (await publicClient.readContract({
               address: EVENT_MANAGER.address,
@@ -123,7 +123,7 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
             })) as any;
             const name = String(m?.name ?? m?.[2] ?? "");
             const iconUrl = String(m?.iconUrl ?? m?.[4] ?? "");
-            items.push({ eventId, medalId, name, iconUrl, blockNumber: l.blockNumber ?? 0n });
+            items.push({ eventId, medalId, name, iconUrl, blockNumber: l.blockNumber ?? BigInt(0) });
           } catch {}
         }
         if (!ignore) setMedalClaims(items);
@@ -138,15 +138,30 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
   // 4) Merge simple timeline
   const boostIcon = "https://cdn-icons-png.flaticon.com/512/1828/1828884.png";
   const investIcon = "https://cdn-icons-png.flaticon.com/512/3135/3135706.png";
+  const medalIcon = "https://png.pngtree.com/png-vector/20220729/ourmid/pngtree-champion-award-medal-icon-png-image_6091841.png";
+  
   const timeline = useMemo(() => {
-    const items: { type: "genesis" | "boost" | "medal"; title: string; sub?: string; icon?: string; when?: bigint }[] = [];
+    const items: { type: "genesis" | "boost" | "medal"; title: string; sub?: string; icon?: string; when?: bigint; tag?: string }[] = [];
     for (const g of genesis) {
+      console.log(g.category)
       const isInvest = (g.category || "").toUpperCase() === "INVESTMENT";
+      const isMedalAward = (g.reason || "").toLowerCase().includes("medal");
+      
+      console.log("🏅 Processing genesis award:", {
+        category: g.category,
+        reason: g.reason,
+        isInvest,
+        isMedalAward
+      });
+      
       items.push({
-        type: "genesis",
-        title: isInvest ? "Investor Badge" : (g.reason || g.category || "Genesis award"),
-        sub: `${g.amount.toString()} pts`,
-        icon: isInvest ? investIcon : undefined,
+        type: isMedalAward ? "medal" : "genesis",
+        title: isMedalAward ? g.category || "Medal award" : isInvest ? "Investor Badge" : (g.reason || g.category || "Genesis award"),
+        sub: isMedalAward 
+          ? `+${g.amount.toString()} • ${g.reason === "Medal claimed" ? "Medal claimed" : "Manual award by event creator"}`
+          : `+${g.amount.toString()} pts`,
+        icon: isMedalAward ? medalIcon : isInvest ? investIcon : undefined,
+        tag: isMedalAward ? "Medal" : isInvest ? "Inspiration" : undefined,
         when: g.timestamp,
       });
     }
@@ -155,9 +170,15 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
       items.push({ type: "boost", title: `Boost from ${short}`, sub: `+${b.power.toString()} pts`, icon: boostIcon, when: b.blockNumber });
     }
     for (const m of medalClaims) {
-      items.push({ type: "medal", title: m.name || `Badge #${m.medalId}`, icon: m.iconUrl, when: m.blockNumber });
+      items.push({ 
+        type: "medal", 
+        title: m.name || `Badge #${m.medalId}`, 
+        icon: medalIcon, // Use consistent medal icon
+        tag: "Medal",
+        when: m.blockNumber 
+      });
     }
-    return items.sort((a, b) => Number((b.when ?? 0n) - (a.when ?? 0n)));
+    return items.sort((a, b) => Number((b.when ?? BigInt(0)) - (a.when ?? BigInt(0))));
   }, [genesis, boosts, medalClaims]);
 
   if (timeline.length === 0) return null;
@@ -177,7 +198,14 @@ export function ReputationHistory({ address }: Readonly<ReputationHistoryProps>)
               <div className="w-10 h-10 rounded bg-indigo-100 flex items-center justify-center text-indigo-600 text-lg">🏅</div>
             )}
             <div className="flex-1 min-w-0">
-              <div className="font-medium text-gray-900 truncate">{it.title}</div>
+              <div className="flex items-center gap-2">
+                {it.tag && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                    {it.tag}
+                  </span>
+                )}
+                <div className="font-medium text-gray-900 truncate">{it.title}</div>
+              </div>
               {it.sub ? <div className="text-xs text-gray-500">{it.sub}</div> : null}
             </div>
           </div>

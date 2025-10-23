@@ -74,6 +74,8 @@ export function useUserNFTs(userAddress?: `0x${string}`): UseUserNFTsResult {
       setIsLoading(true);
       setError(null);
 
+      if (!client) return;
+
       try {
         const totalProjectsBigInt = (await client.readContract({
           address: CONTRACTS.launchpad.address,
@@ -102,7 +104,7 @@ export function useUserNFTs(userAddress?: `0x${string}`): UseUserNFTsResult {
         }));
 
         const projectResults = await client.multicall({
-          contracts: projectCalls,
+          contracts: projectCalls as readonly { abi: any; functionName: string; args?: readonly unknown[] | undefined; address: `0x${string}`; }[],
           allowFailure: true,
         });
 
@@ -157,7 +159,7 @@ export function useUserNFTs(userAddress?: `0x${string}`): UseUserNFTsResult {
         }));
 
         const tokenResults = await client.multicall({
-          contracts: tokenCalls,
+          contracts: tokenCalls as readonly { abi: any; functionName: string; args?: readonly unknown[] | undefined; address: `0x${string}`; }[],
           allowFailure: true,
         });
 

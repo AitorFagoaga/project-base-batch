@@ -256,6 +256,18 @@ async function main() {
     console.log("⚠️  Could not grant ADMIN_ROLE to Launchpad:", (e as Error).message);
   }
 
+  // Ensure EventManager can award Reputation for medal claims
+  console.log("\n🔗 Configuring EventManager permissions...");
+  try {
+    const adminRole = await reputation.ADMIN_ROLE();
+    const gasPrice = await getGasPrice(ethers.provider, 30);
+    const grantTx = await reputation.grantRole(adminRole, eventManagerAddress, { gasPrice });
+    await grantTx.wait();
+    console.log("✅ Granted ADMIN_ROLE to EventManager for Reputation awards");
+  } catch (e) {
+    console.log("⚠️  Could not grant ADMIN_ROLE to EventManager:", (e as Error).message);
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════
   // SAVE DEPLOYMENT INFO
   // ═══════════════════════════════════════════════════════════════════════════

@@ -21,6 +21,7 @@ const CATEGORY_CONFIG: Record<string, { icon: string; label: string; color: stri
   BUILDER: { icon: "🔨", label: "Builder", color: "bg-blue-100 text-blue-800" },
   INVESTMENT: { icon: "💰", label: "Investment", color: "bg-emerald-100 text-emerald-800" },
   CUSTOM: { icon: "https://cdn-icons-png.flaticon.com/512/4151/4151213.png", label: "Inspiration", color: "bg-amber-100 text-amber-800", isUrl: true },
+  MEDAL: { icon: "https://png.pngtree.com/png-vector/20220729/ourmid/pngtree-champion-award-medal-icon-png-image_6091841.png", label: "Medal", color: "bg-amber-100 text-amber-800", isUrl: true },
 };
 
 export function GenesisBreakdown({ address }: GenesisBreakdownProps) {
@@ -53,9 +54,9 @@ export function GenesisBreakdown({ address }: GenesisBreakdownProps) {
     args: [address],
   });
 
-  const total = Number(totalRep || 0n);
-  const genesis = Number(genesisRep || 0n);
-  const boost = Number(boostRep || 0n);
+  const total = Number(totalRep || BigInt(0));
+  const genesis = Number(genesisRep || BigInt(0));
+  const boost = Number(boostRep || BigInt(0));
 
   const genesisPercentage = total > 0 ? Math.round((genesis / total) * 100) : 0;
   const boostPercentage = total > 0 ? Math.round((boost / total) * 100) : 0;
@@ -114,7 +115,7 @@ export function GenesisBreakdown({ address }: GenesisBreakdownProps) {
           </h4>
           <div className="grid grid-cols-2 gap-3 mb-6">
             {Object.entries(categoryTotals).map(([category, amount]) => {
-              const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.CUSTOM;
+              const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.MEDAL;
               return (
                 <div
                   key={category}
@@ -145,7 +146,7 @@ export function GenesisBreakdown({ address }: GenesisBreakdownProps) {
                 .reverse()
                 .map((award, index) => {
                   const config =
-                    CATEGORY_CONFIG[award.category] || CATEGORY_CONFIG.CUSTOM;
+                    CATEGORY_CONFIG[award.category] || CATEGORY_CONFIG.MEDAL;
                   const date = new Date(Number(award.timestamp) * 1000);
                   return (
                     <div

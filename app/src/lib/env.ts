@@ -16,15 +16,15 @@ export const env = {
 export function validateEnv(): { valid: boolean; missing: string[] } {
   const missing: string[] = [];
 
-  if (!env.REPUTATION_ADDRESS || env.REPUTATION_ADDRESS === "") {
+  if (!env.REPUTATION_ADDRESS || env.REPUTATION_ADDRESS === ("" as `0x${string}`)) {
     missing.push("NEXT_PUBLIC_REPUTATION_ADDRESS");
   }
 
-  if (!env.LAUNCHPAD_ADDRESS || env.LAUNCHPAD_ADDRESS === "") {
+  if (!env.LAUNCHPAD_ADDRESS || env.LAUNCHPAD_ADDRESS === ("" as `0x${string}`)) {
     missing.push("NEXT_PUBLIC_LAUNCHPAD_ADDRESS");
   }
 
-  if (!env.EVENT_MANAGER_ADDRESS || env.EVENT_MANAGER_ADDRESS === "") {
+  if (!env.EVENT_MANAGER_ADDRESS || env.EVENT_MANAGER_ADDRESS === ("" as `0x${string}`)) {
     missing.push("NEXT_PUBLIC_EVENT_MANAGER_ADDRESS");
   }
 

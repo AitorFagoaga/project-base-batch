@@ -99,7 +99,7 @@ export function BoostForm({ targetUser }: BoostFormProps = {}) {
 
   return (
     <form onSubmit={handleSubmit} className="card">
-      <h3 className="text-lg font-bold mb-4">Boost Someone's Reputation</h3>
+      <h3 className="text-lg font-bold mb-4">Boost Someone&apos;s Reputation</h3>
 
       <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm">
         <p className="font-medium text-blue-900">Your boost power: {boostPowerData ? String(boostPowerData) : "0"}</p>

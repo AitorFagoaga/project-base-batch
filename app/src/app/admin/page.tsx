@@ -44,7 +44,7 @@ export default function AdminPage() {
     } 
   });
 
-  const isReputationOwner = address && reputationOwner && address.toLowerCase() === reputationOwner.toLowerCase();
+  const isReputationOwner = address && reputationOwner && typeof reputationOwner === 'string' && address.toLowerCase() === reputationOwner.toLowerCase();
   const isHardcodedAdmin = address && ADMIN_ADDRESSES.includes(address.toLowerCase());
   const isAdmin = isReputationOwner || isEventAdmin === true || isHardcodedAdmin;
 
@@ -70,21 +70,11 @@ export default function AdminPage() {
           <div className="card text-center py-16 animate-fadeIn">
             <div className="text-7xl mb-6">🔒</div>
             <h3 className="text-2xl font-bold text-gray-900 mb-3">
-              Access Restricted
+              Access Denied
             </h3>
-            <p className="text-gray-700 text-lg mb-2">
-              Only contract owners and admins can access this page.
+            <p className="text-gray-700 text-lg">
+              You don't have permission to access this page.
             </p>
-            <div className="mt-6 space-y-3">
-              <div className="inline-block px-6 py-3 bg-gray-100 rounded-xl border-2 border-gray-200">
-                <p className="text-sm text-gray-600 mb-1 font-semibold">Reputation Owner</p>
-                <p className="text-gray-900 font-mono text-sm">
-                  {reputationOwner ? `${reputationOwner.slice(0, 10)}...${reputationOwner.slice(-8)}` : "Loading..."}
-                </p>
-              </div>
-              <p className="text-sm text-gray-500">or EventManager ADMIN_ROLE holder</p>
-              <p className="text-sm text-gray-500">or Hardcoded Admin Address</p>
-            </div>
           </div>
         )}
 
