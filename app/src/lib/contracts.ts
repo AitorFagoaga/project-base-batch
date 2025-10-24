@@ -1,8 +1,7 @@
 /**
  * Contract addresses and ABIs for Base Sepolia deployment
  * Auto-generated from /deployments/base-sepolia.json
- * Last updated: 2025-01-23T21:30:00.000Z
- * 6th Deployment - Added creator-only access control for successful project finalization
+ * Last updated: 2025-10-24T02:35:27.491Z
  */
 
 export const CONTRACTS = {
