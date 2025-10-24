@@ -185,7 +185,7 @@ function ProjectListWithFundingSort({ count, selectedCategory, searchQuery, sort
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 2xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         {projectIds.map((id) => (
           <ProjectWithReputation key={id} projectId={BigInt(id)} selectedCategory={selectedCategory} searchQuery={searchQuery} sortBy={sortBy} />
         ))}
@@ -247,7 +247,7 @@ function ProjectList({ count, selectedCategory, searchQuery, sortBy }: { count: 
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 2xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         {projectIds.map((id) => (
           <ProjectWithReputation key={id} projectId={BigInt(id)} selectedCategory={selectedCategory} searchQuery={searchQuery} sortBy={sortBy} />
         ))}
