@@ -123,19 +123,19 @@ export default function ProfilePage({ params }: PageProps) {
       <NetworkGuard>
         {/* Profile Header - Enhanced Card */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-1 shadow-2xl mb-8">
-          <div className="bg-white rounded-xl p-8">
-            <div className="flex flex-col md:flex-row items-start md:items-start gap-8">
+          <div className="bg-white rounded-xl p-4">
+            <div className="flex flex-col md:flex-row items-start md:items-start gap-6">
               {/* Avatar - Larger and more prominent */}
               <div className="flex-shrink-0 mx-auto md:mx-0">
-                <UserAvatar address={address} size="xl" showReputation={true} clickable={false} />
+                <UserAvatar address={address} size="lg" showReputation={true} clickable={false} />
               </div>
 
               {/* Profile Info */}
               <div className="flex-1 w-full">
                 {/* Name and Edit Button */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                   <div>
-                    <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                    <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
                       {isLoadingProfile ? (
                         <div className="h-10 w-64 bg-gray-200 rounded animate-pulse"></div>
                       ) : profile?.exists ? (
@@ -146,7 +146,7 @@ export default function ProfilePage({ params }: PageProps) {
                     </h1>
                     {/* Address with better styling */}
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm text-gray-600 font-mono bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-2 rounded-lg border border-gray-200">
+                      <span className="text-sm text-gray-600 font-mono bg-gradient-to-r from-gray-50 to-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
                         {address.slice(0, 10)}...{address.slice(-8)}
                       </span>
                       <button
@@ -171,7 +171,7 @@ export default function ProfilePage({ params }: PageProps) {
                   {isOwnProfile && (
                     <Link
                       href="/profile/edit"
-                      className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:from-indigo-600 hover:to-purple-600 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
+                      className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 px-4 py-2 text-sm font-semibold text-white transition-all hover:from-indigo-600 hover:to-purple-600 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
                       title="Edit profile"
                     >
                       <Icon name="edit" size="sm" />
@@ -182,33 +182,33 @@ export default function ProfilePage({ params }: PageProps) {
 
                 {/* Description */}
                 {profile?.description && (
-                  <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-xl border border-gray-200">
-                    <p className="text-gray-700 text-base leading-relaxed">{profile.description}</p>
+                  <div className="mb-4 p-3 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-xl border border-gray-200">
+                    <p className="text-gray-700 text-sm leading-relaxed">{profile.description}</p>
                   </div>
                 )}
 
                 {/* Stats Grid - More prominent */}
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-2 gap-3 mb-4">
                   {/* Reputation */}
-                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 p-3 text-white shadow-lg hover:shadow-xl transition-shadow">
                     <div className="absolute top-0 right-0 opacity-10">
-                      <Icon name="star" size={64} className="text-white" />
+                      <Icon name="star" size={36} className="text-white" />
                     </div>
                     <div className="relative z-10">
                       <div className="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1">Total Reputation</div>
-                      <div className="text-4xl font-bold">{reputation}</div>
+                      <div className="text-2xl font-bold">{reputation}</div>
                       <div className="text-xs opacity-75 mt-1">accumulated points</div>
                     </div>
                   </div>
 
                   {/* Projects Created */}
-                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 p-3 text-white shadow-lg hover:shadow-xl transition-shadow">
                     <div className="absolute top-0 right-0 opacity-10">
-                      <Icon name="rocket" size={64} className="text-white" />
+                      <Icon name="rocket" size={36} className="text-white" />
                     </div>
                     <div className="relative z-10">
                       <div className="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1">Projects</div>
-                      <div className="text-4xl font-bold">{createdCount ?? 0}</div>
+                      <div className="text-2xl font-bold">{createdCount ?? 0}</div>
                       <div className="text-xs opacity-75 mt-1">projects created</div>
                     </div>
                   </div>
@@ -219,7 +219,7 @@ export default function ProfilePage({ params }: PageProps) {
                   <div className="flex gap-3">
                     <button
                       onClick={() => setShowBoostForm(!showBoostForm)}
-                      className="flex-1 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 px-6 py-3 text-sm font-bold text-white transition-all hover:from-yellow-500 hover:to-orange-600 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                      className="flex-1 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-2 text-sm font-bold text-white transition-all hover:from-yellow-500 hover:to-orange-600 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                     >
                       {showBoostForm ? (
                         <>
@@ -262,12 +262,12 @@ export default function ProfilePage({ params }: PageProps) {
 
         {/* User's Projects */}
         <div className="mb-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
             <Icon name="folder" size="lg" className="text-indigo-600" />
             Created Projects
           </h2>
           {createdCount !== null && <p className="text-sm text-gray-500 mb-4">Total: {createdCount}</p>}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {userProjects.map((projectId) => (
               <UserProjectCard
                 key={projectId}

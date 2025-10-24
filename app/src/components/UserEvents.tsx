@@ -149,32 +149,32 @@ function EventCard({ eventId, userAddress, showPending, showApproved, showReject
       className="block rounded-2xl bg-white shadow ring-1 ring-gray-100 hover:shadow-md transition overflow-hidden"
     >
       {eventImage && (
-        <div className="w-full h-40 overflow-hidden">
+        <div className="w-full h-32 overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
-            src={eventImage} 
-            alt={event.title} 
+          <img
+            src={eventImage}
+            alt={event.title}
             className="w-full h-full object-cover"
           />
         </div>
       )}
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-3">
-          <h3 className="text-xl font-semibold text-gray-900 flex-1">{event.title}</h3>
-          <span className={`px-3 py-1 rounded-full text-xs font-bold border-2 ${config.color}`}>
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 flex-1">{event.title}</h3>
+          <span className={`px-2 py-1 rounded-full text-xs font-bold border-2 ${config.color}`}>
             {config.label}
           </span>
         </div>
         
         {/* Show reject reason if rejected */}
         {event.status === 3 && event.rejectReason && (
-          <div className="mb-3 p-3 bg-red-50 border-l-4 border-red-500 rounded">
-            <p className="text-sm font-semibold text-red-900 mb-1">Rejection reason:</p>
-            <p className="text-sm text-red-700">{event.rejectReason}</p>
+          <div className="mb-2 p-2 bg-red-50 border-l-4 border-red-500 rounded">
+            <p className="text-xs font-semibold text-red-900 mb-1">Rejection reason:</p>
+            <p className="text-xs text-red-700">{event.rejectReason}</p>
           </div>
         )}
-        
-        <p className="text-gray-600 line-clamp-2 mb-3">{event.description}</p>
+
+        <p className="text-gray-600 text-sm line-clamp-2 mb-2">{event.description}</p>
         <div className="text-sm text-gray-500 space-y-1">
           <div className="flex items-center gap-2">
             <span>📍</span>

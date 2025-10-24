@@ -244,13 +244,13 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {medals.map((medal) => (
             <div
               key={`${medal.medalId}-${medal.blockNumber}`}
-              className="group overflow-hidden rounded-3xl border border-gray-100 bg-white/90 shadow-[0_18px_40px_-24px_rgba(234,179,8,0.4)] transition-all hover:-translate-y-1 hover:shadow-[0_30px_60px_-28px_rgba(234,179,8,0.55)]"
+              className="group overflow-hidden rounded-2xl border border-gray-100 bg-white/90 shadow-[0_18px_40px_-24px_rgba(234,179,8,0.4)] transition-all hover:-translate-y-1 hover:shadow-[0_30px_60px_-28px_rgba(234,179,8,0.55)]"
             >
-              <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 p-8 flex items-center justify-center">
+              <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 p-6 flex items-center justify-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={medal.iconUrl || FALLBACK_MEDAL_IMAGE}
@@ -267,25 +267,25 @@ export function UserMedalsGallery({ address, isOwnProfile }: UserMedalsGalleryPr
                 </div>
               </div>
 
-              <div className="p-5 space-y-3">
+              <div className="p-4 space-y-2">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">{medal.name}</h3>
-                  <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+                  <h3 className="text-base font-semibold text-gray-900 line-clamp-1">{medal.name}</h3>
+                  <p className="mt-1 text-xs text-gray-500 line-clamp-2">
                     {medal.description || "Medal earned by event participation"}
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-yellow-50/70 border border-yellow-100 px-4 py-3">
-                  <p className="text-xs uppercase text-gray-400 tracking-wide mb-1">Reputation earned</p>
+                <div className="rounded-xl bg-yellow-50/70 border border-yellow-100 px-3 py-2">
+                  <p className="text-xs uppercase text-gray-400 tracking-wide mb-0.5">Reputation earned</p>
                   <p className="text-sm font-semibold text-yellow-600">
                     +{medal.points} points
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <Link
                     href={`/events/${medal.eventId}`}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gray-900 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-yellow-600"
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-gray-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-yellow-600"
                   >
                     <Icon name="calendar" size="xs" />
                     View event

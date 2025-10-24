@@ -113,22 +113,22 @@ export function GenesisBreakdown({ address }: GenesisBreakdownProps) {
           <h4 className="text-md font-semibold mb-3 text-gray-900">
             Genesis Achievements
           </h4>
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-2 gap-2 mb-4">
             {Object.entries(categoryTotals).map(([category, amount]) => {
               const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.MEDAL;
               return (
                 <div
                   key={category}
-                  className={`p-3 rounded-lg ${config.color} flex items-center gap-2`}
+                  className={`p-2 rounded-lg ${config.color} flex items-center gap-2`}
                 >
                   {config.isUrl ? (
-                    <img src={config.icon} alt={config.label} className="w-8 h-8" />
+                    <img src={config.icon} alt={config.label} className="w-6 h-6" />
                   ) : (
-                    <span className="text-2xl">{config.icon}</span>
+                    <span className="text-xl">{config.icon}</span>
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium">{config.label}</p>
-                    <p className="text-lg font-bold">{amount}</p>
+                    <p className="text-base font-bold">{amount}</p>
                   </div>
                 </div>
               );
@@ -139,7 +139,7 @@ export function GenesisBreakdown({ address }: GenesisBreakdownProps) {
           <h4 className="text-md font-semibold mb-3 text-gray-900">
             Award History
           </h4>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
+          <div className="space-y-2 max-h-48 overflow-y-auto">
             {genesisHistory && (genesisHistory as GenesisAward[]).length > 0 ? (
               (genesisHistory as GenesisAward[])
                 .slice()
@@ -151,12 +151,12 @@ export function GenesisBreakdown({ address }: GenesisBreakdownProps) {
                   return (
                     <div
                       key={index}
-                      className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+                      className="flex items-start gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200"
                     >
                       {config.isUrl ? (
-                        <img src={config.icon} alt={config.label} className="w-8 h-8 flex-shrink-0" />
+                        <img src={config.icon} alt={config.label} className="w-6 h-6 flex-shrink-0" />
                       ) : (
-                        <span className="text-2xl flex-shrink-0">{config.icon}</span>
+                        <span className="text-xl flex-shrink-0">{config.icon}</span>
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">

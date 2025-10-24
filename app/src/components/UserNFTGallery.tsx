@@ -161,11 +161,11 @@ export function UserNFTGallery({ address, isOwnProfile }: UserNFTGalleryProps) {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {nfts.map((nft) => (
             <div
               key={nft.id}
-              className="group overflow-hidden rounded-3xl border border-gray-100 bg-white/90 shadow-[0_18px_40px_-24px_rgba(99,102,241,0.4)] transition-all hover:-translate-y-1 hover:shadow-[0_30px_60px_-28px_rgba(99,102,241,0.55)]"
+              className="group overflow-hidden rounded-2xl border border-gray-100 bg-white/90 shadow-[0_18px_40px_-24px_rgba(99,102,241,0.4)] transition-all hover:-translate-y-1 hover:shadow-[0_30px_60px_-28px_rgba(99,102,241,0.55)]"
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
                 <NFTImage
@@ -183,15 +183,15 @@ export function UserNFTGallery({ address, isOwnProfile }: UserNFTGalleryProps) {
                 </div>
               </div>
 
-              <div className="p-5 space-y-4">
+              <div className="p-4 space-y-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">{nft.metadataName}</h3>
-                  <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+                  <h3 className="text-base font-semibold text-gray-900 line-clamp-1">{nft.metadataName}</h3>
+                  <p className="mt-1 text-xs text-gray-500 line-clamp-2">
                     {nft.metadataDescription || `NFT obtenido al respaldar ${nft.projectTitle}`}
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-gray-50/70 border border-gray-100 px-4 py-3 flex items-center justify-between">
+                <div className="rounded-xl bg-gray-50/70 border border-gray-100 px-3 py-2 flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase text-gray-400 tracking-wide">Investment</p>
                     <p className="text-sm font-semibold text-indigo-600">
@@ -200,16 +200,16 @@ export function UserNFTGallery({ address, isOwnProfile }: UserNFTGalleryProps) {
                   </div>
                   <div className="text-right">
                     <p className="text-xs uppercase text-gray-400 tracking-wide">Project</p>
-                    <p className="text-sm font-semibold text-gray-700 line-clamp-1">
+                    <p className="text-xs font-semibold text-gray-700 line-clamp-1">
                       {nft.projectTitle}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <Link
                     href={`/project/${nft.projectId}`}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gray-900 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-indigo-600"
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-gray-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-indigo-600"
                   >
                     <Icon name="external" size="xs" />
                     View project
@@ -219,7 +219,7 @@ export function UserNFTGallery({ address, isOwnProfile }: UserNFTGalleryProps) {
                       href={nft.metadataHttpUrl || nft.metadataUri}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-1.5 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-100"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-100"
                       title="Ver metadata IPFS"
                     >
                       <Icon name="download" size="xs" />
