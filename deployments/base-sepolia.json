@@ -11,7 +11,7 @@
   },
   "contracts": {
     "Reputation": {
-      "address": "0x2B760E6f18F5CcD6505162C781c085F3f8F28114",
+      "address": "0x3f0069eBEEc6F1f797048a035BfedC61F5F4f81d",
       "abi": [
         {
           "type": "constructor",
@@ -664,7 +664,7 @@
       ]
     },
     "Launchpad": {
-      "address": "0x8d634EFd94Cb818e3325B46fC627c5753AC89215",
+      "address": "0x4EEc1C2F03A5B97A01949821981F20eFf0e50370",
       "abi": [
         {
           "type": "constructor",
@@ -1513,7 +1513,7 @@
       ]
     },
     "UserProfile": {
-      "address": "0xDd8fe947852c63Adb9CB34B901F01276513323bC",
+      "address": "0x4d2265B27Fcc858a75B6142ACf58C38158eC71Ef",
       "abi": [
         {
           "type": "event",
@@ -1647,7 +1647,7 @@
       ]
     },
     "EventManager": {
-      "address": "0xeDd810A3071Bc0657233EeeAe4aD741b4C1c3bBd",
+      "address": "0xb613cF18d14BcB4dA20BB4003C1dB15B66Ba445E",
       "abi": [
         {
           "type": "constructor",
