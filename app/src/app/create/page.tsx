@@ -422,6 +422,13 @@ export default function CreateProjectPage() {
       // Convert decimal days to seconds for the contract
       // e.g., 0.5 days = 43200 seconds, 1 day = 86400 seconds
       const durationInSeconds = Math.floor(duration * 24 * 60 * 60);
+      
+      // Debug: Log the duration calculation
+      console.log("🔍 Duration Debug:");
+      console.log("  - Input durationDays:", durationDays);
+      console.log("  - Parsed duration:", duration);
+      console.log("  - durationInSeconds:", durationInSeconds);
+      console.log("  - Expected hours:", durationInSeconds / 3600);
 
       writeContract({
         address: CONTRACTS.launchpad.address,

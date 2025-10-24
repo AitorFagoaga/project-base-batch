@@ -266,6 +266,15 @@ export default function ProjectDetailPage() {
 
     if (Number.isFinite(deadlineNumber)) {
       deadlineDate = new Date(deadlineNumber * 1000);
+      
+      // Debug: Log deadline calculation
+      console.log("🔍 Deadline Debug:");
+      console.log("  - deadlineNumber (from contract):", deadlineNumber);
+      console.log("  - now (current timestamp):", now);
+      console.log("  - difference in seconds:", deadlineNumber - now);
+      console.log("  - difference in hours:", (deadlineNumber - now) / 3600);
+      console.log("  - deadlineDate:", deadlineDate);
+      
       daysRemaining = Math.max(
         0,
         Math.ceil((deadlineNumber - now) / 86400)
