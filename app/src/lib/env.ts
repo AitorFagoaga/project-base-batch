@@ -7,6 +7,7 @@ export const env = {
   REPUTATION_ADDRESS: (process.env.NEXT_PUBLIC_REPUTATION_ADDRESS || "") as `0x${string}`,
   LAUNCHPAD_ADDRESS: (process.env.NEXT_PUBLIC_LAUNCHPAD_ADDRESS || "") as `0x${string}`,
   EVENT_MANAGER_ADDRESS: (process.env.NEXT_PUBLIC_EVENT_MANAGER_ADDRESS || "") as `0x${string}`,
+  USERPROFILE_ADDRESS: (process.env.NEXT_PUBLIC_USERPROFILE_ADDRESS || "") as `0x${string}`,
   WALLETCONNECT_PROJECT_ID: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
 } as const;
 
